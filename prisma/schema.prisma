@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  title        String
+  audienceType String    @default("investor")
+  content      String    @default("")
+  summary      String    @default("")
+  keyPoints    String    @default("[]")
+  questions    String    @default("[]")
+  status       String    @default("upload") // upload, analyzed, practicing, completed
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  messages     Message[]
+  scores       Score?
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // user, assistant, system
+  content   String
+  createdAt DateTime @default(now())
+
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Score {
+  id              String   @id @default(cuid())
+  sessionId       String   @unique
+  clarity         Float    @default(0)
+  confidence      Float    @default(0)
+  technical       Float    @default(0)
+  storytelling    Float    @default(0)
+  persuasiveness  Float    @default(0)
+  conciseness     Float    @default(0)
+  verbatimReading Float    @default(0)
+  eyeContact      Float    @default(0)
+  posture         Float    @default(0)
+  cameraPresence  Float    @default(0)
+  overall         Float    @default(0)
+  feedback        String   @default("")
+  weaknesses      String   @default("[]")
+  recommendations String   @default("[]")
+  knowledgeGaps   String   @default("[]")
+  judgeFeedback   String   @default("[]")
+  createdAt       DateTime @default(now())
+
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
