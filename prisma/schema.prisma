@@ -9,13 +9,23 @@ datasource db {
 
 model Session {
   id           String    @id @default(cuid())
+  userId       String?
   title        String
   audienceType String    @default("investor")
+  practiceMode String    @default("full")
+  mode         String    @default("diagnostic")
+  stance       String    @default("rigorous")
   content      String    @default("")
+  deckContext  String    @default("{}")
+  transcriptSegments String @default("[]")
+  examinerEvents String @default("[]")
+  findings     String    @default("[]")
   summary      String    @default("")
   keyPoints    String    @default("[]")
   questions    String    @default("[]")
   status       String    @default("upload") // upload, analyzed, practicing, completed
+  audioPath    String?
+  customConfig String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

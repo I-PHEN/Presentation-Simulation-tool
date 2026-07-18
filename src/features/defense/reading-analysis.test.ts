@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { analyseReading, readingScore } from './reading-analysis';
+import { spokenBySlide } from './transcript';
 
 describe('reading analysis', () => {
   it('flags copied slide phrases', () => {
@@ -76,24 +77,24 @@ describe('reading analysis', () => {
     expect(readingScore(evidence)).toBeLessThanOrEqual(10);
   });
 
-  it('detects exact reading of a short slide', () => {
+  it('does not penalize exact reading of a short slide title', () => {
     const evidence = analyseReading(
       [{ index: 4, imageUrl: '/4', text: 'Retention improved after practice.' }],
       { 4: 'Retention improved after practice.' },
     );
 
-    expect(evidence[0].overlap).toBe(1);
-    expect(readingScore(evidence)).toBeLessThanOrEqual(10);
+    expect(evidence[0].overlap).toBe(0);
+    expect(readingScore(evidence)).toBe(100);
   });
 
-  it('detects a short slide read aloud before extra explanation', () => {
+  it('does not treat a short slide title before explanation as copied reading', () => {
     const evidence = analyseReading(
       [{ index: 7, imageUrl: '/7', text: 'Retention improved after practice.' }],
       { 7: 'Retention improved after practice because repeated exercises reinforce recall.' },
     );
 
-    expect(evidence[0].overlap).toBe(1);
-    expect(readingScore(evidence)).toBeLessThanOrEqual(10);
+    expect(evidence[0].overlap).toBe(0);
+    expect(readingScore(evidence)).toBeGreaterThan(75);
   });
 
   it('marks blank transcripts and excludes them from the average score', () => {
@@ -106,6 +107,39 @@ describe('reading analysis', () => {
     );
 
     expect(evidence[1].hasSpeech).toBe(false);
-    expect(readingScore(evidence)).toBeLessThanOrEqual(10);
+    expect(readingScore(evidence)).toBe(100);
+  });
+
+  it('keeps silent speech at zero overlap and does not penalize a short title or technical term', () => {
+    const evidence = analyseReading([
+      { index: 8, imageUrl: '/8', text: 'Methods' },
+      { index: 9, imageUrl: '/9', text: 'CRISPR' },
+    ], { 8: ' ', 9: 'CRISPR enables targeted gene editing.' });
+
+    expect(evidence[0]).toMatchObject({ hasSpeech: false, overlap: 0, copiedPhrases: [] });
+    expect(evidence[1].overlap).toBe(0);
+  });
+
+  it('does not treat a short multiword technical label as copied reading', () => {
+    const [evidence] = analyseReading(
+      [{ index: 10, imageUrl: '/10', text: 'Machine learning' }],
+      { 10: 'Machine learning helps us classify the samples.' },
+    );
+    expect(evidence).toMatchObject({ hasSpeech: true, overlap: 0, copiedPhrases: [] });
+  });
+
+  it('does not manufacture a shorter phrase for a three-word technical label', () => {
+    const [evidence] = analyseReading(
+      [{ index: 11, imageUrl: '/11', text: 'Polymerase chain reaction' }],
+      { 11: 'Polymerase chain reaction was used to amplify our sample.' },
+    );
+    expect(evidence).toMatchObject({ hasSpeech: true, overlap: 0, copiedPhrases: [] });
+  });
+
+  it('excludes examiner delivery from spoken slide evidence', () => {
+    expect(spokenBySlide([
+      { role: 'presenter', slideIndex: 1, text: 'Our result improved retention.', startedAtMs: 0, endedAtMs: 10 },
+      { role: 'examiner', slideIndex: 1, text: 'Explain your result.', startedAtMs: 10, endedAtMs: 20 },
+    ])).toEqual({ 1: 'Our result improved retention.' });
   });
 });

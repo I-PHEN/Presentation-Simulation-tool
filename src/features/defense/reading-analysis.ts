@@ -47,7 +47,9 @@ function normalisedTerms(text: string): string[] {
 }
 
 function phrases(terms: string[], length = NGRAM_LENGTH): string[] {
-  if (terms.length === 0 || length === 0) {
+  // A one-word title or domain term (for example, "Methods" or "CRISPR") is
+  // not meaningful evidence that a presenter is reading the slide.
+  if (terms.length < NGRAM_LENGTH || length < NGRAM_LENGTH) {
     return [];
   }
 
