@@ -1,19 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { db } from '@/lib/db';
+import { defenseFindingSchema, defenseReportSchema } from '@/features/defense/types';
+import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 
-export async function GET(_req: NextRequest) {
+const deckSchema = z.object({
+  sourceName: z.string().trim().min(1),
+  slides: z.array(z.object({ index: z.number().int().positive(), text: z.string(), imageUrl: z.string().min(1) })).min(1),
+}).strict();
+
+const summarySchema = z.object({ defenseReport: defenseReportSchema }).strict();
+
+function parsePersisted<T>(value: string, schema: z.ZodType<T>): T | undefined {
   try {
+    const parsed = schema.safeParse(JSON.parse(value));
+    return parsed.success ? parsed.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const identity = await authenticateRequest(req);
+    if (isAuthenticationFailure(identity)) return identity;
     const sessions = await db.session.findMany({
+      where: { practiceMode: 'defense', userId: identity.userId },
       orderBy: { createdAt: 'desc' },
-      include: { scores: true },
     });
 
-    return NextResponse.json({ sessions });
+    return NextResponse.json({
+      sessions: sessions.map((session) => {
+        const deck = parsePersisted(session.deckContext, deckSchema);
+        const report = parsePersisted(session.summary, summarySchema)?.defenseReport;
+        const finding = report?.highestLeverage ?? parsePersisted(session.findings, z.array(defenseFindingSchema).min(1))?.[0];
+        return {
+          id: session.id,
+          title: session.title,
+          createdAt: session.createdAt,
+          status: session.status,
+          mode: session.mode === 'mock' ? 'mock' : 'diagnostic',
+          stance: session.stance === 'supportive' ? 'supportive' : 'rigorous',
+          ...(deck ? { deck } : {}),
+          ...(finding ? { finding: { title: finding.title, evidence: finding.evidence, drill: finding.drill } } : {}),
+          ...(report ? { report: { nextDrill: report.nextDrill, highestLeverage: { title: report.highestLeverage.title, slideIndex: report.highestLeverage.slideIndex } } } : {}),
+        };
+      }),
+    });
   } catch (error) {
-    console.error('Error fetching sessions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch sessions' },
-      { status: 500 }
-    );
+    console.error('Error fetching defense sessions:', error);
+    return NextResponse.json({ error: 'Failed to fetch defense sessions' }, { status: 500 });
   }
 }

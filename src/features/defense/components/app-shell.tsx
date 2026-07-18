@@ -6,9 +6,8 @@ export type DefenseNavItem = 'overview' | 'decks' | 'practice' | 'reports';
 
 const navigation: Array<{ href: string; label: string; value: DefenseNavItem }> = [
   { href: '/dashboard', label: 'Overview', value: 'overview' },
-  { href: '/decks', label: 'Decks', value: 'decks' },
+  { href: '/decks/new', label: 'Decks', value: 'decks' },
   { href: '/practice', label: 'Practice', value: 'practice' },
-  { href: '/reports', label: 'Reports', value: 'reports' },
 ];
 
 export function AppShell({ active, children }: {

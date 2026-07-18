@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Cartesia from '@cartesia/cartesia-js';
+import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 
 const cartesia = new Cartesia({
   apiKey: process.env.CARTESIA_API_KEY || 'missing_key',
@@ -11,6 +12,8 @@ const voiceIdPattern = /^[A-Za-z0-9-]+$/;
 
 export async function POST(request: Request) {
   try {
+    const identity = await authenticateRequest(request);
+    if (isAuthenticationFailure(identity)) return identity;
     let body;
     try {
       body = await request.json();

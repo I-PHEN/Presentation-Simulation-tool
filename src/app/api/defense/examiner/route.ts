@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getZAI } from '@/lib/zai';
 import { createExaminerEventSchema } from '@/features/defense/examiner';
+import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 
 const examinerDecisionSchema = z.object({ kind: z.enum(['interrupt', 'question', 'follow_up']) }).passthrough();
 
@@ -48,6 +49,8 @@ function createServerGroundedEvent(
 }
 
 export async function POST(request: Request) {
+  const identity = await authenticateRequest(request);
+  if (isAuthenticationFailure(identity)) return identity;
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid examiner request' }, { status: 400 }); }
   const parsedRequest = requestSchema.safeParse(body);
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
 
   try {
     const { sessionId, currentSegment, readingEvidence } = parsedRequest.data;
-    const session = await db.session.findUnique({ where: { id: sessionId } });
+    const session = await db.session.findFirst({ where: { id: sessionId, userId: identity.userId } });
     if (!session || session.practiceMode !== 'defense') return NextResponse.json({ error: 'Defense session not found' }, { status: 404 });
     const deck = parseDeck(session.deckContext);
     const slide = deck?.slides.find((item) => item.index === currentSegment.slideIndex);

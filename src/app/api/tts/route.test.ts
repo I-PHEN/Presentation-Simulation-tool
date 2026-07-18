@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 const { generate } = vi.hoisted(() => ({ generate: vi.fn() }));
 vi.mock('@cartesia/cartesia-js', () => ({ default: class { tts = { generate }; } }));
+vi.mock('@/lib/server-auth', () => ({ authenticateRequest: vi.fn().mockResolvedValue({ userId: 'user-1' }), isAuthenticationFailure: () => false }));
 import { POST } from './route';
 
 describe('POST /api/tts', () => {

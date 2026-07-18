@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { findUnique, create, getZAI } = vi.hoisted(() => ({ findUnique: vi.fn(), create: vi.fn(), getZAI: vi.fn() }));
-vi.mock('@/lib/db', () => ({ db: { session: { findUnique } } }));
+const { findFirst, create, getZAI } = vi.hoisted(() => ({ findFirst: vi.fn(), create: vi.fn(), getZAI: vi.fn() }));
+vi.mock('@/lib/db', () => ({ db: { session: { findFirst } } }));
+vi.mock('@/lib/server-auth', () => ({ authenticateRequest: vi.fn().mockResolvedValue({ userId: 'user-1' }), isAuthenticationFailure: () => false }));
 vi.mock('@/lib/zai', () => ({ getZAI }));
 import { POST } from './route';
 
@@ -9,13 +10,13 @@ const segment = { role: 'presenter', slideIndex: 1, text: 'Our claim is that ret
 const session = { id: 's1', practiceMode: 'defense', stance: 'rigorous', deckContext: JSON.stringify({ sourceName: 'deck', slides: [{ index: 1, text: 'Retention increased after the onboarding redesign.', imageUrl: 'x' }] }) };
 
 describe('POST /api/defense/examiner', () => {
-  beforeEach(() => { findUnique.mockReset(); create.mockReset(); getZAI.mockReset(); });
+  beforeEach(() => { findFirst.mockReset(); create.mockReset(); getZAI.mockReset(); });
   it('rejects non-presenter or invalid current segments', async () => {
     const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: { ...segment, role: 'examiner' } }) }));
-    expect(response.status).toBe(400); expect(findUnique).not.toHaveBeenCalled();
+    expect(response.status).toBe(400); expect(findFirst).not.toHaveBeenCalled();
   });
   it('returns null for NO_INTERRUPT and supplies both slide claim and spoken evidence to the model', async () => {
-    findUnique.mockResolvedValue(session);
+    findFirst.mockResolvedValue(session);
     create.mockResolvedValue({ choices: [{ message: { content: 'NO_INTERRUPT' } }] });
     getZAI.mockResolvedValue({ chat: { completions: { create } } });
     const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment }) }));
@@ -25,7 +26,7 @@ describe('POST /api/defense/examiner', () => {
   });
 
   it('discards contradictory model text and constructs a quoted question from both server sources', async () => {
-    findUnique.mockResolvedValue(session);
+    findFirst.mockResolvedValue(session);
     create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'interrupt', text: 'Why did retention decline?', evidence: 'decline' }) } }] });
     getZAI.mockResolvedValue({ chat: { completions: { create } } });
     const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment }) }));
@@ -37,7 +38,7 @@ describe('POST /api/defense/examiner', () => {
   });
 
   it('does not surface a model question even when it includes shared source terms', async () => {
-    findUnique.mockResolvedValue(session);
+    findFirst.mockResolvedValue(session);
     create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question', text: 'What did the marketing survey find?', slideIndex: 1, evidence: 'Retention is mentioned on both the slide and in speech.', occurredAtMs: 2 }) } }] });
     getZAI.mockResolvedValue({ chat: { completions: { create } } });
     const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment }) }));
@@ -55,5 +56,13 @@ describe('POST /api/defense/examiner', () => {
       expect(response.status).toBe(400);
     }
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it('does not generate an examiner event for another user’s session', async () => {
+    findFirst.mockResolvedValue(null);
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 'other-user-session', currentSegment: segment }) }));
+    expect(response.status).toBe(404);
+    expect(getZAI).not.toHaveBeenCalled();
+    expect(findFirst).toHaveBeenCalledWith({ where: { id: 'other-user-session', userId: 'user-1' } });
   });
 });

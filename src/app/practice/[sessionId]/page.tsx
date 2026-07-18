@@ -1,0 +1,85 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { AppShell } from '@/features/defense/components/app-shell';
+import { PracticeSetup } from '@/features/defense/components/practice-setup';
+import { RehearsalRoom } from '@/features/defense/components/rehearsal-room';
+import type { DeckContext, DefenseMode, ExaminerEvent, ExaminerStance, TranscriptSegment } from '@/features/defense/types';
+import { defenseDeckSchema, examinerEventsSchema, transcriptSegmentsSchema } from '@/features/defense/session-schema';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
+
+type DefenseSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string };
+
+function isDeckContext(value: unknown): value is DeckContext {
+  if (!value || typeof value !== 'object') return false;
+  const deck = value as Record<string, unknown>;
+  return typeof deck.sourceName === 'string' && deck.sourceName.trim().length > 0
+    && Array.isArray(deck.slides)
+    && deck.slides.length > 0
+    && deck.slides.every((slide) => slide && typeof slide === 'object'
+      && Number.isInteger((slide as Record<string, unknown>).index)
+      && typeof (slide as Record<string, unknown>).text === 'string'
+      && typeof (slide as Record<string, unknown>).imageUrl === 'string');
+}
+
+export function parseDefenseSessionResponse(value: unknown): DefenseSession | null {
+  if (!value || typeof value !== 'object' || !('defense' in value)) return null;
+  const defense = value.defense;
+  if (!defense || typeof defense !== 'object') return null;
+  const session = defense as Record<string, unknown>;
+  const deck = defenseDeckSchema.safeParse(session.deck);
+  const segments = transcriptSegmentsSchema.safeParse(session.transcriptSegments);
+  const events = examinerEventsSchema.safeParse(session.examinerEvents);
+  if (!deck.success || !segments.success || !events.success) return null;
+  if (session.mode !== 'diagnostic' && session.mode !== 'mock') return null;
+  if (session.stance !== 'rigorous' && session.stance !== 'supportive') return null;
+  if (typeof session.id !== 'string') return null;
+  return {
+    id: session.id,
+    deck: deck.data,
+    mode: session.mode,
+    stance: session.stance,
+    transcriptSegments: segments.data,
+    examinerEvents: events.data,
+    status: typeof session.status === 'string' ? session.status : 'upload',
+  };
+}
+
+export default function PracticeSessionPage({ params }: { params: Promise<{ sessionId: string }> }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [sessionId, setSessionId] = useState<string>();
+  const [session, setSession] = useState<DefenseSession>();
+  const [error, setError] = useState<string>();
+  const view = searchParams.get('view');
+
+  useEffect(() => {
+    void params.then(setSessionId);
+  }, [params]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    let active = true;
+    const loadSession = async () => {
+      try {
+        const response = await authenticatedFetch(`/api/session/${sessionId}`);
+        const body = await response.json();
+        const defense = response.ok ? parseDefenseSessionResponse(body) : null;
+        if (!defense) throw new Error(response.ok ? 'This defense session is missing its deck context.' : body.error || 'Unable to load this defense session.');
+        if (active) setSession(defense);
+      } catch (caught) {
+        if (active) setError(caught instanceof Error ? caught.message : 'Unable to load this defense session.');
+      }
+    };
+    void loadSession();
+    return () => { active = false; };
+  }, [sessionId, view]);
+
+  if (view === 'room') {
+    if (error) return <p role="alert" className="p-6 text-sm text-destructive">{error}</p>;
+    return session ? <RehearsalRoom session={session} onComplete={() => router.push(`/reports/${session.id}`)} /> : <p role="status" className="p-6 text-sm text-muted-foreground">Loading rehearsal room...</p>;
+  }
+
+  return <AppShell active="practice">{error ? <p role="alert" className="border-l-2 border-destructive pl-3 text-sm">{error}</p> : sessionId && session ? <PracticeSetup sessionId={sessionId} deck={session.deck} initialMode={session.mode} initialStance={session.stance} onReady={() => router.push(`/practice/${sessionId}?view=room`)} /> : <p role="status" className="text-sm text-muted-foreground">Loading defense setup...</p>}</AppShell>;
+}
