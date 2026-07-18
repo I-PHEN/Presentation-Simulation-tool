@@ -15,12 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sparring Partner — AI Presentation Practice",
-  description:
-    "Practice your pitch with AI judges. Present live, get grilled with questions, receive actionable feedback.",
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
+  title: "Defense",
+  description: "Prepare, practice, and review your defense.",
 };
 
 export default function RootLayout({
