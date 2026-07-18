@@ -3,19 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { OverviewWorkspace } from '@/features/defense/components/overview-workspace';
-import type { DeckContext } from '@/features/defense/types';
+import { AppShell } from '@/features/defense/components/app-shell';
+import { CoachHome } from '@/features/defense/components/coach-home';
+import { buildCoachHomeModel, type CoachHomeSession } from '@/features/defense/coach-home-model';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
-type DefenseOverviewSession = {
-  deck?: DeckContext;
-  finding?: { title: string; evidence: string; drill: string };
-};
+type SessionsResponse = { sessions?: CoachHomeSession[] };
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [latestSession, setLatestSession] = useState<DefenseOverviewSession>();
+  const [sessions, setSessions] = useState<CoachHomeSession[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
@@ -26,15 +24,22 @@ export default function DashboardPage() {
     let active = true;
     void authenticatedFetch('/api/sessions')
       .then(async (response) => response.ok ? response.json() : { sessions: [] })
-      .then((data: { sessions?: DefenseOverviewSession[] }) => {
-        if (active) setLatestSession(data.sessions?.[0]);
+      .then((data: SessionsResponse) => {
+        if (active) setSessions(data.sessions ?? []);
       })
       .catch(() => {
-        if (active) setLatestSession(undefined);
+        if (active) setSessions([]);
       });
     return () => { active = false; };
   }, [user]);
 
   if (authLoading || !user) return <div className="min-h-dvh bg-background" aria-busy="true" />;
-  return <OverviewWorkspace activeDeck={latestSession?.deck} latestFinding={latestSession?.finding} onStartHref="/decks/new" />;
+  return (
+    <AppShell active="overview">
+      <CoachHome
+        name={user.displayName?.split(' ')[0] || 'there'}
+        model={buildCoachHomeModel(sessions)}
+      />
+    </AppShell>
+  );
 }

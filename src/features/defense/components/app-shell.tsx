@@ -5,9 +5,9 @@ import { ThemeToggle } from '@/components/theme-toggle';
 export type DefenseNavItem = 'overview' | 'decks' | 'practice' | 'reports';
 
 const navigation: Array<{ href: string; label: string; value: DefenseNavItem }> = [
-  { href: '/dashboard', label: 'Overview', value: 'overview' },
-  { href: '/decks/new', label: 'Decks', value: 'decks' },
+  { href: '/dashboard', label: 'Today', value: 'overview' },
   { href: '/practice', label: 'Practice', value: 'practice' },
+  { href: '/dashboard#trajectory', label: 'Progress', value: 'reports' },
 ];
 
 export function AppShell({ active, children }: {
@@ -17,9 +17,9 @@ export function AppShell({ active, children }: {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="border-b border-border">
-        <nav aria-label="Primary navigation" className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-5">
-          <Link href="/dashboard" className="text-sm font-semibold tracking-tight">Defense</Link>
-          <div className="flex flex-1 items-center gap-4">
+        <nav aria-label="Primary navigation" className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 sm:flex-nowrap sm:py-0">
+          <Link href="/dashboard" className="text-sm font-semibold tracking-tight">Sparring Partner</Link>
+          <div className="order-3 flex w-full flex-none items-center gap-4 sm:order-none sm:w-auto sm:flex-1">
             {navigation.map((item) => (
               <Link
                 key={item.value}
