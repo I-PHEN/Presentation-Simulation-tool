@@ -3,6 +3,7 @@
 let modelsLoading = false;
 let modelsLoaded = false;
 let activeAudioElement: HTMLAudioElement | null = null;
+let activePlayback: { audio: HTMLAudioElement; url: string; finish: (result: AudioPlayResult) => void } | null = null;
 
 export async function initVoiceEngine() {
   if (typeof window === 'undefined') return;
@@ -46,14 +47,15 @@ export async function generateTTS(text: string, voiceId: string = 'd46abd1d-2d02
 }
 
 export function stopAudioPlayback() {
-  if (activeAudioElement) {
+  if (activePlayback) {
+    const playback = activePlayback;
     try {
-      activeAudioElement.pause();
-      activeAudioElement.src = '';
+      playback.audio.pause();
+      playback.audio.src = '';
     } catch (err) {
       // Ignore
     }
-    activeAudioElement = null;
+    playback.finish({ played: false, error: 'playback' });
   }
 }
 
@@ -73,31 +75,38 @@ export function isAudioUnlocked() {
   return audioUnlocked;
 }
 
-export function playAudioData(audioResult: any): Promise<void> {
+export type AudioPlayResult = { played: true } | { played: false; error: 'autoplay' | 'playback' };
+
+export function playAudioData(audioResult: { audio: Blob }): Promise<AudioPlayResult> {
+  if (activePlayback) stopAudioPlayback();
   return new Promise((resolve) => {
+    let settled = false;
+    let url: string | null = null;
+    let audio: HTMLAudioElement | null = null;
+    const finish = (result: AudioPlayResult) => {
+      if (settled) return;
+      settled = true;
+      if (url) URL.revokeObjectURL(url);
+      if (activeAudioElement === audio) activeAudioElement = null;
+      if (activePlayback?.audio === audio) activePlayback = null;
+      resolve(result);
+    };
     try {
       const blob = audioResult.audio;
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
+      url = URL.createObjectURL(blob);
+      audio = new Audio(url);
       audio.volume = 1.0;
       
       activeAudioElement = audio;
+      activePlayback = { audio, url, finish };
       
       audio.onended = () => {
-        URL.revokeObjectURL(url);
-        if (activeAudioElement === audio) {
-          activeAudioElement = null;
-        }
-        resolve();
+        finish({ played: true });
       };
       
       audio.onerror = (e) => {
         console.error('Audio playback error', e);
-        URL.revokeObjectURL(url);
-        if (activeAudioElement === audio) {
-          activeAudioElement = null;
-        }
-        resolve();
+        finish({ played: false, error: 'playback' });
       };
       
       const playPromise = audio.play();
@@ -106,16 +115,14 @@ export function playAudioData(audioResult: any): Promise<void> {
           .then(() => { audioUnlocked = true; })
           .catch(err => {
             console.warn('Audio autoplay blocked by browser:', err.message);
-            // Mark as not unlocked so UI can show a prompt
-            audioUnlocked = false;
-            URL.revokeObjectURL(url);
-            activeAudioElement = null;
-            resolve(); // continue app flow even if audio fails
+            const autoplay = err?.name === 'NotAllowedError';
+            if (autoplay) audioUnlocked = false;
+            finish({ played: false, error: autoplay ? 'autoplay' : 'playback' });
           });
       }
     } catch (err) {
       console.error('Audio playback setup failed', err);
-      resolve(); 
+      finish({ played: false, error: 'playback' });
     }
   });
 }
