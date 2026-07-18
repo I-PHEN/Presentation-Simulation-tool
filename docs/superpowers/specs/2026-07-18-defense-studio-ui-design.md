@@ -4,13 +4,15 @@
 
 Replace the current feature-island interface with one continuous Defense Studio experience for thesis and capstone presenters. The default home is a **Readiness Desk**: it gives the student one highest-value preparation action, a short rehearsal record, and direct access to their deck history.
 
+The approved visual direction is a high-contrast academic record: a deep ink primary panel, restrained paper surfaces, a single copper action color, and editorial serif display typography. The hero task is the visual center; it must never compete with a generic dashboard grid.
+
 ## Experience model
 
 ```text
 Readiness Desk -> Prepare deck -> Rehearsal room -> Examiner challenge -> Defense brief -> Focused retry
 ```
 
-The product has no primary navigation for generic practice types. Diagnostic Practice and Mock Defense appear only where the student chooses a rehearsal method for their uploaded deck.
+The product has no primary navigation for generic practice types. Diagnostic Practice and Mock Defense appear only where the student chooses a rehearsal method for their uploaded deck. The former Configure Practice Stage, template grid, panel-member builder, focus-area checklist, custom-prompt field, audience count, and screen-share controls are removed from the primary product experience.
 
 ## Screen responsibilities
 
@@ -20,7 +22,7 @@ Show the student their next action first: the selected deck, time to defense if 
 
 ### Prepare Deck
 
-Accept PowerPoint and PDF decks. Once a deck is selected, show a receipt with name, slide count, and thumbnails. The student chooses Diagnostic Practice or Mock Defense through plain-language cards. There are no persona, panel-building, screen-share, interview, or generic audience controls.
+Accept PowerPoint and PDF decks. Once a deck is selected, show a receipt with name, slide count, and thumbnails. The student chooses Diagnostic Practice or Mock Defense through plain-language cards, then chooses an examiner stance: Supportive or Rigorous. There are no persona, panel-building, screen-share, interview, or generic audience controls.
 
 ### Rehearsal Room
 
@@ -34,7 +36,7 @@ Replace score-card grids with a structured brief: readiness, highest-risk defens
 
 The design should feel like an academic defense record, not an AI product.
 
-- **Palette:** library ink `#15262D`, paper `#E9ECE7`, card paper `#F6F7F3`, rule `#C5CECA`, signal copper `#B94C2C`, muted ink `#66757A`.
+- **Palette:** library ink `#15262D`, paper `#E9ECE7`, card paper `#F6F7F3`, rule `#C5CECA`, signal copper `#B94C2C`, muted ink `#66757A`. Ink and paper must meet accessible contrast requirements in both light and dark themes.
 - **Typography:** Georgia (or an equivalent classic serif) for restrained display headings; Geist for body/UI; Geist Mono only for metadata such as elapsed time and slide numbers.
 - **Structure:** thin rules, asymmetric but stable editorial columns, generous whitespace, compact labels, and a single primary action per screen.
 - **Components:** accessible buttons, inputs, dialogs, tooltips, progress indicators, empty states, and toast feedback built on the existing shadcn/Radix primitives. Do not invent unfamiliar controls when a conventional component is clearer.
@@ -46,6 +48,7 @@ The design should feel like an academic defense record, not an AI product.
 - No generic AI chat panes, prompt-style input fields, animated orb/robot branding, or assistant avatars.
 - No dense generic KPI card grids, neon gradients, glassmorphism, or decorative score gauges.
 - Remove the current custom favicon. Do not add a replacement until a dedicated Defense Studio mark is designed.
+- Do not use gray-on-gray body copy, text below 12px for information a student must read, or low-contrast disabled-looking controls for available actions.
 
 ## Quality requirements
 
