@@ -10,7 +10,7 @@ This document supersedes the visual direction in `2026-07-18-defense-studio-ui-d
 
 > Know what your examiner will question before your examiner does.
 
-The product is not a generic voice conversation. Its durable value comes from combining:
+The product is voice-first, not text-first. The examiner is a spoken presence throughout rehearsal; on-screen text supports captions, replay, orientation, and later evidence review. Its durable value comes from combining:
 
 1. the claims in a student's specific deck,
 2. the student’s actual spoken explanation by slide,
@@ -76,16 +76,30 @@ The active slide remains the visual center. The session frame contains only:
 - microphone state and accessible session controls,
 - one examiner context region.
 
+#### Room visual contract
+
+The presentation room defaults to the real dark theme (while respecting a user's saved light preference). It is a stable three-part stage: a thin session header, a large slide stage on the left, and a narrow examiner rail on the right; quiet microphone/slide/end controls sit along the bottom. The slide is displayed at presentation scale and is never reduced to a thumbnail beside a chat feed. The examiner rail contains only the active slide claim, the current spoken/captioned question, and the evidence that caused a Diagnostic interruption. On narrow screens, the slide keeps priority and the rail stacks below it.
+
+#### Voice-first examiner contract
+
+- Every examiner interruption, question, follow-up, and transition is synthesized and played aloud. A student must never need to read a chat-style panel to receive the examiner's challenge.
+- On-screen examiner text mirrors the most recent spoken utterance for captions, replay, accessibility, and evidence review. It is secondary to audio, visually quiet, and never rendered as a text conversation.
+- When an examiner speaks, microphone capture/transcription pauses or marks the audio interval as examiner output. Student capture resumes only after playback completes, so the examiner's synthesized speech cannot be treated as student evidence.
+- The room exposes clear, compact controls to replay the last question, continue, or answer aloud. There is no text reply field in the primary experience.
+- A playback/TTS failure shows the exact question, announces the failure accessibly, and offers replay/retry; it must not silently lose an examiner intervention.
+
 Diagnostic behavior:
 
 - An interruption may happen only when a detectable issue is linked to a deck claim and spoken evidence.
 - The examiner names the concrete challenge, for example an unsupported conclusion, missing method boundary, or repeated slide phrase without explanation.
+- The concrete challenge is spoken before its caption/evidence support is displayed.
 - The student can answer, retry, continue, or end the session without losing the recording/transcript.
 
 Mock behavior:
 
 - The app does not interrupt the presentation merely to display coaching.
 - It preserves slide/context evidence during delivery and uses it to drive the question round and report after the student ends presentation.
+- In the question round, every question and follow-up is spoken aloud, with the caption retained in the examiner rail and session transcript.
 
 ### 5. Report — evidence, then drill
 
@@ -162,6 +176,7 @@ The interface uses grayscale as its product palette. There are no tinted page ba
 - Use existing accessible shadcn/Radix primitives where they fit. Controls must look conventional, have clear labels, visible keyboard focus, and sufficient contrast.
 - Use simple line-based structure, not every-section cards. Rounded surfaces are limited to controls, upload target, dialogs, or true selectable objects.
 - Avoid chat panes, assistant avatars, AI-orb decoration, generic gradient hero sections, and decorative score gauges.
+- Do not provide a primary free-text response field in the presentation room. The examiner experience is listening and speaking; visible text is assistive and evidentiary.
 - Remove the current favicon and do not add a replacement mark until one is deliberately designed.
 
 ### Responsive behavior
@@ -188,6 +203,7 @@ Business rules stay in the domain services and API routes. Visual components do 
 - Conversion failure: identify whether the file could not be opened, converted, or analyzed; allow retry or a new file.
 - No active deck: direct the student to import one, not to a generic configuration screen.
 - Microphone permission/transcription outage: describe the condition and offer retry, input/device selection when available, and an option to end safely.
+- Examiner voice playback outage: preserve and caption the question, announce the unavailable audio accessibly, and offer retry/replay before asking the student to answer.
 - Incomplete session: preserve it as incomplete and keep the recorded evidence/retry path explicit.
 - No findings: state what was observed and guide the next mock/diagnostic session without fabricating weaknesses.
 
@@ -195,6 +211,7 @@ Business rules stay in the domain services and API routes. Visual components do 
 
 - Unit tests cover deck upload acceptance for `.pptx`, `.ppt`, and `.pdf`, converter selection/failure handling, session setup validation, transcript slide-boundary persistence, and fairness cases in reading analysis.
 - Component tests cover theme rendering, primary route states, accessible names, selected setup options, and report evidence visibility.
+- Rehearsal tests cover spoken examiner event order: pause student capture, play the examiner utterance, retain its caption, then resume student capture. They also cover TTS failure/replay behavior.
 - An integration test covers deck upload → session creation → persisted slide-aware transcript → report evidence chain.
 - TypeScript and targeted test suites must pass before claiming completion. Existing unrelated type errors must be either fixed in scope or explicitly reported with their source.
 - Visual review at desktop and 390px validates both themes, contrast, focus states, and the absence of the old configuration/panel UI from the primary flow.
