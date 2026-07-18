@@ -7,7 +7,7 @@ vi.mock('@/lib/db', () => ({
 }));
 vi.mock('@/lib/server-auth', () => ({ authenticateRequest: vi.fn().mockResolvedValue({ userId: 'user-1' }), isAuthenticationFailure: () => false }));
 
-import { PATCH } from './route';
+import { GET, PATCH } from './route';
 
 describe('PATCH /api/session/[id]', () => {
   beforeEach(() => {
@@ -110,5 +110,12 @@ describe('PATCH /api/session/[id]', () => {
     expect(response.status).toBe(404);
     expect(update).not.toHaveBeenCalled();
     expect(findFirst).toHaveBeenCalledWith({ where: { id: 'other-user-session', userId: 'user-1' }, select: { id: true } });
+  });
+
+  it('returns recoverable defense evidence error for malformed persisted JSON', async () => {
+    findFirst.mockResolvedValue({ id: 'session-1', practiceMode: 'defense', deckContext: '{bad', transcriptSegments: '[]', examinerEvents: '[]', findings: '[]', messages: [], scores: null });
+    const response = await GET(new Request('http://localhost/api/session/session-1') as never, { params: Promise.resolve({ id: 'session-1' }) });
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining('Saved defense evidence') });
   });
 });

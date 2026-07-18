@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { playAudioData } from './voice-engine';
+const { authenticatedFetch } = vi.hoisted(() => ({ authenticatedFetch: vi.fn() }));
+vi.mock('./authenticated-fetch', () => ({ authenticatedFetch }));
+import { generateTTS, playAudioData } from './voice-engine';
 
 describe('playAudioData', () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -57,5 +59,15 @@ describe('playAudioData', () => {
     stopAudioPlayback();
     await expect(second).resolves.toEqual({ played: false, error: 'playback' });
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:second');
+  });
+});
+
+describe('generateTTS', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('uses authenticated transport for the protected TTS endpoint', async () => {
+    authenticatedFetch.mockResolvedValue(new Response(new Blob(['audio'])));
+    await expect(generateTTS('Question', 'voice-1')).resolves.toEqual({ audio: expect.any(Blob) });
+    expect(authenticatedFetch).toHaveBeenCalledWith('/api/tts', expect.objectContaining({ method: 'POST' }));
   });
 });

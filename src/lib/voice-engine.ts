@@ -1,5 +1,7 @@
 'use client';
 
+import { authenticatedFetch } from './authenticated-fetch';
+
 let modelsLoading = false;
 let modelsLoaded = false;
 let activeAudioElement: HTMLAudioElement | null = null;
@@ -31,7 +33,7 @@ export async function generateTTS(text: string, voiceId: string = 'd46abd1d-2d02
   }
 
   // Call our secure Cartesia TTS API route
-  const res = await fetch('/api/tts', {
+  const res = await authenticatedFetch('/api/tts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, voiceId })

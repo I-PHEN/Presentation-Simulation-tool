@@ -24,6 +24,10 @@ function parseArray(value: string): unknown[] {
   }
 }
 
+function parsePersisted(value: string): unknown | undefined {
+  try { return JSON.parse(value); } catch { return undefined; }
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -49,9 +53,9 @@ export async function GET(
     }
 
     if (session.practiceMode === 'defense') {
-      const deck = defenseDeckSchema.safeParse(JSON.parse(session.deckContext));
-      const segments = transcriptSegmentsSchema.safeParse(JSON.parse(session.transcriptSegments));
-      const events = examinerEventsSchema.safeParse(JSON.parse(session.examinerEvents));
+      const deck = defenseDeckSchema.safeParse(parsePersisted(session.deckContext));
+      const segments = transcriptSegmentsSchema.safeParse(parsePersisted(session.transcriptSegments));
+      const events = examinerEventsSchema.safeParse(parsePersisted(session.examinerEvents));
       if (!deck.success || !segments.success || !events.success) return NextResponse.json({ error: 'Saved defense evidence is invalid. Please retry or create a new rehearsal.' }, { status: 422 });
       return NextResponse.json({
         defense: {
