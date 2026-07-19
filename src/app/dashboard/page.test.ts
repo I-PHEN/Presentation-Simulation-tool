@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { shouldResyncAfterAuth } from './page';
 
 const readRoute = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
@@ -20,5 +21,26 @@ describe('primary defense route contracts', () => {
     const source = readRoute('src/app/practice/page.tsx');
     expect(source).toContain("redirect('/decks/new')");
     expect(source).not.toMatch(/UploadSection|ConfigureSection|PresentSection|QnaSection/);
+  });
+});
+
+describe('shouldResyncAfterAuth', () => {
+  it('does not resync while auth is still resolving', () => {
+    expect(shouldResyncAfterAuth(true, null, false)).toBe(false);
+    expect(shouldResyncAfterAuth(true, { uid: '1' }, false)).toBe(false);
+  });
+
+  it('does not resync once auth resolves without a signed-in user', () => {
+    expect(shouldResyncAfterAuth(false, null, false)).toBe(false);
+  });
+
+  it('fires exactly once when auth resolves after an initial unauthenticated fetch', () => {
+    // Render 1: auth still loading, hook's mount-time fetch may already be in flight.
+    expect(shouldResyncAfterAuth(true, null, false)).toBe(false);
+    // Render 2: auth resolves with a signed-in user and we have not resynced yet - fire.
+    expect(shouldResyncAfterAuth(false, { uid: '1' }, false)).toBe(true);
+    // Render 3+: the effect marks resyncedAfterAuth true before calling retry(), so
+    // subsequent renders with the same signed-in user must not fire again.
+    expect(shouldResyncAfterAuth(false, { uid: '1' }, true)).toBe(false);
   });
 });

@@ -85,9 +85,18 @@ describe('StudioDesk', () => {
     expect(html).toContain('Loading private slide preview');
   });
 
-  it('omits the coach-note region when the model has no coach note', () => {
+  it('omits the coach-note region entirely when the model has no coach note', () => {
     const html = renderToStaticMarkup(<StudioDesk model={settingUpTodayModel} />);
+    expect(html).not.toContain('id="coach-note-heading"');
     expect(html).not.toContain('Coach note');
+    expect(html).not.toContain('Your coach will leave a note here');
+  });
+
+  it('renders Open latest review without a coach-note region when only a report link is available', () => {
+    const html = renderToStaticMarkup(<StudioDesk model={completedTodayModel} />);
+    expect(html).not.toContain('id="coach-note-heading"');
+    expect(html).not.toContain('Your coach will leave a note here');
+    expect(html).toContain('Open latest review');
   });
 
   it('renders Open latest review only when the model provides a report link', () => {

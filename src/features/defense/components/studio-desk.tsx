@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { DeckContext, SlideContext } from '@/features/defense/types';
 import type { TodayModel } from '@/features/defense/studio-session-model';
 import { AuthenticatedSlideImage } from '@/lib/authenticated-asset';
+import { cn } from '@/lib/utils';
 
 const STATUS_LABELS: Record<string, string> = {
   upload: 'Setup needed',
@@ -33,6 +34,9 @@ function slideCountLabel(count: number): string {
 export function StudioDesk({ model }: { model: TodayModel }) {
   const { active } = model;
   const previewSlide = active ? selectPreviewSlide(active.deck, active.cue) : undefined;
+  // Only ever show this pane when there is real, API-backed content to put in
+  // it (a coach note or a finished report) - never a filler sentence.
+  const hasSupportPanel = Boolean(active?.coachNote || active?.reportHref);
 
   return (
     <div className="border-y border-border">
@@ -64,10 +68,13 @@ export function StudioDesk({ model }: { model: TodayModel }) {
 
       {active?.deck && (
         <section
-          className="grid border-t border-border md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]"
+          className={cn(
+            'grid border-t border-border',
+            hasSupportPanel && 'md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]',
+          )}
           aria-labelledby="deck-heading"
         >
-          <div className="py-7 md:border-r md:border-border md:pr-8">
+          <div className={cn('py-7', hasSupportPanel && 'md:border-r md:border-border md:pr-8')}>
             <p id="deck-heading" className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Deck in play
             </p>
@@ -85,28 +92,29 @@ export function StudioDesk({ model }: { model: TodayModel }) {
             </p>
             {active.cue && <p className="mt-1 text-sm font-medium text-accent-foreground">{active.cue}</p>}
           </div>
-          <div className="border-t border-border py-7 md:border-t-0 md:pl-8">
-            {active.coachNote ? (
-              <>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                  Coach note
-                </p>
-                <p className="mt-4 max-w-sm text-sm leading-6">{active.coachNote}</p>
-              </>
-            ) : (
-              <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-                Your coach will leave a note here once this rehearsal has evidence to review.
-              </p>
-            )}
-            {active.reportHref && (
-              <Link
-                href={active.reportHref}
-                className="mt-6 inline-block text-sm font-medium underline underline-offset-4"
-              >
-                Open latest review
-              </Link>
-            )}
-          </div>
+          {hasSupportPanel && (
+            <div className="border-t border-border py-7 md:border-t-0 md:pl-8">
+              {active.coachNote && (
+                <section aria-labelledby="coach-note-heading">
+                  <p id="coach-note-heading" className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                    Coach note
+                  </p>
+                  <p className="mt-4 max-w-sm text-sm leading-6">{active.coachNote}</p>
+                </section>
+              )}
+              {active.reportHref && (
+                <Link
+                  href={active.reportHref}
+                  className={cn(
+                    'inline-block text-sm font-medium underline underline-offset-4',
+                    active.coachNote ? 'mt-6' : 'mt-0',
+                  )}
+                >
+                  Open latest review
+                </Link>
+              )}
+            </div>
+          )}
         </section>
       )}
     </div>

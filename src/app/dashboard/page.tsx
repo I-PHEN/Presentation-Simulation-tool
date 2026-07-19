@@ -8,6 +8,17 @@ import { StudioDesk } from '@/features/defense/components/studio-desk';
 import { buildTodayModel } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
 
+/**
+ * useDefenseSessions fetches on mount, which can race ahead of Firebase
+ * resolving the signed-in user and fail with 401 before a retry is ever
+ * triggered. Once auth confirms a signed-in user we need exactly one fresh
+ * authenticated fetch - never more than once - so a slow auth handshake
+ * never strands the desk on a spurious error banner, and so we never loop.
+ */
+export function shouldResyncAfterAuth(authLoading: boolean, user: unknown, resyncedAfterAuth: boolean): boolean {
+  return !authLoading && Boolean(user) && !resyncedAfterAuth;
+}
+
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -18,12 +29,8 @@ export default function DashboardPage() {
     if (!authLoading && !user) router.replace('/login');
   }, [authLoading, router, user]);
 
-  // useDefenseSessions fetches on mount, which can race ahead of Firebase
-  // resolving the signed-in user. Once auth is confirmed, force one fresh
-  // authenticated fetch so a slow auth handshake never strands the desk on
-  // a spurious error from an earlier unauthenticated attempt.
   useEffect(() => {
-    if (!authLoading && user && !resyncedAfterAuth) {
+    if (shouldResyncAfterAuth(authLoading, user, resyncedAfterAuth)) {
       setResyncedAfterAuth(true);
       retry();
     }
