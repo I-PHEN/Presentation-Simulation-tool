@@ -119,7 +119,7 @@ export function AppShell({ active, children }: {
             collapsed ? 'flex-col' : 'flex-row justify-between',
           )}
         >
-          <ThemeToggle />
+          <ThemeToggle collapsed={collapsed} />
           <button
             type="button"
             onClick={toggleCollapsed}

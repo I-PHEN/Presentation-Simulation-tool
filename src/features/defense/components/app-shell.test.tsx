@@ -45,4 +45,10 @@ describe('AppShell', () => {
     expect(source).toContain('readShellCollapsed');
     expect(source).toContain('writeShellCollapsed');
   });
+
+  it('passes the collapse state to the desktop theme toggle so it stays icon-only in the collapsed rail', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/features/defense/components/app-shell.tsx'), 'utf8');
+
+    expect(source).toContain('<ThemeToggle collapsed={collapsed} />');
+  });
 });
