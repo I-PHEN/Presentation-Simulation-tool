@@ -86,6 +86,16 @@ The approved visual target is Studio Desk:
 - **Signature element:** the defense run/cue ladder. It represents a user’s preparation sequence through real states rather than a generic score or gamified streak.
 - **Density:** purposeful and calm. Deck evidence, a current voice rehearsal, and a coaching note share one workspace with dividers, not floating “islands.”
 
+### Interaction-first composition
+
+Studio Desk must feel like application software, not a written coaching article or chat response.
+
+- Every primary region starts with a useful control or a scannable object: a rehearsal action, session row, deck slide, cue, playback control, report row, programme switcher, or menu.
+- The user can reach the next meaningful action with one click from Today, Practice, and Review. Actions use direct verbs such as `Enter rehearsal`, `Resume`, `Open review`, `Import deck`, and `View slides`.
+- Copy is subordinate and short: one-sentence decision support, status, or evidence. Paragraph-length explanation is reserved for an individual coach finding or report—not dashboard decoration.
+- Use compact buttons, segmented controls, contextual menus, status chips, session rows, slide previews, and playback affordances where they represent a real capability. Do not add inert controls solely to make the page look busy.
+- Avoid chat bubbles, conversational prompts, oversized greetings, marketing headlines, generic motivational copy, and large empty text blocks. The interface should look useful before the user reads any prose.
+
 The design must work in both themes, at desktop and narrow mobile widths, with visible focus states and reduced-motion-safe interactions.
 
 ## Data and error handling
@@ -106,6 +116,7 @@ The design must work in both themes, at desktop and narrow mobile widths, with v
 7. All primary calls to action resolve to real existing routes and are verified by route/component tests.
 8. Existing PowerPoint/PDF intake and continuation recovery tests remain green.
 9. Full test suite and production build pass; browser checks cover desktop and 390px mobile in dark and light modes.
+10. Each primary route has at least one visible, data-backed action in the first viewport; no route relies on a large explanatory paragraph as its main content.
 
 ## Implementation boundaries
 
