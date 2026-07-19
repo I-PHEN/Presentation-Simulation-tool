@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
-import { PracticeHub } from '@/features/defense/components/practice-hub';
-import { buildPracticeModel } from '@/features/defense/studio-session-model';
+import { ReviewWorkspace } from '@/features/defense/components/review-workspace';
+import { buildReviewRows } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
 
 /**
@@ -13,13 +13,13 @@ import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
  * resolving the signed-in user and fail with 401 before a retry is ever
  * triggered. Once auth confirms a signed-in user we need exactly one fresh
  * authenticated fetch - never more than once - so a slow auth handshake
- * never strands the hub on a spurious error banner, and so we never loop.
+ * never strands the workspace on a spurious error banner, and so we never loop.
  */
 export function shouldResyncAfterAuth(authLoading: boolean, user: unknown, resyncedAfterAuth: boolean): boolean {
   return !authLoading && Boolean(user) && !resyncedAfterAuth;
 }
 
-export default function PracticePage() {
+export default function ReviewPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
@@ -39,7 +39,7 @@ export default function PracticePage() {
   if (authLoading || !user) return <div className="min-h-dvh bg-background" aria-busy="true" />;
 
   return (
-    <AppShell active="practice">
+    <AppShell active="review">
       {error ? (
         <div role="alert" className="border-y border-border py-10">
           <p className="text-sm text-destructive">{error}</p>
@@ -53,10 +53,10 @@ export default function PracticePage() {
         </div>
       ) : sessionsLoading ? (
         <p role="status" className="border-y border-border py-10 text-sm text-muted-foreground">
-          Loading your practice programmes...
+          Loading your session history...
         </p>
       ) : (
-        <PracticeHub model={buildPracticeModel(sessions)} />
+        <ReviewWorkspace rows={buildReviewRows(sessions)} />
       )}
     </AppShell>
   );
