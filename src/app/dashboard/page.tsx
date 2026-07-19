@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   if (authLoading || !user) return <div className="min-h-dvh bg-background" aria-busy="true" />;
   return (
-    <AppShell active="overview">
+    <AppShell active="today">
       <CoachHome
         name={user.displayName?.split(' ')[0] || 'there'}
         model={buildCoachHomeModel(sessions)}
