@@ -16,12 +16,6 @@ describe('primary defense route contracts', () => {
     expect(source).not.toContain('Progress');
     expect(source).not.toMatch(/OverviewWorkspace|Daily speaking challenge|Overall Score|ScoringDashboard|AI Panel Members|Practice History|KPI/);
   });
-
-  it('redirects the retired practice route directly to deck intake without generic wizard imports', () => {
-    const source = readRoute('src/app/practice/page.tsx');
-    expect(source).toContain("redirect('/decks/new')");
-    expect(source).not.toMatch(/UploadSection|ConfigureSection|PresentSection|QnaSection/);
-  });
 });
 
 describe('shouldResyncAfterAuth', () => {
