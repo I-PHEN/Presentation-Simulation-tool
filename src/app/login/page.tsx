@@ -7,11 +7,10 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Swords, AlertCircle, Sparkles } from 'lucide-react';
+import { Loader2, AlertCircle, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -66,46 +65,49 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-background relative overflow-hidden px-4">
-      {/* Background dynamic ambient glow */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 size-96 rounded-full bg-chart-2/5 blur-[120px] pointer-events-none" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background px-4 py-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,color-mix(in_oklab,var(--primary)_8%,transparent),transparent_70%)]"
+      />
 
-      <div className="w-full max-w-md z-10 space-y-4">
-        {/* Logo and Brand */}
-        <div className="flex flex-col items-center text-center space-y-1.5 mb-2">
-          <div className="rounded-lg bg-primary/10 p-2.5">
-            <Swords className="size-5 text-primary" />
+      <div className="relative z-10 w-full max-w-md space-y-4">
+        {/* Brand lockup */}
+        <div className="mb-2 flex flex-col items-center gap-2 text-center">
+          <span
+            aria-hidden="true"
+            className="flex size-10 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-e1"
+          >
+            SP
+          </span>
+          <div className="space-y-0.5">
+            <h1 className="text-sm font-semibold tracking-tight text-foreground">Sparring Partner</h1>
+            <p className="text-xs text-muted-foreground">AI-Powered Presentation & Interview Coach</p>
           </div>
-          <h1 className="text-xl font-bold tracking-tight">Sparring Partner</h1>
-          <p className="text-xs text-muted-foreground">AI-Powered Presentation & Interview Coach</p>
         </div>
 
         {/* Configuration Warning */}
         {!configured && (
-          <Card className="border-warning/30 bg-warning/5 border">
-            <CardContent className="p-3 flex items-start gap-2.5 text-warning">
-              <AlertCircle className="size-4 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-xs font-semibold">Firebase Not Configured</p>
-                <p className="text-[11px] leading-relaxed text-muted-foreground">
-                  Your project environment keys are missing. Please add Firebase variables to your `.env` file. You can register/login with mock details in development.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-start gap-2.5 rounded-lg border border-warning/30 bg-warning/5 p-4 text-sm text-warning">
+            <AlertCircle className="size-4 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-semibold">Firebase Not Configured</p>
+              <p className="leading-relaxed text-muted-foreground">
+                Your project environment keys are missing. Please add Firebase variables to your `.env` file. You can register/login with mock details in development.
+              </p>
+            </div>
+          </div>
         )}
 
-        <Card className="border-border/40 bg-surface/50 backdrop-blur-xl shadow-2xl">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg">Sign In</CardTitle>
-            <CardDescription className="text-xs">
+        <div className="rounded-xl border border-border bg-card p-8 shadow-e2">
+          <div className="space-y-1">
+            <h2 className="font-display text-2xl font-medium tracking-tight sm:text-3xl">Sign In</h2>
+            <p className="text-sm text-muted-foreground">
               Enter your email and password to access your dashboard
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-3">
+            </p>
+          </div>
+          <form onSubmit={handleLogin} className="mt-6 space-y-3">
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs">Email Address</Label>
                 <Input
@@ -114,7 +116,7 @@ export default function LoginPage() {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-background/50 h-9 text-sm"
+                  className="h-9 rounded-lg text-sm"
                   required
                 />
               </div>
@@ -127,12 +129,12 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-background/50 h-9 text-sm"
+                  className="h-9 rounded-lg text-sm"
                   required
                 />
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-3 pt-2">
+            </div>
+            <div className="flex flex-col gap-3 pt-3">
               <Button type="submit" className="w-full h-9 text-xs font-medium" disabled={loading}>
                 {loading ? (
                   <><Loader2 className="size-3.5 animate-spin mr-1.5" />Signing In...</>
@@ -140,8 +142,12 @@ export default function LoginPage() {
                   'Sign In'
                 )}
               </Button>
-              <div className="w-full text-center">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-2">Or continue with</span>
+              <div className="w-full space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">Or continue with</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
                 <Button
                   type="button"
                   variant="outline"
@@ -160,9 +166,9 @@ export default function LoginPage() {
                   Sign up
                 </Link>
               </div>
-            </CardFooter>
+            </div>
           </form>
-        </Card>
+        </div>
       </div>
     </div>
   );
