@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ClipboardCheck, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Plus, Swords } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { readShellCollapsed, writeShellCollapsed } from '../shell-preference';
 
@@ -27,15 +28,18 @@ function BrandMark({ collapsed }: { collapsed: boolean }) {
     <Link
       href="/dashboard"
       className={cn(
-        'flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border px-4 text-sm font-semibold tracking-tight text-sidebar-foreground',
+        'flex h-14 shrink-0 items-center gap-2.5 px-4 text-sm font-semibold tracking-tight text-sidebar-foreground',
         collapsed && 'justify-center px-0',
       )}
     >
-      <span
-        aria-hidden="true"
-        className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-primary text-[11px] font-bold text-primary-foreground"
-      >
-        SP
+      <span className="relative flex size-7 shrink-0 items-center justify-center">
+        <span aria-hidden="true" className="absolute inset-0 rounded-lg bg-primary/40 blur-md" />
+        <span
+          aria-hidden="true"
+          className="relative flex size-7 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground shadow-e1"
+        >
+          SP
+        </span>
       </span>
       <span className={collapsed ? 'sr-only' : undefined}>Sparring Partner</span>
     </Link>
@@ -61,14 +65,14 @@ function NavLink({
       title={collapsed ? item.label : undefined}
       onClick={onNavigate}
       className={cn(
-        'relative flex items-center gap-3 rounded-md py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground aria-[current=page]:font-medium aria-[current=page]:text-sidebar-foreground',
-        collapsed ? 'justify-center px-0' : 'px-3',
+        'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground',
+        collapsed && 'justify-center px-0',
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
-          'absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary transition-opacity',
+          'absolute left-1.5 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary transition-opacity',
           isActive ? 'opacity-100' : 'opacity-0',
         )}
       />
@@ -85,8 +89,8 @@ function NewProgrammeAction({ collapsed, onNavigate }: { collapsed: boolean; onN
       title={collapsed ? 'New programme' : undefined}
       onClick={onNavigate}
       className={cn(
-        'inline-flex items-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90',
-        collapsed ? 'size-8 shrink-0 justify-center px-0' : 'w-full justify-center px-3 py-2',
+        buttonVariants({ size: collapsed ? 'icon' : 'sm' }),
+        collapsed ? 'shrink-0' : 'w-full',
       )}
     >
       <Plus className="size-4 shrink-0" aria-hidden="true" />
@@ -119,8 +123,7 @@ export function AppShell({ active, children }: {
       <aside
         data-collapsed={collapsed}
         className={cn(
-          'sticky top-0 hidden h-dvh shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-in-out md:flex',
-          'border-r border-sidebar-border',
+          'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border/60 bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-in-out md:flex',
           collapsed ? 'w-20' : 'w-60',
         )}
       >
@@ -130,12 +133,13 @@ export function AppShell({ active, children }: {
             <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
           ))}
         </nav>
-        <div className={cn('border-t border-sidebar-border p-3', collapsed && 'flex justify-center')}>
+        <div className={cn('px-3 pb-3', collapsed && 'flex justify-center')}>
           <NewProgrammeAction collapsed={collapsed} />
         </div>
+        <div className="mx-3 h-px bg-sidebar-border/50" />
         <div
           className={cn(
-            'flex items-center gap-2 border-t border-sidebar-border p-3',
+            'flex items-center gap-2 px-3 py-3',
             collapsed ? 'flex-col' : 'flex-row justify-between',
           )}
         >
@@ -144,7 +148,7 @@ export function AppShell({ active, children }: {
             type="button"
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
           >
             {collapsed ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
           </button>
@@ -152,19 +156,19 @@ export function AppShell({ active, children }: {
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 md:hidden">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur md:hidden">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
                   type="button"
                   aria-label="Open navigation"
-                  className="inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                  className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
                 >
                   <Menu className="size-4" aria-hidden="true" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground">
+              <SheetContent side="left" className="w-72 border-sidebar-border/60 bg-sidebar p-0 text-sidebar-foreground">
                 <SheetTitle className="sr-only">Primary navigation</SheetTitle>
                 <SheetDescription className="sr-only">
                   Jump to Today, Practice, or Review.
@@ -181,7 +185,7 @@ export function AppShell({ active, children }: {
                     />
                   ))}
                 </nav>
-                <div className="border-t border-sidebar-border p-3">
+                <div className="px-3 pb-4">
                   <NewProgrammeAction collapsed={false} onNavigate={() => setMobileOpen(false)} />
                 </div>
               </SheetContent>
@@ -190,7 +194,9 @@ export function AppShell({ active, children }: {
           </div>
           <ThemeToggle />
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-10">{children}</main>
+        <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">{children}</div>
+        </main>
       </div>
     </div>
   );
