@@ -77,9 +77,9 @@ export default function PracticeSessionPage({ params }: { params: Promise<{ sess
   }, [sessionId, view]);
 
   if (view === 'room') {
-    if (error) return <p role="alert" className="p-6 text-sm text-destructive">{error}</p>;
+    if (error) return <p role="alert" className="m-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>;
     return session ? <RehearsalRoom session={session} onComplete={() => router.push(`/reports/${session.id}`)} /> : <p role="status" className="p-6 text-sm text-muted-foreground">Loading rehearsal room...</p>;
   }
 
-  return <AppShell active="practice">{error ? <p role="alert" className="border-l-2 border-destructive pl-3 text-sm">{error}</p> : sessionId && session ? <PracticeSetup sessionId={sessionId} deck={session.deck} initialMode={session.mode} initialStance={session.stance} onReady={() => router.push(`/practice/${sessionId}?view=room`)} /> : <p role="status" className="text-sm text-muted-foreground">Loading defense setup...</p>}</AppShell>;
+  return <AppShell active="practice">{error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p> : sessionId && session ? <PracticeSetup sessionId={sessionId} deck={session.deck} initialMode={session.mode} initialStance={session.stance} onReady={() => router.push(`/practice/${sessionId}?view=room`)} /> : <p role="status" className="text-sm text-muted-foreground">Loading defense setup...</p>}</AppShell>;
 }

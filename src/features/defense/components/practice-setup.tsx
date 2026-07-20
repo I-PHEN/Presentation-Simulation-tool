@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import type { DeckContext, DefenseMode, ExaminerStance } from '@/features/defense/types';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Fetcher = typeof fetch;
 
@@ -61,10 +63,10 @@ export function PracticeSetup({
   };
 
   return (
-    <section aria-labelledby="practice-setup-title" className="border-y border-border py-8 sm:py-10">
+    <section aria-labelledby="practice-setup-title" className="rounded-xl border border-border bg-card p-6 shadow-e1 sm:p-8">
       <div className="border-b border-border pb-6">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Practice setup</p>
-        <h1 id="practice-setup-title" className="mt-2 text-3xl font-semibold tracking-tight">Set the conditions for this defense</h1>
+        <h1 id="practice-setup-title" className="mt-2 font-display text-3xl sm:text-4xl font-medium tracking-tight">Set the conditions for this defense</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{deck.sourceName} is ready. Choose how the room should challenge your explanation.</p>
       </div>
 
@@ -77,7 +79,7 @@ export function PracticeSetup({
               ['diagnostic', 'Diagnostic practice'],
               ['mock', 'Mock defense'],
             ] as const).map(([value, label]) => (
-              <label key={value} className={`cursor-pointer border px-4 py-3 text-left text-sm font-medium hover:bg-muted has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-foreground ${mode === value ? 'border-foreground bg-muted' : 'border-border'}`}>
+              <label key={value} className={cn('cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary', mode === value && 'border-primary bg-accent shadow-e1')}>
                 <input type="radio" name="practice-mode" value={value} checked={mode === value} onChange={() => setMode(value)} className="sr-only" />
                 {label}
               </label>
@@ -93,7 +95,7 @@ export function PracticeSetup({
               ['rigorous', 'Rigorous'],
               ['supportive', 'Supportive'],
             ] as const).map(([value, label]) => (
-              <label key={value} className={`cursor-pointer border px-4 py-3 text-left text-sm font-medium hover:bg-muted has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-foreground ${stance === value ? 'border-foreground bg-muted' : 'border-border'}`}>
+              <label key={value} className={cn('cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary', stance === value && 'border-primary bg-accent shadow-e1')}>
                 <input type="radio" name="examiner-stance" value={value} checked={stance === value} onChange={() => setStance(value)} className="sr-only" />
                 {label}
               </label>
@@ -103,7 +105,7 @@ export function PracticeSetup({
       </div>
 
       {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
-      <button type="button" disabled={saving} onClick={() => void continueToRoom()} className="mt-6 w-full border border-foreground bg-foreground px-4 py-3 text-sm font-medium text-background hover:opacity-85 disabled:opacity-60">
+      <button type="button" disabled={saving} onClick={() => void continueToRoom()} className={cn(buttonVariants({ size: 'lg' }), 'mt-6 w-full')}>
         {saving ? 'Saving setup...' : 'Continue to voice rehearsal'}
       </button>
     </section>

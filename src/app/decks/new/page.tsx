@@ -7,6 +7,8 @@ import { DeckIntake } from '@/features/defense/components/deck-intake';
 import type { DeckContext } from '@/features/defense/types';
 import { useAuth } from '@/hooks/use-auth';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function createDefenseSessionPayload(deck: DeckContext) {
   return { title: deck.sourceName, mode: 'diagnostic' as const, stance: 'rigorous' as const, deck };
@@ -32,16 +34,16 @@ export function continuationRequestFailureMessage(response: { status: number }, 
 export function DeckContinuationRecovery({ hasUser, hasDeck }: { hasUser: boolean; hasDeck: boolean }): React.ReactElement | null {
   const message = continuationBlockMessage({ hasUser, hasDeck });
   if (!message) return null;
-  return <p id="deck-continuation-error" className="mt-4 text-sm text-destructive" role="alert">{message}{!hasUser && <a className="ml-2 font-medium underline underline-offset-4" href="/login">Sign in</a>}</p>;
+  return <div id="deck-continuation-error" className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">{message}{!hasUser && <a className="ml-2 font-medium underline underline-offset-4" href="/login">Sign in</a>}</div>;
 }
 
 export function DeckContinuationError({ error, authRecovery }: { error: string; authRecovery: boolean }): React.ReactElement {
   if (authRecovery) return <DeckContinuationRecovery hasUser={false} hasDeck />;
-  return <p id="deck-continuation-error" className="mt-4 text-sm text-destructive" role="alert">{error}</p>;
+  return <div id="deck-continuation-error" className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">{error}</div>;
 }
 
 export function DeckContinuationAction({ creating, error, onContinue }: { creating: boolean; error?: string; onContinue: () => void }): React.ReactElement {
-  return <button type="button" onClick={onContinue} disabled={creating} aria-describedby={error ? 'deck-continuation-error' : undefined} className="mt-6 border border-foreground bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60">{creating ? 'Creating your defense session...' : 'Continue to defense setup'}</button>;
+  return <button type="button" onClick={onContinue} disabled={creating} aria-describedby={error ? 'deck-continuation-error' : undefined} className={cn(buttonVariants({ size: 'lg' }), 'mt-6')}>{creating ? 'Creating your defense session...' : 'Continue to defense setup'}</button>;
 }
 
 export default function NewDeckPage() {
