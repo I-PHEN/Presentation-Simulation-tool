@@ -52,6 +52,24 @@ describe('AppShell', () => {
     expect(source).toContain('<ThemeToggle collapsed={collapsed} />');
   });
 
+  it('keeps a persistent New programme action outside primary navigation while still reachable from the rail', () => {
+    const html = renderToStaticMarkup(
+      <AppShell active="today"><p>Today</p></AppShell>,
+    );
+
+    const navStart = html.indexOf('<nav aria-label="Primary navigation"');
+    const navEnd = html.indexOf('</nav>', navStart);
+    const navSection = html.slice(navStart, navEnd);
+
+    expect(navSection).toContain('>Today<');
+    expect(navSection).toContain('>Practice<');
+    expect(navSection).toContain('>Review<');
+    expect(navSection).not.toContain('/decks/new');
+
+    expect(html).toContain('href="/decks/new"');
+    expect(html).toContain('New programme');
+  });
+
   it('keeps every primary route free of the retired trajectory anchor, Progress label, and CoachHome component', () => {
     const routeFiles = [
       'src/app/page.tsx',

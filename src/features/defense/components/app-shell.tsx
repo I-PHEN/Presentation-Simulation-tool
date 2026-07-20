@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
-import { ClipboardCheck, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Swords } from 'lucide-react';
+import { ClipboardCheck, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Plus, Swords } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -78,6 +78,23 @@ function NavLink({
   );
 }
 
+function NewProgrammeAction({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+  return (
+    <Link
+      href="/decks/new"
+      title={collapsed ? 'New programme' : undefined}
+      onClick={onNavigate}
+      className={cn(
+        'inline-flex items-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90',
+        collapsed ? 'size-8 shrink-0 justify-center px-0' : 'w-full justify-center px-3 py-2',
+      )}
+    >
+      <Plus className="size-4 shrink-0" aria-hidden="true" />
+      <span className={collapsed ? 'sr-only' : undefined}>New programme</span>
+    </Link>
+  );
+}
+
 export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
@@ -113,6 +130,9 @@ export function AppShell({ active, children }: {
             <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
           ))}
         </nav>
+        <div className={cn('border-t border-sidebar-border p-3', collapsed && 'flex justify-center')}>
+          <NewProgrammeAction collapsed={collapsed} />
+        </div>
         <div
           className={cn(
             'flex items-center gap-2 border-t border-sidebar-border p-3',
@@ -161,6 +181,9 @@ export function AppShell({ active, children }: {
                     />
                   ))}
                 </nav>
+                <div className="border-t border-sidebar-border p-3">
+                  <NewProgrammeAction collapsed={false} onNavigate={() => setMobileOpen(false)} />
+                </div>
               </SheetContent>
             </Sheet>
             <span className="text-sm font-semibold tracking-tight">Sparring Partner</span>
