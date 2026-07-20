@@ -7,6 +7,8 @@ import { AppShell } from '@/features/defense/components/app-shell';
 import { PracticeHub } from '@/features/defense/components/practice-hub';
 import { buildPracticeModel } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 /**
  * useDefenseSessions fetches on mount, which can race ahead of Firebase
@@ -41,20 +43,25 @@ export default function PracticePage() {
   return (
     <AppShell active="practice">
       {error ? (
-        <div role="alert" className="border-y border-border py-10">
+        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
           <p className="text-sm text-destructive">{error}</p>
           <button
             type="button"
             onClick={retry}
-            className="mt-4 inline-flex w-fit items-center justify-center border border-border px-4 py-2.5 text-sm font-medium hover:bg-surface"
+            className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'mt-4')}
           >
             Retry
           </button>
         </div>
       ) : sessionsLoading ? (
-        <p role="status" className="border-y border-border py-10 text-sm text-muted-foreground">
-          Loading your practice programmes...
-        </p>
+        <div role="status" className="rounded-xl border border-border bg-card p-6">
+          <span className="sr-only">Loading your practice programmes...</span>
+          <div aria-hidden="true" className="flex animate-pulse flex-col gap-3">
+            <div className="h-3 w-24 rounded bg-muted" />
+            <div className="h-8 w-2/3 rounded bg-muted" />
+            <div className="h-4 w-1/2 rounded bg-muted" />
+          </div>
+        </div>
       ) : (
         <PracticeHub model={buildPracticeModel(sessions)} />
       )}

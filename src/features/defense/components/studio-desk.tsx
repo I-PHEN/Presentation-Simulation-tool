@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { DeckContext, SlideContext } from '@/features/defense/types';
 import type { TodayModel } from '@/features/defense/studio-session-model';
 import { AuthenticatedSlideImage } from '@/lib/authenticated-asset';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -9,6 +10,13 @@ const STATUS_LABELS: Record<string, string> = {
   analyzed: 'Ready to rehearse',
   practicing: 'In progress',
   completed: 'Reviewed',
+};
+
+const STATUS_DOT: Record<string, string> = {
+  upload: 'bg-warning',
+  analyzed: 'bg-primary',
+  practicing: 'bg-primary',
+  completed: 'bg-success',
 };
 
 /**
@@ -39,17 +47,15 @@ export function StudioDesk({ model }: { model: TodayModel }) {
   const hasSupportPanel = Boolean(active?.coachNote || active?.reportHref);
 
   return (
-    <div className="border-y border-border">
-      <section className="py-10 sm:py-14" aria-labelledby="next-rehearsal-heading">
-        <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Your next rehearsal
-        </p>
-        <h1 id="next-rehearsal-heading" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+    <div className="flex flex-col gap-6">
+      <section className="rounded-xl border border-border bg-card p-6 shadow-e1" aria-labelledby="next-rehearsal-heading">
+        <p className="text-xs font-medium text-muted-foreground">Your next rehearsal</p>
+        <h1 id="next-rehearsal-heading" className="mt-3 font-display text-3xl sm:text-4xl font-medium tracking-tight">
           {active?.title ?? 'Build your first defense programme'}
         </h1>
         {active && (
-          <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+          <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <span className={cn('size-1.5 rounded-full', STATUS_DOT[active.status] ?? 'bg-primary')} aria-hidden="true" />
             {STATUS_LABELS[active.status] ?? active.status}
           </span>
         )}
@@ -58,33 +64,32 @@ export function StudioDesk({ model }: { model: TodayModel }) {
             ? 'Step back into your rehearsal and close the gap the examiner flagged.'
             : 'Import the deck you will defend, then rehearse against real examiner pressure.'}
         </p>
-        <Link
-          href={model.primaryAction.href}
-          className="mt-6 inline-flex w-fit items-center justify-center bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
+        <Link href={model.primaryAction.href} className={cn(buttonVariants({ size: 'lg' }), 'mt-6 w-fit')}>
           {model.primaryAction.label}
         </Link>
       </section>
 
       {active?.deck && (
         <section
-          className={cn(
-            'grid border-t border-border',
-            hasSupportPanel && 'md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]',
-          )}
+          className={cn('grid gap-6', hasSupportPanel && 'md:grid-cols-[2fr_1fr]')}
           aria-labelledby="deck-heading"
         >
-          <div className={cn('py-7', hasSupportPanel && 'md:border-r md:border-border md:pr-8')}>
-            <p id="deck-heading" className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-e1">
+            <p id="deck-heading" className="text-xs font-medium text-muted-foreground">
               Deck in play
             </p>
             {previewSlide && (
-              <div className="mt-4 aspect-video max-w-sm overflow-hidden border border-border bg-muted/20">
-                <AuthenticatedSlideImage
-                  source={previewSlide.imageUrl}
-                  alt={`Slide ${previewSlide.index}: ${previewSlide.text}`}
-                  className="h-full w-full object-contain"
-                />
+              <div className="relative mt-4 rounded-xl border border-border bg-card p-2 shadow-e2 before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent after:absolute after:inset-0 after:-z-10 after:rounded-xl after:bg-primary/10 after:blur-2xl">
+                <div className="aspect-video overflow-hidden rounded-lg bg-muted/30">
+                  <AuthenticatedSlideImage
+                    source={previewSlide.imageUrl}
+                    alt={`Slide ${previewSlide.index}: ${previewSlide.text}`}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <span className="absolute right-3 top-3 rounded-md bg-background/80 px-1.5 py-0.5 font-mono text-[11px] backdrop-blur">
+                  {previewSlide.index}/{active.deck.slides.length}
+                </span>
               </div>
             )}
             <p className="mt-4 text-sm text-muted-foreground">
@@ -93,22 +98,19 @@ export function StudioDesk({ model }: { model: TodayModel }) {
             {active.cue && <p className="mt-1 text-sm font-medium text-accent-foreground">{active.cue}</p>}
           </div>
           {hasSupportPanel && (
-            <div className="border-t border-border py-7 md:border-t-0 md:pl-8">
+            <div className="flex flex-col gap-6">
               {active.coachNote && (
-                <section aria-labelledby="coach-note-heading">
-                  <p id="coach-note-heading" className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                <section className="rounded-xl border border-border bg-card p-6 shadow-e1" aria-labelledby="coach-note-heading">
+                  <p id="coach-note-heading" className="text-xs font-medium text-muted-foreground">
                     Coach note
                   </p>
-                  <p className="mt-4 max-w-sm text-sm leading-6">{active.coachNote}</p>
+                  <p className="mt-4 text-sm leading-6">{active.coachNote}</p>
                 </section>
               )}
               {active.reportHref && (
                 <Link
                   href={active.reportHref}
-                  className={cn(
-                    'inline-block text-sm font-medium underline underline-offset-4',
-                    active.coachNote ? 'mt-6' : 'mt-0',
-                  )}
+                  className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'w-fit')}
                 >
                   Open latest review
                 </Link>
