@@ -51,4 +51,25 @@ describe('AppShell', () => {
 
     expect(source).toContain('<ThemeToggle collapsed={collapsed} />');
   });
+
+  it('keeps every primary route free of the retired trajectory anchor, Progress label, and CoachHome component', () => {
+    const routeFiles = [
+      'src/app/page.tsx',
+      'src/app/login/page.tsx',
+      'src/app/signup/page.tsx',
+      'src/app/dashboard/page.tsx',
+      'src/app/practice/page.tsx',
+      'src/app/practice/[sessionId]/page.tsx',
+      'src/app/review/page.tsx',
+      'src/app/reports/[sessionId]/page.tsx',
+      'src/app/decks/new/page.tsx',
+    ];
+
+    for (const routeFile of routeFiles) {
+      const source = readFileSync(resolve(process.cwd(), routeFile), 'utf8');
+      expect(source).not.toContain('dashboard#trajectory');
+      expect(source).not.toContain('Progress');
+      expect(source).not.toContain('CoachHome');
+    }
+  });
 });

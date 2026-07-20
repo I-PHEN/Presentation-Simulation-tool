@@ -1,6 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DeckContinuationAction, DeckContinuationError, DeckContinuationRecovery, continuationBlockMessage, continuationRequestFailureMessage, isAuthenticationRejected, createDefenseSessionPayload } from './page';
+
+it('keeps deck intake inside the Practice shell state', () => {
+  const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
+  expect(source).toContain('<AppShell active="practice">');
+});
 
 describe('createDefenseSessionPayload', () => {
   it('uses the validated route-local deck when creating a diagnostic session', () => {
