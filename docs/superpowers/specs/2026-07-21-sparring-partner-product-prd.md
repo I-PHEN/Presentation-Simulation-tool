@@ -181,6 +181,7 @@ The writing-plans step will turn this into the detailed task-by-task plan.
 - **Job-interview mode** — a new persona pack + configure preset inside Rehearse.
 - **Timeline-synced audio** (if not already folded into Slice 1), deeper analytics dashboards.
 - **Video** capture/replay — explicitly deferred; audio only for now.
+- **Native mobile app** — a future goal is to ship Sparring Partner as a mobile app (e.g. React Native or a wrapped shell), not only responsive web. This reinforces the Slice 1 architecture: keep the simulation engine, coaching/report assembly, and data models as **portable, UI-agnostic core logic** decoupled from web-only concerns, so a future mobile shell can reuse them. It does not change Slice 1 scope, but it is a tie-breaker in favor of clean separation wherever a Slice 1 decision is otherwise even.
 
 ## 12. Open risks
 
