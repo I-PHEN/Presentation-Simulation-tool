@@ -40,11 +40,13 @@ export function RehearseSetup({
   creating = false,
   startError,
   onStart,
+  onDeckChange,
   uploadFetcher = authenticatedFetch,
 }: {
   creating?: boolean;
   startError?: string;
   onStart: (config: RehearseConfig) => void;
+  onDeckChange?: () => void;
   uploadFetcher?: typeof fetch;
 }): React.ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,6 +86,7 @@ export function RehearseSetup({
 
   const chooseFile = (selectedFile: File | undefined) => {
     if (!selectedFile) return;
+    onDeckChange?.();
     setFile(selectedFile);
     setDeck(null);
     void upload(selectedFile);
@@ -167,7 +170,6 @@ export function RehearseSetup({
 
       <section
         aria-labelledby="rehearse-step-room"
-        aria-disabled={!deck}
         className={cn('rounded-xl border border-border bg-card p-6 shadow-e1 transition-opacity sm:p-8', !deck && 'opacity-60')}
       >
         <div className="flex items-baseline gap-3">

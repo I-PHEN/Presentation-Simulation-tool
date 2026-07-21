@@ -58,7 +58,7 @@ export default function NewDeckPage() {
   if (!user) return <AppShell active="rehearse"><SignInRecovery /></AppShell>;
   return (
     <AppShell active="rehearse">
-      <RehearseSetup creating={creating} startError={error} onStart={(config) => void start(config)} />
+      <RehearseSetup creating={creating} startError={error} onStart={(config) => void start(config)} onDeckChange={() => setError(undefined)} />
     </AppShell>
   );
 }

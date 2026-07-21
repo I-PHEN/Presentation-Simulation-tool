@@ -18,6 +18,11 @@ describe('rehearse setup route', () => {
     expect(source).not.toContain('?view=setup');
     expect(source).toContain('buildRehearseSessionPayload');
   });
+
+  it('clears a stale create error when the user picks a new deck', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
+    expect(source).toContain('onDeckChange={() => setError(undefined)}');
+  });
 });
 
 describe('sessionCreateFailureMessage', () => {
