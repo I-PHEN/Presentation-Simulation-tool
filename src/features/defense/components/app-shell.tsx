@@ -171,7 +171,7 @@ export function AppShell({ active, children }: {
               <SheetContent side="left" className="w-72 border-sidebar-border/60 bg-sidebar p-0 text-sidebar-foreground">
                 <SheetTitle className="sr-only">Primary navigation</SheetTitle>
                 <SheetDescription className="sr-only">
-                  Jump to Today, Practice, or Review.
+                  Jump to Home, Rehearse, or Progress.
                 </SheetDescription>
                 <BrandMark collapsed={false} />
                 <nav aria-label="Primary navigation" className="flex flex-col gap-1 p-3">
