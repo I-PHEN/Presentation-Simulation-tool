@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { readShellCollapsed, writeShellCollapsed } from '../shell-preference';
+import { AccountMenu } from './account-menu';
 
 export type StudioNavItem = 'home' | 'rehearse' | 'progress';
 
@@ -21,6 +22,12 @@ const navIcons: Record<StudioNavItem, typeof Home> = {
   home: Home,
   rehearse: Mic,
   progress: LineChart,
+};
+
+const navTitles: Record<StudioNavItem, string> = {
+  home: 'Home',
+  rehearse: 'Rehearse',
+  progress: 'Progress',
 };
 
 function BrandMark({ collapsed }: { collapsed: boolean }) {
@@ -136,34 +143,17 @@ export function AppShell({ active, children }: {
         <div className={cn('px-3 pb-3', collapsed && 'flex justify-center')}>
           <NewProgrammeAction collapsed={collapsed} />
         </div>
-        <div className="mx-3 h-px bg-sidebar-border/50" />
-        <div
-          className={cn(
-            'flex items-center gap-2 px-3 py-3',
-            collapsed ? 'flex-col' : 'flex-row justify-between',
-          )}
-        >
-          <ThemeToggle collapsed={collapsed} />
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-          >
-            {collapsed ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
-          </button>
-        </div>
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
                   type="button"
                   aria-label="Open navigation"
-                  className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+                  className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'md:hidden')}
                 >
                   <Menu className="size-4" aria-hidden="true" />
                 </button>
@@ -190,9 +180,20 @@ export function AppShell({ active, children }: {
                 </div>
               </SheetContent>
             </Sheet>
-            <span className="text-sm font-semibold tracking-tight">Sparring Partner</span>
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'hidden md:inline-flex')}
+            >
+              {collapsed ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
+            </button>
+            <span className="text-sm font-semibold tracking-tight">{navTitles[active]}</span>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <AccountMenu />
+          </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">{children}</div>

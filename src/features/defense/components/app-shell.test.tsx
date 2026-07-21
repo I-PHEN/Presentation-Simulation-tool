@@ -46,10 +46,26 @@ describe('AppShell', () => {
     expect(source).toContain('writeShellCollapsed');
   });
 
-  it('passes the collapse state to the desktop theme toggle so it stays icon-only in the collapsed rail', () => {
-    const source = readFileSync(resolve(process.cwd(), 'src/features/defense/components/app-shell.tsx'), 'utf8');
+  it('renders a global top bar carrying the theme toggle and account menu', () => {
+    const html = renderToStaticMarkup(
+      <AppShell active="home"><p>Home</p></AppShell>,
+    );
 
-    expect(source).toContain('<ThemeToggle collapsed={collapsed} />');
+    expect(html).toContain('aria-label="Account menu"');
+    // The theme toggle renders its accessible switch label.
+    expect(html).toMatch(/aria-label="Switch to (light|dark) mode"/);
+  });
+
+  it('keeps the theme toggle and account menu out of the sidebar rail', () => {
+    const html = renderToStaticMarkup(
+      <AppShell active="home"><p>Home</p></AppShell>,
+    );
+    const asideStart = html.indexOf('<aside');
+    const asideEnd = html.indexOf('</aside>', asideStart);
+    const aside = html.slice(asideStart, asideEnd);
+
+    expect(aside).not.toContain('aria-label="Account menu"');
+    expect(aside).not.toMatch(/aria-label="Switch to (light|dark) mode"/);
   });
 
   it('keeps a persistent New programme action outside primary navigation while still reachable from the rail', () => {
