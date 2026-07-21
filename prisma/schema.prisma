@@ -10,6 +10,7 @@ datasource db {
 model Session {
   id           String    @id @default(cuid())
   userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
   title        String
   audienceType String    @default("investor")
   practiceMode String    @default("full")
@@ -65,4 +66,27 @@ model Score {
   createdAt       DateTime @default(now())
 
   session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String   @id
+  email        String?
+  displayName  String?
+  createdAt    DateTime @default(now())
+
+  profile      SpeakerProfile?
+  sessions     Session[]
+}
+
+model SpeakerProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  recurringWeaknesses String  @default("[]")
+  dimensionBaselines String   @default("{}")
+  totalSessions      Int      @default(0)
+  streak             Int      @default(0)
+  nextFocus          String   @default("")
+  updatedAt          DateTime @updatedAt
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
