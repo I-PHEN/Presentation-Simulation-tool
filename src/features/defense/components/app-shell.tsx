@@ -34,10 +34,7 @@ function BrandMark({ collapsed }: { collapsed: boolean }) {
   return (
     <Link
       href="/dashboard"
-      className={cn(
-        'flex h-14 shrink-0 items-center gap-2.5 px-4 text-sm font-semibold tracking-tight text-sidebar-foreground',
-        collapsed && 'justify-center px-0',
-      )}
+      className="flex h-14 shrink-0 items-center gap-2.5 px-5 text-sm font-semibold tracking-tight text-sidebar-foreground"
     >
       <span className="relative flex size-7 shrink-0 items-center justify-center">
         <span aria-hidden="true" className="absolute inset-0 rounded-lg bg-primary/40 blur-md" />
@@ -48,7 +45,9 @@ function BrandMark({ collapsed }: { collapsed: boolean }) {
           SP
         </span>
       </span>
-      <span className={collapsed ? 'sr-only' : undefined}>Sparring Partner</span>
+      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>
+        Sparring Partner
+      </span>
     </Link>
   );
 }
@@ -71,10 +70,7 @@ function NavLink({
       aria-current={isActive ? 'page' : undefined}
       title={collapsed ? item.label : undefined}
       onClick={onNavigate}
-      className={cn(
-        'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground',
-        collapsed && 'justify-center px-0',
-      )}
+      className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
     >
       <span
         aria-hidden="true"
@@ -84,7 +80,7 @@ function NavLink({
         )}
       />
       <Icon className="size-4 shrink-0" aria-hidden="true" />
-      <span className={collapsed ? 'sr-only' : undefined}>{item.label}</span>
+      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>{item.label}</span>
     </Link>
   );
 }
@@ -95,13 +91,10 @@ function NewProgrammeAction({ collapsed, onNavigate }: { collapsed: boolean; onN
       href="/decks/new"
       title={collapsed ? 'New programme' : undefined}
       onClick={onNavigate}
-      className={cn(
-        buttonVariants({ variant: 'secondary', size: collapsed ? 'icon' : 'sm' }),
-        collapsed ? 'shrink-0' : 'w-full',
-      )}
+      className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'w-full justify-start')}
     >
       <Plus className="size-4 shrink-0" aria-hidden="true" />
-      <span className={collapsed ? 'sr-only' : undefined}>New programme</span>
+      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>New programme</span>
     </Link>
   );
 }
@@ -110,11 +103,22 @@ export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Read the persisted rail state synchronously so client-side navigation
+  // renders the correct width on the first paint - no expand-then-collapse
+  // flash when moving between pages. (SSR has no localStorage, so the server
+  // renders expanded and the client reconciles; suppressHydrationWarning keeps
+  // that first-load correction quiet.)
+  const [collapsed, setCollapsed] = useState(() =>
+    typeof window !== 'undefined' ? readShellCollapsed(window.localStorage) : false,
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Only animate the rail width for real user toggles, never for the initial
+  // mount/reconcile - that is what turned navigation into a visible shrink.
+  const [animateWidth, setAnimateWidth] = useState(false);
 
   useEffect(() => {
     setCollapsed(readShellCollapsed(window.localStorage));
+    setAnimateWidth(true);
   }, []);
 
   const toggleCollapsed = () => {
@@ -128,9 +132,11 @@ export function AppShell({ active, children }: {
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
       <aside
+        suppressHydrationWarning
         data-collapsed={collapsed}
         className={cn(
-          'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border/60 bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-in-out md:flex',
+          'sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border/60 bg-sidebar/75 text-sidebar-foreground backdrop-blur-xl md:flex',
+          animateWidth && 'transition-[width] duration-200 ease-in-out',
           collapsed ? 'w-20' : 'w-60',
         )}
       >
@@ -146,7 +152,7 @@ export function AppShell({ active, children }: {
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/50 bg-background/60 px-4 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
