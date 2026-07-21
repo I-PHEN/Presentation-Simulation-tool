@@ -109,33 +109,33 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="mt-6 space-y-3">
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs">Email Address</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-9 rounded-lg text-sm"
+                  className="h-9 text-sm"
                   required
                 />
               </div>
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="password" className="text-xs">Password</Label>
+                  <Label htmlFor="password">Password</Label>
                 </div>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-9 rounded-lg text-sm"
+                  className="h-9 text-sm"
                   required
                 />
               </div>
             </div>
             <div className="flex flex-col gap-3 pt-3">
-              <Button type="submit" className="w-full h-9 text-xs font-medium" disabled={loading}>
+              <Button type="submit" className="w-full font-medium" disabled={loading}>
                 {loading ? (
                   <><Loader2 className="size-3.5 animate-spin mr-1.5" />Signing In...</>
                 ) : (
@@ -150,12 +150,12 @@ export default function LoginPage() {
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     loginAsMock('Guest Presenter');
                     toast.success('Logged in as Guest!');
                   }}
-                  className="w-full h-9 text-xs border-dashed"
+                  className="w-full"
                 >
                   <Sparkles className="size-3.5 text-primary mr-1.5" /> Guest Mode (No Account Required)
                 </Button>

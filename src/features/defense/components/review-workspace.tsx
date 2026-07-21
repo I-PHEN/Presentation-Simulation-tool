@@ -34,10 +34,13 @@ export function ReviewWorkspace({ rows }: { rows: ReviewRow[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <section className="rounded-xl border border-border bg-card p-6 shadow-e1">
         <p className="text-xs font-medium text-muted-foreground">Review</p>
         <h1 className="mt-3 font-display text-3xl sm:text-4xl font-medium tracking-tight">Session history</h1>
-      </div>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+          Every rehearsal you have run, newest first. Open a finished review or step back into one still in progress.
+        </p>
+      </section>
       <ol className="flex flex-col divide-y divide-border rounded-xl border border-border bg-card p-3 shadow-e1">
         {rows.map((row) => (
           <li

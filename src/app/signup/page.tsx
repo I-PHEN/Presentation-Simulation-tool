@@ -125,43 +125,43 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="mt-6 space-y-3">
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-xs">Full Name</Label>
+                <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-9 rounded-lg text-sm"
+                  className="h-9 text-sm"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs">Email Address</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-9 rounded-lg text-sm"
+                  className="h-9 text-sm"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-xs">Password (6+ characters)</Label>
+                <Label htmlFor="password">Password (6+ characters)</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-9 rounded-lg text-sm"
+                  className="h-9 text-sm"
                   required
                 />
               </div>
             </div>
             <div className="flex flex-col gap-3 pt-3">
-              <Button type="submit" className="w-full h-9 text-xs font-medium" disabled={loading}>
+              <Button type="submit" className="w-full font-medium" disabled={loading}>
                 {loading ? (
                   <><Loader2 className="size-3.5 animate-spin mr-1.5" />Creating Account...</>
                 ) : (

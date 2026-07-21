@@ -65,7 +65,7 @@ export function PracticeSetup({
   return (
     <section aria-labelledby="practice-setup-title" className="rounded-xl border border-border bg-card p-6 shadow-e1 sm:p-8">
       <div className="border-b border-border pb-6">
-        <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Practice setup</p>
+        <p className="text-xs font-medium text-muted-foreground">Practice setup</p>
         <h1 id="practice-setup-title" className="mt-2 font-display text-3xl sm:text-4xl font-medium tracking-tight">Set the conditions for this defense</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{deck.sourceName} is ready. Choose how the room should challenge your explanation.</p>
       </div>

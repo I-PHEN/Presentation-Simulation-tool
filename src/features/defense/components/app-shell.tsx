@@ -89,7 +89,7 @@ function NewProgrammeAction({ collapsed, onNavigate }: { collapsed: boolean; onN
       title={collapsed ? 'New programme' : undefined}
       onClick={onNavigate}
       className={cn(
-        buttonVariants({ size: collapsed ? 'icon' : 'sm' }),
+        buttonVariants({ variant: 'secondary', size: collapsed ? 'icon' : 'sm' }),
         collapsed ? 'shrink-0' : 'w-full',
       )}
     >

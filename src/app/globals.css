@@ -91,17 +91,17 @@
 .dark {
   --background: #0C0D11;
   --foreground: #F2F3F6;
-  --surface: #15171E;
+  --surface: #1B1E26;
   --surface-foreground: #F2F3F6;
   --card: #15171E;
   --card-foreground: #F2F3F6;
   --popover: #1D202A;
   --popover-foreground: #F2F3F6;
-  --primary: #4C6FF5;
+  --primary: #4463E6;
   --primary-foreground: #F8FAFF;
-  --secondary: #15171E;
+  --secondary: #1B1E26;
   --secondary-foreground: #F2F3F6;
-  --muted: #15171E;
+  --muted: #232732;
   --muted-foreground: #98A0AE;
   --accent: #171E33;
   --accent-foreground: #BAC8FF;
