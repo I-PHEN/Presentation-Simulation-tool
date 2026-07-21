@@ -2,25 +2,25 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
-import { ClipboardCheck, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Plus, Swords } from 'lucide-react';
+import { Home, LineChart, Menu, Mic, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { readShellCollapsed, writeShellCollapsed } from '../shell-preference';
 
-export type StudioNavItem = 'today' | 'practice' | 'review';
+export type StudioNavItem = 'home' | 'rehearse' | 'progress';
 
 const navigation = [
-  { href: '/dashboard', label: 'Today', value: 'today' },
-  { href: '/practice', label: 'Practice', value: 'practice' },
-  { href: '/review', label: 'Review', value: 'review' },
+  { href: '/dashboard', label: 'Home', value: 'home' },
+  { href: '/practice', label: 'Rehearse', value: 'rehearse' },
+  { href: '/review', label: 'Progress', value: 'progress' },
 ] as const;
 
-const navIcons: Record<StudioNavItem, typeof LayoutDashboard> = {
-  today: LayoutDashboard,
-  practice: Swords,
-  review: ClipboardCheck,
+const navIcons: Record<StudioNavItem, typeof Home> = {
+  home: Home,
+  rehearse: Mic,
+  progress: LineChart,
 };
 
 function BrandMark({ collapsed }: { collapsed: boolean }) {

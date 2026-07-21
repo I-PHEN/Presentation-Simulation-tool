@@ -7,22 +7,22 @@ import { AppShell } from './app-shell';
 describe('AppShell', () => {
   it('renders exactly the three studio destinations with their routes', () => {
     const html = renderToStaticMarkup(
-      <AppShell active="today"><p>Today</p></AppShell>,
+      <AppShell active="home"><p>Home</p></AppShell>,
     );
 
-    expect(html).toContain('>Today<');
-    expect(html).toContain('>Practice<');
-    expect(html).toContain('>Review<');
+    expect(html).toContain('>Home<');
+    expect(html).toContain('>Rehearse<');
+    expect(html).toContain('>Progress<');
     expect(html).toContain('href="/dashboard"');
     expect(html).toContain('href="/practice"');
     expect(html).toContain('href="/review"');
-    expect(html).not.toContain('Progress');
+    expect(html).not.toContain('>Today<');
     expect(html).not.toContain('/dashboard#trajectory');
   });
 
   it('exposes an accessible control to collapse the sidebar rail', () => {
     const html = renderToStaticMarkup(
-      <AppShell active="practice"><p>Room</p></AppShell>,
+      <AppShell active="rehearse"><p>Room</p></AppShell>,
     );
 
     expect(html).toContain('aria-label="Collapse sidebar"');
@@ -30,7 +30,7 @@ describe('AppShell', () => {
 
   it('renders a labelled navigation landmark and marks the active destination', () => {
     const html = renderToStaticMarkup(
-      <AppShell active="review"><p>Report</p></AppShell>,
+      <AppShell active="progress"><p>Report</p></AppShell>,
     );
 
     expect(html).toContain('aria-label="Primary navigation"');
@@ -54,16 +54,16 @@ describe('AppShell', () => {
 
   it('keeps a persistent New programme action outside primary navigation while still reachable from the rail', () => {
     const html = renderToStaticMarkup(
-      <AppShell active="today"><p>Today</p></AppShell>,
+      <AppShell active="home"><p>Home</p></AppShell>,
     );
 
     const navStart = html.indexOf('<nav aria-label="Primary navigation"');
     const navEnd = html.indexOf('</nav>', navStart);
     const navSection = html.slice(navStart, navEnd);
 
-    expect(navSection).toContain('>Today<');
-    expect(navSection).toContain('>Practice<');
-    expect(navSection).toContain('>Review<');
+    expect(navSection).toContain('>Home<');
+    expect(navSection).toContain('>Rehearse<');
+    expect(navSection).toContain('>Progress<');
     expect(navSection).not.toContain('/decks/new');
 
     expect(html).toContain('href="/decks/new"');

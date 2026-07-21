@@ -11,7 +11,7 @@ describe('/review route', () => {
     expect(source).toContain('ReviewWorkspace');
     expect(source).toContain('useDefenseSessions');
     expect(source).toContain('buildReviewRows');
-    expect(source).toContain('active="review"');
+    expect(source).toContain('active="progress"');
   });
 
   it('renders a visible retry action on a failed session request', () => {

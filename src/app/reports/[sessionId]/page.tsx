@@ -37,5 +37,5 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
     };
     void load(); return () => { active = false; };
   }, [sessionId]);
-  return <AppShell active="review">{error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p> : report ? <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} /> : <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>}</AppShell>;
+  return <AppShell active="progress">{error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p> : report ? <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} /> : <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>}</AppShell>;
 }

@@ -41,7 +41,7 @@ export default function DashboardPage() {
   if (authLoading || !user) return <div className="min-h-dvh bg-background" aria-busy="true" />;
 
   return (
-    <AppShell active="today">
+    <AppShell active="home">
       {error ? (
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
           <p className="text-sm text-destructive">{error}</p>

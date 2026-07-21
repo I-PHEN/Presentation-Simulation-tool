@@ -6,7 +6,7 @@ import { DeckContinuationAction, DeckContinuationError, DeckContinuationRecovery
 
 it('keeps deck intake inside the Practice shell state', () => {
   const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
-  expect(source).toContain('<AppShell active="practice">');
+  expect(source).toContain('<AppShell active="rehearse">');
 });
 
 describe('createDefenseSessionPayload', () => {

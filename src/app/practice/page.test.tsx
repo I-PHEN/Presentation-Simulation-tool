@@ -11,7 +11,7 @@ describe('/practice route', () => {
     expect(source).toContain('PracticeHub');
     expect(source).toContain('useDefenseSessions');
     expect(source).toContain('buildPracticeModel');
-    expect(source).toContain('active="practice"');
+    expect(source).toContain('active="rehearse"');
     expect(source).not.toContain("redirect('/decks/new')");
   });
 

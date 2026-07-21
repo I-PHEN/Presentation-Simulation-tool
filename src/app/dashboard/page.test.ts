@@ -11,7 +11,7 @@ describe('primary defense route contracts', () => {
     expect(source).toContain('StudioDesk');
     expect(source).toContain('useDefenseSessions');
     expect(source).toContain('buildTodayModel');
-    expect(source).toContain('active="today"');
+    expect(source).toContain('active="home"');
     expect(source).not.toContain('CoachHome');
     expect(source).not.toContain('Progress');
     expect(source).not.toMatch(/OverviewWorkspace|Daily speaking challenge|Overall Score|ScoringDashboard|AI Panel Members|Practice History|KPI/);

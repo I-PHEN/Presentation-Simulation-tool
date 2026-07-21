@@ -85,6 +85,6 @@ export default function NewDeckPage() {
   };
 
   if (loading) return null;
-  if (!user) return <AppShell active="practice"><DeckContinuationRecovery hasUser={false} hasDeck={Boolean(deck)} /></AppShell>;
-  return <AppShell active="practice"><DeckIntake onDeckReady={(readyDeck) => { setDeck(readyDeck); setError(undefined); setAuthRecovery(false); }} onDeckInvalidated={() => { setDeck(undefined); setError(undefined); setAuthRecovery(false); }} />{deck && <DeckContinuationAction creating={creating} error={error} onContinue={() => void continueToPractice()} />}{error && <DeckContinuationError error={error} authRecovery={authRecovery} />}</AppShell>;
+  if (!user) return <AppShell active="rehearse"><DeckContinuationRecovery hasUser={false} hasDeck={Boolean(deck)} /></AppShell>;
+  return <AppShell active="rehearse"><DeckIntake onDeckReady={(readyDeck) => { setDeck(readyDeck); setError(undefined); setAuthRecovery(false); }} onDeckInvalidated={() => { setDeck(undefined); setError(undefined); setAuthRecovery(false); }} />{deck && <DeckContinuationAction creating={creating} error={error} onContinue={() => void continueToPractice()} />}{error && <DeckContinuationError error={error} authRecovery={authRecovery} />}</AppShell>;
 }

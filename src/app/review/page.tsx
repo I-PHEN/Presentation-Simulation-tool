@@ -41,7 +41,7 @@ export default function ReviewPage() {
   if (authLoading || !user) return <div className="min-h-dvh bg-background" aria-busy="true" />;
 
   return (
-    <AppShell active="review">
+    <AppShell active="progress">
       {error ? (
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
           <p className="text-sm text-destructive">{error}</p>
