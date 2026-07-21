@@ -6,4 +6,5 @@ export const createExaminerEventSchema = z.object({
   slideIndex: z.number().int().positive(),
   evidence: z.string().trim().min(1).max(2_000),
   occurredAtMs: z.number().finite().nonnegative(),
+  persona: z.object({ id: z.string().trim().min(1).max(50), title: z.string().trim().min(1).max(80) }).optional(),
 }).strict();

@@ -20,6 +20,7 @@ const requestSchema = z.object({
     slideIndex: z.number().int().positive(), hasSpeech: z.boolean(), overlap: z.number().min(0).max(1),
     copiedPhrases: z.array(z.string().max(500)).max(50), explanationSignals: z.array(z.string().max(500)).max(50),
   }).optional(),
+  persona: z.object({ id: z.string().trim().min(1).max(50), title: z.string().trim().min(1).max(80), promptFragment: z.string().trim().min(1).max(2_000) }).optional(),
 }).strict().refine((request) => !request.readingEvidence || request.readingEvidence.slideIndex === request.currentSegment.slideIndex);
 
 function parseDeck(value: string): { slides: Array<{ index: number; text: string }> } | null {
@@ -32,12 +33,25 @@ function parseDeck(value: string): { slides: Array<{ index: number; text: string
 
 function excerpt(text: string): string { return text.trim().slice(0, 350); }
 
+const PERSONA_LEADS: Record<string, string> = {
+  professor: 'Walk me through your method here.',
+  examiner: 'Address this precisely.',
+  peer: 'Say this in plain terms.',
+};
+
 function createServerGroundedEvent(
-  kind: 'interrupt' | 'question' | 'follow_up', stance: 'supportive' | 'rigorous', slideIndex: number, slideText: string, speech: string,
+  kind: 'interrupt' | 'question' | 'follow_up',
+  stance: 'supportive' | 'rigorous',
+  slideIndex: number,
+  slideText: string,
+  speech: string,
+  persona?: { id: string; title: string },
 ) {
   const claim = excerpt(slideText);
   const spoken = excerpt(speech);
-  const lead = stance === 'rigorous' ? 'Address this precisely.' : 'Please clarify this connection.';
+  const lead = persona
+    ? (PERSONA_LEADS[persona.id] ?? (stance === 'rigorous' ? 'Address this precisely.' : 'Please clarify this connection.'))
+    : stance === 'rigorous' ? 'Address this precisely.' : 'Please clarify this connection.';
   const action = kind === 'interrupt' ? 'Pause for a moment' : kind === 'follow_up' ? 'Follow up on this point' : 'Please explain';
   return {
     kind,
@@ -45,6 +59,7 @@ function createServerGroundedEvent(
     slideIndex,
     evidence: `Slide claim: ${claim} Presenter speech: ${spoken}`,
     occurredAtMs: Date.now(),
+    ...(persona ? { persona: { id: persona.id, title: persona.title } } : {}),
   };
 }
 
@@ -57,14 +72,14 @@ export async function POST(request: Request) {
   if (!parsedRequest.success) return NextResponse.json({ error: 'Invalid examiner request' }, { status: 400 });
 
   try {
-    const { sessionId, currentSegment, readingEvidence } = parsedRequest.data;
+    const { sessionId, currentSegment, readingEvidence, persona } = parsedRequest.data;
     const session = await db.session.findFirst({ where: { id: sessionId, userId: identity.userId } });
     if (!session || session.practiceMode !== 'defense') return NextResponse.json({ error: 'Defense session not found' }, { status: 404 });
     const deck = parseDeck(session.deckContext);
     const slide = deck?.slides.find((item) => item.index === currentSegment.slideIndex);
     if (!slide) return NextResponse.json({ error: 'Current slide is unavailable' }, { status: 400 });
     const stance = session.stance === 'supportive' ? 'supportive' : 'rigorous';
-    const prompt = `You are a ${stance} thesis examiner. Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
+    const prompt = `You are a ${stance} thesis examiner.${persona ? ` Persona focus: ${persona.promptFragment}` : ''} Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
 
 Current slide claim/text: ${slide.text}
 Presenter's current spoken evidence: ${currentSegment.text}
@@ -79,7 +94,7 @@ Only decide whether an event is warranted and its kind. Do not write a question,
     try { candidate = JSON.parse(content); } catch { return NextResponse.json({ event: null }); }
     const decision = examinerDecisionSchema.safeParse(candidate);
     if (!decision.success) return NextResponse.json({ event: null });
-    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text));
+    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text, persona ? { id: persona.id, title: persona.title } : undefined));
     return NextResponse.json({ event: event.success ? event.data : null });
   } catch (error) {
     console.error('Examiner generation failed', error);

@@ -65,4 +65,31 @@ describe('POST /api/defense/examiner', () => {
     expect(getZAI).not.toHaveBeenCalled();
     expect(findFirst).toHaveBeenCalledWith({ where: { id: 'other-user-session', userId: 'user-1' } });
   });
+
+  it('tags the grounded event with the persona and uses the persona lead when a persona is supplied', async () => {
+    findFirst.mockResolvedValue(session);
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const persona = { id: 'peer', title: 'Peer', promptFragment: 'You weigh clarity and plain explanation.' };
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment, persona }) }));
+    const body = await response.json();
+    expect(body.event.persona).toEqual({ id: 'peer', title: 'Peer' });
+    // Persona fragment reaches the model decision prompt.
+    expect(create.mock.calls[0][0].messages[0].content).toContain('clarity and plain explanation');
+    // Still grounded in both server sources.
+    expect(body.event.text).toContain('Retention increased after the onboarding redesign.');
+    expect(body.event.text).toContain(segment.text);
+    // Peer lead phrasing is used.
+    expect(body.event.text).toContain('Say this in plain terms');
+  });
+
+  it('omits persona from the event and keeps legacy lead phrasing when no persona is supplied', async () => {
+    findFirst.mockResolvedValue(session);
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'interrupt' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment }) }));
+    const body = await response.json();
+    expect(body.event.persona).toBeUndefined();
+    expect(body.event.text).toContain('Address this precisely'); // rigorous legacy lead
+  });
 });

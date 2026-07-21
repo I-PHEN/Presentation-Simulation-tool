@@ -18,6 +18,7 @@ export interface ExaminerEvent {
   slideIndex: number;
   evidence: string;
   occurredAtMs: number;
+  persona?: { id: string; title: string };
 }
 
 export interface SlideContext {
