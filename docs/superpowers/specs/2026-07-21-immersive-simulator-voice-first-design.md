@@ -102,6 +102,17 @@ Persona prompt fragments are ported from `/api/multi-chat`'s `coachPersonas` (pr
 - Motion honors `prefers-reduced-motion` (existing global guard).
 - Soft-depth tokens throughout (`rounded-xl`, `shadow-e1/e2`, `buttonVariants`).
 
+## 7a. Opening moment — the room must feel alive (added 2026-07-22, user-requested)
+
+The room must **never open in silence**. The moment the user enters and makes the first gesture (a prominent **"Begin"** control — required to satisfy browser autoplay policy via `unlockAudio()`), the **lead persona speaks a short spoken welcome** that (a) greets the speaker, (b) names the panel present ("I'm the Professor — with me are the Examiner and a Peer"), and (c) invites them to start talking when ready. This is the liveness the previous simulator had and is what "immersive" means here.
+
+- **Endpoint reuse:** harvest the existing `POST /api/intro` (`{ title, judges }` → `{ text, judgeId, voice }`). It already produces a 1-sentence LLM welcome from the lead judge with a safe default fallback ("Welcome! Please turn on your microphone whenever you're ready to begin."). We pass the assembled panel as `judges` (each `{ id, title }`) and the session title; the lead persona (panel[0] = Professor) delivers it. If the LLM fails, the default welcome still plays — the room is never silent.
+- **Playback:** `generateTTS(text, voice)` + `playAudioData(...)` from the existing `voice-engine`, using the lead persona's `voiceId`. While it plays, that persona's `AudiencePanel` card is in the **speaking** state with the caption; the others show **listening**.
+- **Sequencing:** `Begin` → `unlockAudio()` → intro plays (persona speaking) → on finish, mic capture starts and the rehearsal proceeds exactly as the engine already defines. A **Replay intro** affordance re-plays the welcome (mirrors the old sim). Autoplay/playback failure degrades to the caption + a Replay control — never a hard error.
+- **Honesty:** the welcome is scripted greeting/logistics only (no coaching claim), so it invents no evidence — consistent with §12.
+
+This opening is a first-class Phase 5 deliverable, not polish: the engine hook owns the intro step and the room UI renders the speaking lead persona.
+
 ## 8. Responsive strategy
 
 - **Desktop:** stage centered with the audience panel + transcript alongside (grid, e.g. `lg:grid-cols-[minmax(0,1fr)_22rem]` like the current room).
