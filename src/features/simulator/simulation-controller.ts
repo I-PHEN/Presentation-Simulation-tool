@@ -73,6 +73,8 @@ export function createSimulationController(dependencies: SimulationControllerDep
       notify();
       return;
     }
+    // Deliberately detached: stopCapture only waits for the final presenter
+    // persistence, never for examiner speech that may pause capture itself.
     examinerWork = examinerWork.then(() => examine(segment));
   };
   const start = async () => {
@@ -91,7 +93,10 @@ export function createSimulationController(dependencies: SimulationControllerDep
   };
   const end = async () => {
     if (ended) return;
+    // stopCapture is required to resolve only after its final commit has run.
     await dependencies.stopCapture();
+    // Capture stop only awaited presenter persistence. It is safe to await
+    // independently tracked examiner decisions here because capture is detached.
     await examinerWork;
     if (dependencies.mode === 'mock' && events.length) {
       answeringQuestion = true;
