@@ -72,13 +72,6 @@ function NavLink({
       onClick={onNavigate}
       className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          'absolute left-1.5 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary transition-opacity',
-          isActive ? 'opacity-100' : 'opacity-0',
-        )}
-      />
       <Icon className="size-4 shrink-0" aria-hidden="true" />
       <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>{item.label}</span>
     </Link>
