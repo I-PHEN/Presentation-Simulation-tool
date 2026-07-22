@@ -55,7 +55,7 @@ export default function PracticeSessionPage({ params }: { params: Promise<{ sess
   const view = searchParams.get('view');
 
   useEffect(() => {
-    void params.then(setSessionId);
+    void params.then(({ sessionId: value }) => setSessionId(value));
   }, [params]);
 
   useEffect(() => {

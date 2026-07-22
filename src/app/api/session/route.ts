@@ -7,6 +7,9 @@ export async function POST(req: NextRequest) {
   try {
     const identity = await authenticateRequest(req);
     if (isAuthenticationFailure(identity)) return identity;
+    // Session.userId is a foreign key to User; ensure the owner row exists before
+    // inserting a session, or the create violates the constraint (500).
+    await db.user.upsert({ where: { id: identity.userId }, update: {}, create: { id: identity.userId } });
     const body = await req.json();
 
     if (body.mode && body.deck) {
