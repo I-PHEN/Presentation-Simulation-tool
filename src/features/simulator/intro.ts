@@ -1,0 +1,20 @@
+import type { Persona } from './personas';
+
+const DEFAULT_WELCOME = 'Welcome. Take a breath — turn on your microphone whenever you are ready to begin.';
+
+export function leadPersona(panel: Persona[]): Persona {
+  if (panel.length === 0) throw new Error('leadPersona requires a non-empty panel');
+  return panel[0];
+}
+
+export function buildIntroRequest(title: string, panel: Persona[]): { title: string; judges: Array<{ id: string; title: string }> } {
+  return { title, judges: panel.map((p) => ({ id: p.id, title: p.title })) };
+}
+
+export function parseIntroResponse(data: unknown, panel: Persona[]): { text: string; voiceId: string; personaId: string } {
+  const lead = leadPersona(panel);
+  const record = (data && typeof data === 'object') ? data as Record<string, unknown> : {};
+  const text = typeof record.text === 'string' && record.text.trim().length > 0 ? record.text.trim() : DEFAULT_WELCOME;
+  const voiceId = typeof record.voice === 'string' && record.voice.trim().length > 0 ? record.voice.trim() : lead.voiceId;
+  return { text, voiceId, personaId: lead.id };
+}
