@@ -11,10 +11,10 @@ describe('rehearse setup route', () => {
     expect(source).toContain('<RehearseSetup');
   });
 
-  it('creates a fully-configured session and enters the room in one step', () => {
+  it('creates a fully-configured session and enters the immersive room in one step', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
-    // One-shot: straight into the room, never the intermediate setup view.
-    expect(source).toContain('?view=room');
+    // One-shot: straight into the immersive /rehearse room, never the intermediate setup view.
+    expect(source).toContain('/rehearse/');
     expect(source).not.toContain('?view=setup');
     expect(source).toContain('buildRehearseSessionPayload');
   });

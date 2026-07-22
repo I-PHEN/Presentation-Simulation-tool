@@ -46,7 +46,7 @@ export default function NewDeckPage() {
       const failure = sessionCreateFailureMessage(response, data);
       if (failure) throw new Error(failure);
       if (!data.sessionId) throw new Error('Unable to create the rehearsal session.');
-      router.push(`/practice/${data.sessionId}?view=room`);
+      router.push(`/rehearse/${data.sessionId}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to create the rehearsal session.');
     } finally {
