@@ -70,4 +70,15 @@ describe('createSessionRecorder', () => {
     await r.stop();
     expect(upload).not.toHaveBeenCalled();
   });
+
+  it('releases the sink and stays non-fatal when start throws after acquire', async () => {
+    const released = vi.fn();
+    const s = { start: () => { throw new Error('recorder start failed'); }, stop: vi.fn(async () => new Blob()), release: released };
+    const onError = vi.fn();
+    const r = createSessionRecorder({ acquire: async () => s as unknown as RecorderSink, upload: vi.fn(async () => undefined), onError });
+    await expect(r.start()).resolves.toBeUndefined();
+    expect(released).toHaveBeenCalledOnce();
+    expect(onError).toHaveBeenCalledOnce();
+    expect(r.isRecording()).toBe(false);
+  });
 });

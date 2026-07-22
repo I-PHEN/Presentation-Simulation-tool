@@ -19,11 +19,14 @@ export function createSessionRecorder(deps: SessionRecorderDeps) {
 
   const start = async (): Promise<void> => {
     if (recording) return;
+    let acquired: RecorderSink | null = null;
     try {
-      sink = await deps.acquire();
-      sink.start();
+      acquired = await deps.acquire();
+      acquired.start();
+      sink = acquired;
       recording = true;
     } catch {
+      if (acquired) { try { acquired.release(); } catch { /* best effort */ } }
       sink = null;
       recording = false;
       deps.onError?.(START_ERROR);
