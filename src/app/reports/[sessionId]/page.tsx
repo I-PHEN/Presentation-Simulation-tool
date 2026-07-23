@@ -43,16 +43,17 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
   }, [sessionId]);
   return (
     <AppShell active="progress">
-      {error ? (
-        <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>
-      ) : report ? (
-        <div className="space-y-6">
-          <SessionAudioPlayer audioPath={audioPath} />
+      <div className="space-y-6">
+        {/* The recording is independent of the report: replay stays available even if report generation fails. */}
+        <SessionAudioPlayer audioPath={audioPath} />
+        {error ? (
+          <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>
+        ) : report ? (
           <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} />
-        </div>
-      ) : (
-        <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>
-      )}
+        ) : (
+          <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>
+        )}
+      </div>
     </AppShell>
   );
 }
