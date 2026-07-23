@@ -12,7 +12,7 @@ import { assembleCoachingReport, validatePersonaVerdictLines } from '@/features/
 const requestSchema = z.object({ sessionId: z.string().trim().min(1).max(200) }).strict();
 const deckSchema = z.object({ sourceName: z.string(), slides: z.array(z.object({ index: z.number().int().positive(), text: z.string(), imageUrl: z.string() })).min(1) });
 const transcriptSchema = z.array(z.object({ role: z.enum(['presenter', 'examiner']), slideIndex: z.number().int().positive(), text: z.string(), startedAtMs: z.number().finite().nonnegative(), endedAtMs: z.number().finite().nonnegative() }));
-const eventSchema = z.array(z.object({ kind: z.enum(['interrupt', 'question', 'follow_up']), text: z.string(), slideIndex: z.number().int().positive(), evidence: z.string(), occurredAtMs: z.number().finite().nonnegative() }));
+const eventSchema = z.array(z.object({ kind: z.enum(['interrupt', 'question', 'follow_up']), text: z.string(), slideIndex: z.number().int().positive(), evidence: z.string(), occurredAtMs: z.number().finite().nonnegative(), persona: z.object({ id: z.string(), title: z.string() }).optional() }));
 const findingsSchema = z.object({
   findings: z.array(defenseFindingSchema).min(1).max(3),
   personaVerdicts: z.array(z.object({ personaId: z.string(), line: z.string() })).optional(),
