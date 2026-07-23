@@ -2,23 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/features/defense/components/app-shell';
-import { DefenseReportView } from '@/features/defense/components/defense-report';
-import { defenseReportSchema, type DefenseReport } from '@/features/defense/types';
+import { CoachingReportView } from '@/features/defense/components/coaching-report';
+import { coachingReportSchema, type CoachingReport } from '@/features/defense/types';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
-import { SessionAudioPlayer } from '@/features/simulator/SessionAudioPlayer';
 
-export function reportFromSummary(value: unknown): DefenseReport | null {
+export function reportFromSummary(value: unknown): CoachingReport | null {
   if (!value || typeof value !== 'object') return null;
-  const candidate = (value as Record<string, unknown>).defenseReport;
-  const parsed = defenseReportSchema.safeParse(candidate);
+  const candidate = (value as Record<string, unknown>).coachingReport;
+  const parsed = coachingReportSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
 }
 
 export default function DefenseReportPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const [sessionId, setSessionId] = useState<string>();
-  const [report, setReport] = useState<DefenseReport>();
-  const [error, setError] = useState<string>();
+  const [report, setReport] = useState<CoachingReport>();
   const [audioPath, setAudioPath] = useState<string | null>(null);
+  const [error, setError] = useState<string>();
   useEffect(() => { void params.then(({ sessionId: value }) => setSessionId(value)); }, [params]);
   useEffect(() => {
     if (!sessionId) return;
@@ -35,25 +34,21 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
         if (cached) { if (active) setReport(cached); return; }
         const generated = await authenticatedFetch('/api/defense/report', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId }) });
         const body = await generated.json();
-        if (!generated.ok || !reportFromSummary({ defenseReport: body.report })) throw new Error(body.error || 'Unable to create this defense report.');
+        if (!generated.ok || !reportFromSummary({ coachingReport: body.report })) throw new Error(body.error || 'Unable to create this coaching report.');
         if (active) setReport(body.report);
-      } catch (caught) { if (active) setError(caught instanceof Error ? caught.message : 'Unable to load this defense report.'); }
+      } catch (caught) { if (active) setError(caught instanceof Error ? caught.message : 'Unable to load this coaching report.'); }
     };
     void load(); return () => { active = false; };
   }, [sessionId]);
   return (
     <AppShell active="progress">
-      <div className="space-y-6">
-        {/* The recording is independent of the report: replay stays available even if report generation fails. */}
-        <SessionAudioPlayer audioPath={audioPath} />
-        {error ? (
-          <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>
-        ) : report ? (
-          <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} />
-        ) : (
-          <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>
-        )}
-      </div>
+      {error ? (
+        <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>
+      ) : report ? (
+        <CoachingReportView report={report} audioPath={audioPath} retryHref={`/rehearse/${sessionId}`} />
+      ) : (
+        <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>
+      )}
     </AppShell>
   );
 }
