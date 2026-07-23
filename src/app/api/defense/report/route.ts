@@ -8,6 +8,8 @@ import { getZAI } from '@/lib/zai';
 import { defenseFindingSchema } from '@/features/defense/types';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 import { assembleCoachingReport, validatePersonaVerdictLines } from '@/features/defense/coaching-report';
+import { recordSessionOutcome } from '@/features/coaching/speaker-profile-repository';
+import { buildSessionOutcome, hasEvidence } from '@/features/coaching/session-outcome';
 
 const requestSchema = z.object({ sessionId: z.string().trim().min(1).max(200) }).strict();
 const deckSchema = z.object({ sourceName: z.string(), slides: z.array(z.object({ index: z.number().int().positive(), text: z.string(), imageUrl: z.string() })).min(1) });
@@ -43,11 +45,23 @@ export async function POST(request: Request) {
     const cache = async (report: Awaited<ReturnType<typeof assembleCoachingReport>>, findings: unknown) => {
       await db.session.update({ where: { id: session.id }, data: { findings: JSON.stringify(findings), summary: JSON.stringify({ coachingReport: report }) } });
     };
+    const recordOutcome = async (report: Awaited<ReturnType<typeof assembleCoachingReport>>, weaknessLabels: string[]) => {
+      if (session.outcomeRecorded) return;
+      try {
+        const outcome = buildSessionOutcome({ sessionId: session.id, metrics: report.metrics, weaknessLabels, completedAt: new Date().toISOString() });
+        if (!hasEvidence(outcome)) return;
+        await recordSessionOutcome(identity.userId, outcome);
+        await db.session.update({ where: { id: session.id }, data: { outcomeRecorded: true } });
+      } catch (error) {
+        console.error('Failed to record session outcome (non-fatal):', error);
+      }
+    };
 
     // Graceful minimal report: no presenter speech → still return a usable, grounded report.
     if (noSpeech) {
       const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true });
       await cache(report, []);
+      await recordOutcome(report, []);
       return NextResponse.json({ report });
     }
 
@@ -71,12 +85,14 @@ export async function POST(request: Request) {
     if (findingsUnsupported || !parsed.success) {
       const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true });
       await cache(report, []);
+      await recordOutcome(report, []);
       return NextResponse.json({ report });
     }
 
     const verdictLines = validatePersonaVerdictLines(examinerEvents, parsed.data.personaVerdicts);
     const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: parsed.data.findings, verdictLines, minimal: false });
     await cache(report, parsed.data.findings);
+    await recordOutcome(report, parsed.data.findings.map((finding) => finding.title));
     return NextResponse.json({ report });
   } catch (error) {
     console.error('Defense report generation failed', error);
