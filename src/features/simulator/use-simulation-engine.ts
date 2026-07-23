@@ -140,15 +140,16 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
 
   const changeSlide = useCallback(async (pos: number) => { await controller.changeSlide(session.deck.slides[pos].index); }, [controller, session.deck.slides]);
   const end = useCallback(async () => {
+    let failure: string | null = null;
     try {
       await controller.end();
-      setCaptureState('idle');
-      setPhase(controller.getState().ended ? 'ended' : 'live');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Your rehearsal could not be saved.');
-    } finally {
-      await recorder.stop();
+      failure = e instanceof Error ? e.message : 'Your rehearsal could not be saved.';
     }
+    await recorder.stop(); // finish upload + release BEFORE showing the report, so audio is present on first load
+    if (failure) setError(failure);
+    setCaptureState('idle');
+    setPhase(controller.getState().ended ? 'ended' : 'live');
   }, [controller, recorder]);
 
   return {
