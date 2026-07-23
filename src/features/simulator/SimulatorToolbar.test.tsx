@@ -19,4 +19,19 @@ describe('SimulatorToolbar', () => {
     );
     expect(html).toContain('aria-label="Turn on microphone"');
   });
+
+  it('shows a recording indicator while recording', () => {
+    const html = renderToStaticMarkup(
+      <SimulatorToolbar recording micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(html).toContain('Rec');
+    expect(html).toContain('aria-label="Recording in progress"');
+  });
+
+  it('hides the recording indicator when not recording', () => {
+    const html = renderToStaticMarkup(
+      <SimulatorToolbar recording={false} micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(html).not.toContain('aria-label="Recording in progress"');
+  });
 });

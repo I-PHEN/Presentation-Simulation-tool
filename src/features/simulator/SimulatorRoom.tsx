@@ -45,7 +45,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
       )}
 
       <footer className="pointer-events-none sticky bottom-0 flex justify-center p-4">
-        <SimulatorToolbar micActive={engine.micActive} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={engine.phase !== 'live'} />
+        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={engine.phase !== 'live'} />
       </footer>
 
       {engine.phase === 'ended' && (

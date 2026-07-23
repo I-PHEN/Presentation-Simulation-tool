@@ -11,6 +11,9 @@ import { createPanelVoiceController } from './panel-voice';
 import { assemblePanel, type Persona } from './personas';
 import { computeMetrics } from './metrics';
 import { buildIntroRequest, parseIntroResponse } from './intro';
+import { createSessionRecorder } from './session-recorder';
+import { acquireBrowserRecorder } from './browser-audio-recorder';
+import { uploadSessionAudio } from './upload-recording';
 
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string };
 type STTHandle = Awaited<ReturnType<typeof createSTT>>;
@@ -32,6 +35,15 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const startedAtRef = useRef(0);
   const controllerRef = useRef<ReturnType<typeof createSimulationController> | null>(null);
   const voiceRef = useRef<ReturnType<typeof createPanelVoiceController> | null>(null);
+  const recorderRef = useRef<ReturnType<typeof createSessionRecorder> | null>(null);
+  if (!recorderRef.current) {
+    recorderRef.current = createSessionRecorder({
+      acquire: acquireBrowserRecorder,
+      upload: (blob) => uploadSessionAudio(session.id, blob),
+      onError: (message) => setError(message),
+    });
+  }
+  const recorder = recorderRef.current;
 
   const stopCapture = useCallback(async () => {
     const capture = captureRef.current; captureRef.current = null;
@@ -103,6 +115,7 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const begin = useCallback(async () => {
     unlockAudio();
     startedAtRef.current = Date.now();
+    await recorder.start();
     setPhase('introducing');
     try {
       const res = await authenticatedFetch('/api/intro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildIntroRequest(session.deck.sourceName, panel)) });
@@ -111,7 +124,7 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
     } catch { /* intro is best-effort; never blocks the rehearsal */ }
     setPhase('live');
     await controller.start();
-  }, [controller, panel, session.deck.sourceName, voice]);
+  }, [controller, panel, recorder, session.deck.sourceName, voice]);
 
   const replayIntro = useCallback(async () => {
     const res = await authenticatedFetch('/api/intro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildIntroRequest(session.deck.sourceName, panel)) }).catch(() => null);
@@ -125,10 +138,17 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   }, [captureState, startCapture, state.slideIndex, stopCapture]);
 
   const changeSlide = useCallback(async (pos: number) => { await controller.changeSlide(session.deck.slides[pos].index); }, [controller, session.deck.slides]);
-  const end = useCallback(async () => { try { await controller.end(); setCaptureState('idle'); setPhase(controller.getState().ended ? 'ended' : 'live'); } catch (e) { setError(e instanceof Error ? e.message : 'Your rehearsal could not be saved.'); } }, [controller]);
+  const end = useCallback(async () => {
+    try {
+      await controller.end();
+      await recorder.stop();
+      setCaptureState('idle');
+      setPhase(controller.getState().ended ? 'ended' : 'live');
+    } catch (e) { setError(e instanceof Error ? e.message : 'Your rehearsal could not be saved.'); }
+  }, [controller, recorder]);
 
   return {
-    phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening',
+    phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening', recording: recorder.isRecording(),
     panel, speakingPersonaId: voiceState.speakingPersonaId, caption: voiceState.caption, events: state.events, transcript: state.segments, interim, metrics,
     error: error ?? voiceState.lastError, begin, toggleMic, changeSlide, end, replayIntro,
     canFinish: controller.canFinish(), finish: controller.finish,
