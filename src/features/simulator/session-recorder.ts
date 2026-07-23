@@ -16,9 +16,11 @@ const UPLOAD_ERROR = 'The recording could not be saved. Your report is still rea
 export function createSessionRecorder(deps: SessionRecorderDeps) {
   let sink: RecorderSink | null = null;
   let recording = false;
+  let starting = false;
 
   const start = async (): Promise<void> => {
-    if (recording) return;
+    if (recording || starting) return;
+    starting = true;
     let acquired: RecorderSink | null = null;
     try {
       acquired = await deps.acquire();
@@ -30,6 +32,8 @@ export function createSessionRecorder(deps: SessionRecorderDeps) {
       sink = null;
       recording = false;
       deps.onError?.(START_ERROR);
+    } finally {
+      starting = false;
     }
   };
 

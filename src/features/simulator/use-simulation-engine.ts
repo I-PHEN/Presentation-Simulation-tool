@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createSTT, generateTTS, playAudioData, unlockAudio } from '@/lib/voice-engine';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import type { DeckContext, DefenseMode, ExaminerEvent, ExaminerStance, TranscriptSegment } from '@/features/defense/types';
@@ -44,6 +44,7 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
     });
   }
   const recorder = recorderRef.current;
+  useEffect(() => () => { void recorder.stop(); }, [recorder]);
 
   const stopCapture = useCallback(async () => {
     const capture = captureRef.current; captureRef.current = null;

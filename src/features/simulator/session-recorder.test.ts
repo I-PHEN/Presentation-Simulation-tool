@@ -81,4 +81,18 @@ describe('createSessionRecorder', () => {
     expect(onError).toHaveBeenCalledOnce();
     expect(r.isRecording()).toBe(false);
   });
+
+  it('does not double-acquire when start is called twice before the first resolves', async () => {
+    const s = sink();
+    let resolveAcquire: () => void = () => undefined;
+    const acquire = vi.fn(() => new Promise<RecorderSink>((res) => { resolveAcquire = () => res(s as unknown as RecorderSink); }));
+    const r = createSessionRecorder({ acquire, upload: vi.fn(async () => undefined) });
+    const p1 = r.start();
+    const p2 = r.start(); // second call while the first acquire is still pending
+    resolveAcquire();
+    await Promise.all([p1, p2]);
+    expect(acquire).toHaveBeenCalledOnce();
+    expect(s.started).toBe(1);
+    expect(r.isRecording()).toBe(true);
+  });
 });
