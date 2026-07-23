@@ -42,3 +42,5 @@ export function buildProgressModel(profile: SpeakerProfileData, sessions: Progre
     history,
   };
 }
+
+export type ProgressModel = ReturnType<typeof buildProgressModel>;
