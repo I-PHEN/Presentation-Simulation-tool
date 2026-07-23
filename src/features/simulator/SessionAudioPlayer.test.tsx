@@ -15,4 +15,10 @@ describe('SessionAudioPlayer', () => {
     expect(html).toContain('No recording was captured for this session.');
     expect(html).not.toContain('<audio');
   });
+
+  it('still renders the player when given a ref (seek handle attached)', () => {
+    const html = renderToStaticMarkup(<SessionAudioPlayer audioPath="/recordings/s.webm" />);
+    expect(html).toContain('controls');
+    expect(html).toContain('src="/recordings/s.webm"');
+  });
 });
