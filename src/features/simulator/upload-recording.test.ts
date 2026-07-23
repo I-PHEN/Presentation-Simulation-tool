@@ -16,6 +16,6 @@ describe('uploadSessionAudio', () => {
 
   it('throws when the server rejects the upload', async () => {
     const fetcher = vi.fn(async () => new Response(JSON.stringify({ error: 'nope' }), { status: 500 }));
-    await expect(uploadSessionAudio('sess-1', new Blob(['x']), fetcher as unknown as typeof fetch)).rejects.toThrow();
+    await expect(uploadSessionAudio('sess-1', new Blob(['x']), fetcher as unknown as typeof fetch)).rejects.toThrow('nope');
   });
 });
