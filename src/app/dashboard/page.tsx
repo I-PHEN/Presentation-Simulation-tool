@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
+import { NextFocusCard } from '@/features/defense/components/next-focus-card';
 import { StudioDesk } from '@/features/defense/components/studio-desk';
 import { buildTodayModel } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
+import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +27,7 @@ export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
+  const { profile } = useSpeakerProfile();
   const [resyncedAfterAuth, setResyncedAfterAuth] = useState(false);
 
   useEffect(() => {
@@ -63,7 +66,10 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        <StudioDesk model={buildTodayModel(sessions)} />
+        <div className="flex flex-col gap-6">
+          <NextFocusCard profile={profile} />
+          <StudioDesk model={buildTodayModel(sessions)} />
+        </div>
       )}
     </AppShell>
   );
