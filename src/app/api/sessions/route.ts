@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { defenseFindingSchema, coachingReportSchema } from '@/features/defense/types';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
+import { dimensionsFromMetrics } from '@/features/coaching/session-outcome';
 
 const deckSchema = z.object({
   sourceName: z.string().trim().min(1),
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
       sessions: sessions.map((session) => {
         const deck = parsePersisted(session.deckContext, deckSchema);
         const report = parsePersisted(session.summary, summarySchema)?.coachingReport;
+        const dimensions = report ? dimensionsFromMetrics(report.metrics) : undefined;
         const finding = report?.highestLeverage ?? parsePersisted(session.findings, z.array(defenseFindingSchema).min(1))?.[0];
         return {
           id: session.id,
@@ -44,6 +46,7 @@ export async function GET(req: NextRequest) {
           ...(deck ? { deck } : {}),
           ...(finding ? { finding: { title: finding.title, evidence: finding.evidence, drill: finding.drill } } : {}),
           ...(report ? { report: { nextDrill: report.drills[0] ?? '', highestLeverage: { title: report.highestLeverage.title, slideIndex: report.highestLeverage.slideIndex } } } : {}),
+          ...(dimensions && Object.keys(dimensions).length > 0 ? { dimensions } : {}),
         };
       }),
     });

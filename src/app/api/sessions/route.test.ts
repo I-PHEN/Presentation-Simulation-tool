@@ -11,7 +11,7 @@ describe('GET /api/sessions', () => {
 
   it('returns only UI-safe defense sessions in newest-first order and omits malformed persisted JSON', async () => {
     findMany.mockResolvedValue([
-      { id: 'new', title: 'Current deck', createdAt: new Date('2026-07-18T12:00:00Z'), status: 'completed', practiceMode: 'defense', mode: 'mock', stance: 'rigorous', deckContext: JSON.stringify({ sourceName: 'deck.pdf', slides: [{ index: 1, text: 'Claim', imageUrl: 'slide.png' }] }), findings: JSON.stringify([{ title: 'Evidence gap', risk: 'high', basis: 'response_explanation', presenterQuote: 'Claim', evidence: 'Support is missing.', slideIndex: 1, drill: 'Explain the evidence.' }]), summary: JSON.stringify({ coachingReport: { highestLeverage: { title: 'Evidence gap', risk: 'high', basis: 'response_explanation', presenterQuote: 'Claim', evidence: 'Support is missing.', slideIndex: 1, drill: 'Explain the evidence.' }, drills: ['Explain the evidence.'], metrics: { paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 } }, timeline: [], personaVerdicts: [], strengths: [], minimal: false } }), transcriptSegments: '["private"]', examinerEvents: '["private"]', scores: { overall: 99 } },
+      { id: 'new', title: 'Current deck', createdAt: new Date('2026-07-18T12:00:00Z'), status: 'completed', practiceMode: 'defense', mode: 'mock', stance: 'rigorous', deckContext: JSON.stringify({ sourceName: 'deck.pdf', slides: [{ index: 1, text: 'Claim', imageUrl: 'slide.png' }] }), findings: JSON.stringify([{ title: 'Evidence gap', risk: 'high', basis: 'response_explanation', presenterQuote: 'Claim', evidence: 'Support is missing.', slideIndex: 1, drill: 'Explain the evidence.' }]), summary: JSON.stringify({ coachingReport: { highestLeverage: { title: 'Evidence gap', risk: 'high', basis: 'response_explanation', presenterQuote: 'Claim', evidence: 'Support is missing.', slideIndex: 1, drill: 'Explain the evidence.' }, drills: ['Explain the evidence.'], metrics: { paceWpm: 130, fillerPerMin: 2, verbatimSlides: 0, slideTimes: [{ slideIndex: 1, ms: 1000, atMs: 0 }], questionsHandled: { handled: 1, total: 1 } }, timeline: [], personaVerdicts: [], strengths: [], minimal: false } }), transcriptSegments: '["private"]', examinerEvents: '["private"]', scores: { overall: 99 } },
       { id: 'old', title: 'Stale deck', createdAt: new Date('2026-07-17T12:00:00Z'), status: 'upload', practiceMode: 'defense', mode: 'diagnostic', stance: 'supportive', deckContext: '{bad', findings: 'not-json', summary: '{bad', transcriptSegments: '[]', examinerEvents: '[]', scores: { overall: 20 } },
     ]);
 
@@ -29,5 +29,8 @@ describe('GET /api/sessions', () => {
     expect(JSON.stringify(body)).not.toContain('scores');
     expect(body.sessions[1]).not.toHaveProperty('deck');
     expect(body.sessions[1]).not.toHaveProperty('finding');
+    const completed = body.sessions.find((s: { id: string }) => s.id === 'new');
+    expect(completed.dimensions).toBeDefined();
+    expect(completed.dimensions.fluency).toBe(88);
   });
 });

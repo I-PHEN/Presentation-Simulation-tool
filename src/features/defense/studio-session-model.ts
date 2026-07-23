@@ -10,6 +10,7 @@ export type StudioSession = {
   deck?: DeckContext;
   finding?: { title: string; evidence: string; drill: string };
   report?: { nextDrill: string; highestLeverage: { title: string; slideIndex: number } };
+  dimensions?: Record<string, number>;
 };
 
 export type StudioAction = { label: string; href: string };
