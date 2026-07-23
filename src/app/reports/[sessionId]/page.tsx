@@ -5,6 +5,7 @@ import { AppShell } from '@/features/defense/components/app-shell';
 import { DefenseReportView } from '@/features/defense/components/defense-report';
 import { defenseReportSchema, type DefenseReport } from '@/features/defense/types';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { SessionAudioPlayer } from '@/features/simulator/SessionAudioPlayer';
 
 export function reportFromSummary(value: unknown): DefenseReport | null {
   if (!value || typeof value !== 'object') return null;
@@ -17,6 +18,7 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
   const [sessionId, setSessionId] = useState<string>();
   const [report, setReport] = useState<DefenseReport>();
   const [error, setError] = useState<string>();
+  const [audioPath, setAudioPath] = useState<string | null>(null);
   useEffect(() => { void params.then(({ sessionId: value }) => setSessionId(value)); }, [params]);
   useEffect(() => {
     if (!sessionId) return;
@@ -24,6 +26,8 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
     const load = async () => {
       try {
         const stored = await authenticatedFetch(`/api/session/${sessionId}`).then(async (response) => ({ ok: response.ok, body: await response.json() }));
+        const path = stored.ok && typeof stored.body?.defense?.audioPath === 'string' ? stored.body.defense.audioPath : null;
+        if (active) setAudioPath(path);
         const summaryText = stored.body?.defense?.summary;
         let parsed: unknown = null;
         try { parsed = typeof summaryText === 'string' ? JSON.parse(summaryText) : null; } catch { parsed = null; }
@@ -37,5 +41,18 @@ export default function DefenseReportPage({ params }: { params: Promise<{ sessio
     };
     void load(); return () => { active = false; };
   }, [sessionId]);
-  return <AppShell active="progress">{error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p> : report ? <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} /> : <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>}</AppShell>;
+  return (
+    <AppShell active="progress">
+      {error ? (
+        <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>
+      ) : report ? (
+        <div className="space-y-6">
+          <SessionAudioPlayer audioPath={audioPath} />
+          <DefenseReportView report={report} retryHref={`/practice/${sessionId}`} />
+        </div>
+      ) : (
+        <p role="status" className="text-sm text-muted-foreground">Preparing your evidence-led report...</p>
+      )}
+    </AppShell>
+  );
 }
