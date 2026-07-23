@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,6 +10,13 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+
+    const identity = await authenticateRequest(req);
+    if (isAuthenticationFailure(identity)) return identity;
+
+    const owned = await db.session.findFirst({ where: { id, userId: identity.userId }, select: { id: true } });
+    if (!owned) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
     const formData = await req.formData();
     const file = formData.get('audio') as File;
 
