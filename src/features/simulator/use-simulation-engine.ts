@@ -141,10 +141,13 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const end = useCallback(async () => {
     try {
       await controller.end();
-      await recorder.stop();
       setCaptureState('idle');
       setPhase(controller.getState().ended ? 'ended' : 'live');
-    } catch (e) { setError(e instanceof Error ? e.message : 'Your rehearsal could not be saved.'); }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Your rehearsal could not be saved.');
+    } finally {
+      await recorder.stop();
+    }
   }, [controller, recorder]);
 
   return {
