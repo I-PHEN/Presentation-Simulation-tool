@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { defenseFindingSchema, defenseReportSchema } from '@/features/defense/types';
+import { defenseFindingSchema, coachingReportSchema } from '@/features/defense/types';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 
 const deckSchema = z.object({
@@ -9,7 +9,7 @@ const deckSchema = z.object({
   slides: z.array(z.object({ index: z.number().int().positive(), text: z.string(), imageUrl: z.string().min(1) })).min(1),
 }).strict();
 
-const summarySchema = z.object({ defenseReport: defenseReportSchema }).strict();
+const summarySchema = z.object({ coachingReport: coachingReportSchema }).strict();
 
 function parsePersisted<T>(value: string, schema: z.ZodType<T>): T | undefined {
   try {
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       sessions: sessions.map((session) => {
         const deck = parsePersisted(session.deckContext, deckSchema);
-        const report = parsePersisted(session.summary, summarySchema)?.defenseReport;
+        const report = parsePersisted(session.summary, summarySchema)?.coachingReport;
         const finding = report?.highestLeverage ?? parsePersisted(session.findings, z.array(defenseFindingSchema).min(1))?.[0];
         return {
           id: session.id,
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
           stance: session.stance === 'supportive' ? 'supportive' : 'rigorous',
           ...(deck ? { deck } : {}),
           ...(finding ? { finding: { title: finding.title, evidence: finding.evidence, drill: finding.drill } } : {}),
-          ...(report ? { report: { nextDrill: report.nextDrill, highestLeverage: { title: report.highestLeverage.title, slideIndex: report.highestLeverage.slideIndex } } } : {}),
+          ...(report ? { report: { nextDrill: report.drills[0] ?? '', highestLeverage: { title: report.highestLeverage.title, slideIndex: report.highestLeverage.slideIndex } } } : {}),
         };
       }),
     });

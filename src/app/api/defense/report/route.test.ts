@@ -39,4 +39,12 @@ describe('POST /api/defense/report', () => {
     expect(response.status).toBe(200); expect(body.report.minimal).toBe(false); expect(body.report.drills.join(' ')).toMatch(/without reading/i);
     expect(update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ findings: expect.any(String), summary: expect.any(String) }) }));
   });
+  it('carries persona through examinerEvents and populates personaVerdicts, dropping unsupported personaIds', async () => {
+    const personaSession = { ...session, examinerEvents: JSON.stringify([{ kind: 'question', text: 'Why does that follow?', slideIndex: 1, evidence: 'Retention increased after onboarding.', occurredAtMs: 500, persona: { id: 'professor', title: 'Professor' } }]) };
+    findFirst.mockResolvedValue(personaSession); getZAI.mockResolvedValue({ chat: { completions: { create } } }); create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ findings: [{ title: 'Explain the result', risk: 'high', basis: 'response_explanation', presenterQuote: 'Retention increased after onboarding.', evidence: 'You said "Retention increased after onboarding."', slideIndex: 1, drill: 'Explain the result without reading.' }], personaVerdicts: [{ personaId: 'professor', line: 'You leaned on the slide text.' }, { personaId: 'ghost', line: 'never spoke' }] }) } }] });
+    const response = await POST(request()); const body = await response.json();
+    expect(response.status).toBe(200); expect(body.report.minimal).toBe(false);
+    expect(body.report.personaVerdicts).toContainEqual(expect.objectContaining({ personaId: 'professor', personaTitle: 'Professor', verdictLine: 'You leaned on the slide text.' }));
+    expect(body.report.personaVerdicts.some((verdict: { personaId: string }) => verdict.personaId === 'ghost')).toBe(false);
+  });
 });

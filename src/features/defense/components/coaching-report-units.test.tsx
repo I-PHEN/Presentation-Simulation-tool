@@ -26,6 +26,7 @@ describe('MetricsStrip', () => {
   it('renders a dash when a metric is null', () => {
     const html = renderToStaticMarkup(<MetricsStrip metrics={{ ...metrics, paceWpm: null, fillerPerMin: null }} onSeek={() => undefined} />);
     expect(html).toContain('Pace');
+    expect(html).toContain('--');
   });
 });
 
