@@ -26,6 +26,7 @@ model Session {
   questions    String    @default("[]")
   status       String    @default("upload") // upload, analyzed, practicing, completed
   audioPath    String?
+  outcomeRecorded Boolean  @default(false)
   customConfig String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

@@ -23,4 +23,9 @@ describe('prisma schema longitudinal models', () => {
     expect(schema).toMatch(/userId\s+String\?/);
     expect(schema).toContain('user         User?    @relation(fields: [userId], references: [id])');
   });
+
+  it('adds an idempotency flag for one-time outcome recording', () => {
+    expect(schema).toContain('outcomeRecorded');
+    expect(schema).toMatch(/outcomeRecorded\s+Boolean\s+@default\(false\)/);
+  });
 });
