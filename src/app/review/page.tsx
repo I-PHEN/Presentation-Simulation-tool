@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
-import { ReviewWorkspace } from '@/features/defense/components/review-workspace';
-import { buildReviewRows } from '@/features/defense/studio-session-model';
+import { ProgressWorkspace } from '@/features/defense/components/progress-workspace';
+import { buildProgressModel } from '@/features/coaching/progress-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
+import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -21,10 +22,11 @@ export function shouldResyncAfterAuth(authLoading: boolean, user: unknown, resyn
   return !authLoading && Boolean(user) && !resyncedAfterAuth;
 }
 
-export default function ReviewPage() {
+export default function ProgressPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
+  const { profile } = useSpeakerProfile();
   const [resyncedAfterAuth, setResyncedAfterAuth] = useState(false);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function ReviewPage() {
         </div>
       ) : sessionsLoading ? (
         <div role="status" className="rounded-xl border border-border bg-card p-6">
-          <span className="sr-only">Loading your session history...</span>
+          <span className="sr-only">Loading your progress...</span>
           <div aria-hidden="true" className="flex animate-pulse flex-col gap-3">
             <div className="h-3 w-24 rounded bg-muted" />
             <div className="h-8 w-2/3 rounded bg-muted" />
@@ -63,7 +65,12 @@ export default function ReviewPage() {
           </div>
         </div>
       ) : (
-        <ReviewWorkspace rows={buildReviewRows(sessions)} />
+        <ProgressWorkspace
+          model={buildProgressModel(
+            profile,
+            sessions.map((s) => ({ ...s, createdAt: String(s.createdAt) }))
+          )}
+        />
       )}
     </AppShell>
   );

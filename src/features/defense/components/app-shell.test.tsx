@@ -87,6 +87,9 @@ describe('AppShell', () => {
   });
 
   it('keeps every primary route free of the retired trajectory anchor, Progress label, and CoachHome component', () => {
+    // /review is exempt: it now renders the longitudinal Progress workspace
+    // (ProgressWorkspace/buildProgressModel), so it legitimately carries the
+    // "Progress" identifier that other routes must stay free of.
     const routeFiles = [
       'src/app/page.tsx',
       'src/app/login/page.tsx',
@@ -94,7 +97,6 @@ describe('AppShell', () => {
       'src/app/dashboard/page.tsx',
       'src/app/practice/page.tsx',
       'src/app/practice/[sessionId]/page.tsx',
-      'src/app/review/page.tsx',
       'src/app/reports/[sessionId]/page.tsx',
       'src/app/decks/new/page.tsx',
     ];

@@ -5,12 +5,13 @@ import { shouldResyncAfterAuth } from './page';
 
 const readRoute = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
-describe('/review route', () => {
-  it('renders the review workspace wired to real session history', () => {
+describe('/progress route', () => {
+  it('renders the progress workspace wired to sessions + profile', () => {
     const source = readRoute('src/app/review/page.tsx');
-    expect(source).toContain('ReviewWorkspace');
+    expect(source).toContain('ProgressWorkspace');
     expect(source).toContain('useDefenseSessions');
-    expect(source).toContain('buildReviewRows');
+    expect(source).toContain('useSpeakerProfile');
+    expect(source).toContain('buildProgressModel');
     expect(source).toContain('active="progress"');
   });
 
