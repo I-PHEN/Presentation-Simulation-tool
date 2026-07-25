@@ -39,6 +39,21 @@ describe('POST /api/defense/report', () => {
     expect(response.status).toBe(200); expect(body.report.minimal).toBe(false); expect(body.report.drills.join(' ')).toMatch(/without reading/i);
     expect(update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ findings: expect.any(String), summary: expect.any(String) }) }));
   });
+  it('builds a topic-source report with transcript-validated findings and deck-agnostic metrics', async () => {
+    const topicSession = { ...session, source: 'topic', topic: 'Is onboarding worth the cost?' };
+    findFirst.mockResolvedValue(topicSession);
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ findings: [{ title: 'Support the claim', risk: 'high', basis: 'response_explanation', presenterQuote: 'Retention increased after onboarding.', evidence: 'No causal reasoning offered.', slideIndex: 1, drill: 'Give the mechanism, not just the outcome.' }] }) } }] });
+    const response = await POST(request());
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.report.minimal).toBe(false);
+    // Deckless: ownWords is never derived, and the metrics carry the flag.
+    expect(body.report.metrics.deckless).toBe(true);
+    // The topic prompt asks for response_explanation findings validated against the transcript.
+    expect(create.mock.calls[0][0].messages[0].content).toContain('Is onboarding worth the cost?');
+  });
+
   it('carries persona through examinerEvents and populates personaVerdicts, dropping unsupported personaIds', async () => {
     const personaSession = { ...session, examinerEvents: JSON.stringify([{ kind: 'question', text: 'Why does that follow?', slideIndex: 1, evidence: 'Retention increased after onboarding.', occurredAtMs: 500, persona: { id: 'professor', title: 'Professor' } }]) };
     findFirst.mockResolvedValue(personaSession); getZAI.mockResolvedValue({ chat: { completions: { create } } }); create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ findings: [{ title: 'Explain the result', risk: 'high', basis: 'response_explanation', presenterQuote: 'Retention increased after onboarding.', evidence: 'You said "Retention increased after onboarding."', slideIndex: 1, drill: 'Explain the result without reading.' }], personaVerdicts: [{ personaId: 'professor', line: 'You leaned on the slide text.' }, { personaId: 'ghost', line: 'never spoke' }] }) } }] });

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { buildDefenseEvaluationPrompt } from '@/features/defense/evaluation';
+import { buildTopicEvaluationPrompt } from '@/features/defense/topic-evaluation';
 import { analyseReading } from '@/features/defense/reading-analysis';
 import { spokenBySlide } from '@/features/defense/transcript';
 import { getZAI } from '@/lib/zai';
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
     const transcriptSegments = parse(session.transcriptSegments, transcriptSchema);
     const examinerEvents = parse(session.examinerEvents, eventSchema);
     if (!deck || !transcriptSegments || !examinerEvents) return NextResponse.json({ error: 'Defense session evidence is unavailable' }, { status: 422 });
+    const deckless = session.source === 'topic';
     const spoken = spokenBySlide(transcriptSegments);
     const noSpeech = Object.keys(spoken).length === 0;
 
@@ -59,14 +61,22 @@ export async function POST(request: Request) {
 
     // Graceful minimal report: no presenter speech → still return a usable, grounded report.
     if (noSpeech) {
-      const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true });
+      const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true, deckless });
       await cache(report, []);
       await recordOutcome(report, []);
       return NextResponse.json({ report });
     }
 
+    const prompt = deckless
+      ? buildTopicEvaluationPrompt({
+          topic: session.topic ?? deck.slides[0]?.text ?? '',
+          transcript: transcriptSegments.filter((segment) => segment.role === 'presenter').map((segment) => segment.text).join('\n'),
+          examinerEvents,
+        })
+      : buildDefenseEvaluationPrompt({ title: session.title, mode: session.mode === 'mock' ? 'mock' : 'diagnostic', deckText: deck.slides.map((slide) => `Slide ${slide.index}: ${slide.text}`).join('\n'), transcript: transcriptSegments.filter((segment) => segment.role === 'presenter').map((segment) => `Slide ${segment.slideIndex}: ${segment.text}`).join('\n'), readingEvidence, examinerEvents });
+
     const zai = await getZAI();
-    const completion = await zai.chat.completions.create({ messages: [{ role: 'system', content: buildDefenseEvaluationPrompt({ title: session.title, mode: session.mode === 'mock' ? 'mock' : 'diagnostic', deckText: deck.slides.map((slide) => `Slide ${slide.index}: ${slide.text}`).join('\n'), transcript: transcriptSegments.filter((segment) => segment.role === 'presenter').map((segment) => `Slide ${segment.slideIndex}: ${segment.text}`).join('\n'), readingEvidence, examinerEvents }) }], thinking: { type: 'disabled' } });
+    const completion = await zai.chat.completions.create({ messages: [{ role: 'system', content: prompt }], thinking: { type: 'disabled' } });
     const text = completion.choices[0]?.message?.content;
     let candidate: unknown;
     try { candidate = text ? JSON.parse(cleanModelJson(text)) : null; } catch { candidate = null; }
@@ -83,14 +93,14 @@ export async function POST(request: Request) {
 
     // Unvalidatable findings → minimal report (grounded timeline/metrics/persona evidence still render), not a 502.
     if (findingsUnsupported || !parsed.success) {
-      const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true });
+      const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: [], verdictLines: {}, minimal: true, deckless });
       await cache(report, []);
       await recordOutcome(report, []);
       return NextResponse.json({ report });
     }
 
     const verdictLines = validatePersonaVerdictLines(examinerEvents, parsed.data.personaVerdicts);
-    const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: parsed.data.findings, verdictLines, minimal: false });
+    const report = assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings: parsed.data.findings, verdictLines, minimal: false, deckless });
     await cache(report, parsed.data.findings);
     await recordOutcome(report, parsed.data.findings.map((finding) => finding.title));
     return NextResponse.json({ report });
