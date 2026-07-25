@@ -7,6 +7,7 @@ import { RehearseSetup, buildRehearseSessionPayload, type RehearseConfig } from 
 import { RehearseSourcePicker, TopicComingSoon, type RehearseSource } from '@/features/defense/components/rehearse-source-picker';
 import { useAuth } from '@/hooks/use-auth';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { useOnboardingGuard } from '@/features/onboarding/use-onboarding';
 
 export function isAuthenticationRejected(status: number): boolean {
   return status === 401 || status === 403;
@@ -29,6 +30,7 @@ export function SignInRecovery(): React.ReactElement {
 }
 
 export default function NewDeckPage() {
+  useOnboardingGuard();
   const { user, loading } = useAuth();
   const router = useRouter();
   const [creating, setCreating] = useState(false);

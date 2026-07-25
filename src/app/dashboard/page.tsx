@@ -11,6 +11,7 @@ import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
 import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useOnboardingGuard } from '@/features/onboarding/use-onboarding';
 
 /**
  * useDefenseSessions fetches on mount, which can race ahead of Firebase
@@ -24,6 +25,7 @@ export function shouldResyncAfterAuth(authLoading: boolean, user: unknown, resyn
 }
 
 export default function DashboardPage() {
+  useOnboardingGuard();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
