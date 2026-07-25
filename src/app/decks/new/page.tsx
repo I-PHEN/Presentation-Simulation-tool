@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from '@/features/defense/components/app-shell';
 import { RehearseSetup, buildRehearseSessionPayload, type RehearseConfig } from '@/features/defense/components/rehearse-setup';
-import { RehearseSourcePicker, TopicComingSoon, type RehearseSource } from '@/features/defense/components/rehearse-source-picker';
+import { RehearseSourcePicker, type RehearseSource } from '@/features/defense/components/rehearse-source-picker';
+import { TopicSetup } from '@/features/defense/components/topic-setup';
+import { buildTopicSessionPayload, type TopicConfig } from '@/features/defense/components/topic-session';
 import { useAuth } from '@/hooks/use-auth';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { useOnboardingGuard } from '@/features/onboarding/use-onboarding';
@@ -37,14 +39,14 @@ export default function NewDeckPage() {
   const [error, setError] = useState<string>();
   const [source, setSource] = useState<RehearseSource>('deck');
 
-  const start = async (config: RehearseConfig) => {
+  const createSession = async (payload: unknown) => {
     setCreating(true);
     setError(undefined);
     try {
       const response = await authenticatedFetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildRehearseSessionPayload(config)),
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
       const failure = sessionCreateFailureMessage(response, data);
@@ -58,6 +60,9 @@ export default function NewDeckPage() {
     }
   };
 
+  const start = (config: RehearseConfig) => void createSession(buildRehearseSessionPayload(config));
+  const startTopic = (config: TopicConfig) => void createSession(buildTopicSessionPayload(config));
+
   if (loading) return null;
   if (!user) return <AppShell active="rehearse"><SignInRecovery /></AppShell>;
   return (
@@ -65,9 +70,9 @@ export default function NewDeckPage() {
       <div className="flex flex-col gap-6">
         <RehearseSourcePicker source={source} onSelect={setSource} />
         {source === 'deck' ? (
-          <RehearseSetup creating={creating} startError={error} onStart={(config) => void start(config)} onDeckChange={() => setError(undefined)} />
+          <RehearseSetup creating={creating} startError={error} onStart={start} onDeckChange={() => setError(undefined)} />
         ) : (
-          <TopicComingSoon />
+          <TopicSetup creating={creating} startError={error} onStart={startTopic} />
         )}
       </div>
     </AppShell>
