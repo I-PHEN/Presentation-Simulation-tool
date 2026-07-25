@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPracticeModel, buildReviewRows, buildTodayModel, type StudioSession } from './studio-session-model';
+import { buildReviewRows, buildTodayModel, type StudioSession } from './studio-session-model';
 
 const deck = {
   sourceName: 'thesis-deck.pdf',
@@ -51,18 +51,28 @@ const noDeckSession: StudioSession = {
 };
 
 describe('buildTodayModel', () => {
-  it('gives a brand-new student a single import action and no active programme', () => {
+  it('gives a brand-new student a single start action, no active programme, and no recent list', () => {
     expect(buildTodayModel([])).toEqual({
       empty: true,
-      primaryAction: { label: 'Import deck', href: '/decks/new' },
+      primaryAction: { label: 'Start rehearsing', href: '/decks/new' },
+      recent: [],
     });
   });
 
-  it('routes a deck-less session back to deck import instead of a broken practice room', () => {
+  it('routes a deck-less session back to setup instead of a broken practice room', () => {
     const model = buildTodayModel([noDeckSession]);
     expect(model.empty).toBe(false);
-    expect(model.primaryAction).toEqual({ label: 'Import deck', href: '/decks/new' });
+    expect(model.primaryAction).toEqual({ label: 'Start rehearsing', href: '/decks/new' });
     expect(model.active).toBeUndefined();
+  });
+
+  it('lists sessions after the active one as resumable recent rows', () => {
+    const model = buildTodayModel([practicingDeckSession, deckOnlySession, noDeckSession]);
+    expect(model.active?.id).toBe('session-1');
+    expect(model.recent).toEqual([
+      { id: 'session-2', title: 'Dissertation walkthrough', status: 'upload', action: { label: 'Continue setup', href: '/practice/session-2?view=setup' } },
+      { id: 'session-3', title: 'Untitled programme', status: 'upload', action: { label: 'Start rehearsing', href: '/decks/new' } },
+    ]);
   });
 
   it('routes a not-yet-started deck session to setup', () => {
@@ -109,32 +119,6 @@ describe('buildTodayModel', () => {
   });
 });
 
-describe('buildPracticeModel', () => {
-  it('gives a brand-new student one import action and an empty recent list', () => {
-    expect(buildPracticeModel([])).toEqual({
-      empty: true,
-      primaryAction: { label: 'Import deck', href: '/decks/new' },
-      recent: [],
-    });
-  });
-
-  it('makes a practicing programme resumable and lists the rest as recent sessions', () => {
-    const model = buildPracticeModel([practicingDeckSession, deckOnlySession, noDeckSession]);
-    expect(model.primaryAction).toEqual({ label: 'Resume rehearsal', href: '/practice/session-1?view=room' });
-    expect(model.active).toMatchObject({ id: 'session-1', status: 'practicing', deck });
-    expect(model.recent).toEqual([
-      { id: 'session-2', title: 'Dissertation walkthrough', status: 'upload', action: { label: 'Continue setup', href: '/practice/session-2?view=setup' } },
-      { id: 'session-3', title: 'Untitled programme', status: 'upload', action: { label: 'Import deck', href: '/decks/new' } },
-    ]);
-  });
-
-  it('omits the active programme for a deck-less newest session but keeps the import action', () => {
-    const model = buildPracticeModel([noDeckSession]);
-    expect(model.active).toBeUndefined();
-    expect(model.primaryAction).toEqual({ label: 'Import deck', href: '/decks/new' });
-  });
-});
-
 describe('buildReviewRows', () => {
   it('returns no rows for a new student', () => {
     expect(buildReviewRows([])).toEqual([]);
@@ -152,9 +136,9 @@ describe('buildReviewRows', () => {
     });
   });
 
-  it('routes a deck-less row to deck import and omits the source name', () => {
+  it('routes a deck-less row to setup and omits the source name', () => {
     const [row] = buildReviewRows([noDeckSession]);
-    expect(row.action).toEqual({ label: 'Import deck', href: '/decks/new' });
+    expect(row.action).toEqual({ label: 'Start rehearsing', href: '/decks/new' });
     expect(row.sourceName).toBeUndefined();
   });
 

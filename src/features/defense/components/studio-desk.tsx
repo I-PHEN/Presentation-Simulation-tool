@@ -40,7 +40,7 @@ function slideCountLabel(count: number): string {
  * everything else reads as structure, not decoration.
  */
 export function StudioDesk({ model }: { model: TodayModel }) {
-  const { active } = model;
+  const { active, recent } = model;
   const previewSlide = active ? selectPreviewSlide(active.deck, active.cue) : undefined;
   // Only ever show this pane when there is real, API-backed content to put in
   // it (a coach note or a finished report) - never a filler sentence.
@@ -62,7 +62,7 @@ export function StudioDesk({ model }: { model: TodayModel }) {
         <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
           {active
             ? 'Step back into your rehearsal and close the gap the examiner flagged.'
-            : 'Import the deck you will defend, then rehearse against real examiner pressure.'}
+            : 'Set up your next rehearsal — bring a deck or speak to a topic — then face real examiner pressure.'}
         </p>
         <Link href={model.primaryAction.href} className={cn(buttonVariants({ size: 'lg' }), 'mt-6 w-fit')}>
           {model.primaryAction.label}
@@ -117,6 +117,27 @@ export function StudioDesk({ model }: { model: TodayModel }) {
               )}
             </div>
           )}
+        </section>
+      )}
+
+      {recent.length > 0 && (
+        <section className="rounded-xl border border-border bg-card p-3 shadow-e1" aria-labelledby="recent-sessions-heading">
+          <p id="recent-sessions-heading" className="px-3 pt-2 text-xs font-medium text-muted-foreground">
+            Recent sessions
+          </p>
+          <ul className="mt-1 divide-y divide-border">
+            {recent.map((row) => (
+              <li key={row.id} className="flex items-center justify-between gap-4 rounded-lg px-3 py-3 transition-colors hover:bg-surface">
+                <div>
+                  <p className="text-sm font-medium">{row.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{STATUS_LABELS[row.status] ?? row.status}</p>
+                </div>
+                <Link href={row.action.href} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'shrink-0')}>
+                  {row.action.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </div>

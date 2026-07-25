@@ -15,6 +15,8 @@ export type StudioSession = {
 
 export type StudioAction = { label: string; href: string };
 
+export type PracticeRow = { id: string; title: string; status: string; action: StudioAction };
+
 export type TodayModel = {
   empty: boolean;
   primaryAction: StudioAction;
@@ -27,14 +29,6 @@ export type TodayModel = {
     coachNote?: string;
     reportHref?: string;
   };
-};
-
-export type PracticeRow = { id: string; title: string; status: string; action: StudioAction };
-
-export type PracticeModel = {
-  empty: boolean;
-  primaryAction: StudioAction;
-  active?: { id: string; title: string; status: string; deck: DeckContext };
   recent: PracticeRow[];
 };
 
@@ -46,7 +40,7 @@ export type ReviewRow = {
   action: StudioAction;
 };
 
-const IMPORT_DECK_ACTION: StudioAction = { label: 'Import deck', href: '/decks/new' };
+const START_REHEARSING_ACTION: StudioAction = { label: 'Start rehearsing', href: '/decks/new' };
 
 /**
  * The single source of routing truth for every Studio surface: every action
@@ -54,7 +48,7 @@ const IMPORT_DECK_ACTION: StudioAction = { label: 'Import deck', href: '/decks/n
  * or `/practice/:id`), never an invented one.
  */
 function resolveAction(session: StudioSession): StudioAction {
-  if (!session.deck) return IMPORT_DECK_ACTION;
+  if (!session.deck) return START_REHEARSING_ACTION;
   if (session.status === 'completed') return { label: 'Open review', href: `/reports/${session.id}` };
   if (session.status === 'practicing') return { label: 'Resume rehearsal', href: `/practice/${session.id}?view=room` };
   return { label: 'Continue setup', href: `/practice/${session.id}?view=setup` };
@@ -71,11 +65,13 @@ function cueFor(session: StudioSession): string | undefined {
 }
 
 export function buildTodayModel(sessions: StudioSession[]): TodayModel {
-  const session = sessions[0];
-  if (!session) return { empty: true, primaryAction: IMPORT_DECK_ACTION };
+  const [session, ...rest] = sessions;
+  const recent = rest.map((row) => ({ id: row.id, title: row.title, status: row.status, action: resolveAction(row) }));
+
+  if (!session) return { empty: true, primaryAction: START_REHEARSING_ACTION, recent };
 
   const primaryAction = resolveAction(session);
-  if (!session.deck) return { empty: false, primaryAction };
+  if (!session.deck) return { empty: false, primaryAction, recent };
 
   const coachNote = coachNoteFor(session);
   const cue = cueFor(session);
@@ -93,22 +89,6 @@ export function buildTodayModel(sessions: StudioSession[]): TodayModel {
       ...(coachNote ? { coachNote } : {}),
       ...(reportHref ? { reportHref } : {}),
     },
-  };
-}
-
-export function buildPracticeModel(sessions: StudioSession[]): PracticeModel {
-  const [session, ...rest] = sessions;
-  const recent = rest.map((row) => ({ id: row.id, title: row.title, status: row.status, action: resolveAction(row) }));
-
-  if (!session) return { empty: true, primaryAction: IMPORT_DECK_ACTION, recent };
-
-  const primaryAction = resolveAction(session);
-  if (!session.deck) return { empty: false, primaryAction, recent };
-
-  return {
-    empty: false,
-    primaryAction,
-    active: { id: session.id, title: session.title, status: session.status, deck: session.deck },
     recent,
   };
 }
@@ -122,3 +102,4 @@ export function buildReviewRows(sessions: StudioSession[]): ReviewRow[] {
     action: resolveAction(session),
   }));
 }
+

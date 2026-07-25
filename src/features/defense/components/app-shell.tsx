@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Home, LineChart, Menu, Mic, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
+import { Home, LineChart, Menu, Mic, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { buttonVariants } from '@/components/ui/button';
@@ -14,7 +14,7 @@ export type StudioNavItem = 'home' | 'rehearse' | 'progress';
 
 const navigation = [
   { href: '/dashboard', label: 'Home', value: 'home' },
-  { href: '/practice', label: 'Rehearse', value: 'rehearse' },
+  { href: '/decks/new', label: 'Rehearse', value: 'rehearse' },
   { href: '/review', label: 'Progress', value: 'progress' },
 ] as const;
 
@@ -78,20 +78,6 @@ function NavLink({
   );
 }
 
-function NewProgrammeAction({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
-  return (
-    <Link
-      href="/decks/new"
-      title={collapsed ? 'New programme' : undefined}
-      onClick={onNavigate}
-      className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'w-full justify-start')}
-    >
-      <Plus className="size-4 shrink-0" aria-hidden="true" />
-      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>New programme</span>
-    </Link>
-  );
-}
-
 export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
@@ -139,9 +125,6 @@ export function AppShell({ active, children }: {
             <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
           ))}
         </nav>
-        <div className={cn('px-3 pb-3', collapsed && 'flex justify-center')}>
-          <NewProgrammeAction collapsed={collapsed} />
-        </div>
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
@@ -174,9 +157,6 @@ export function AppShell({ active, children }: {
                     />
                   ))}
                 </nav>
-                <div className="px-3 pb-4">
-                  <NewProgrammeAction collapsed={false} onNavigate={() => setMobileOpen(false)} />
-                </div>
               </SheetContent>
             </Sheet>
             <button

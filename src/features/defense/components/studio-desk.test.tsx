@@ -22,11 +22,15 @@ const practicingTodayModel: TodayModel = {
     cue: 'Slide 4',
     coachNote: 'Explain the evidence.',
   },
+  recent: [
+    { id: 'defense-9', title: 'Prospectus rehearsal', status: 'upload', action: { label: 'Continue setup', href: '/practice/defense-9?view=setup' } },
+  ],
 };
 
 const emptyTodayModel: TodayModel = {
   empty: true,
-  primaryAction: { label: 'Import deck', href: '/decks/new' },
+  primaryAction: { label: 'Start rehearsing', href: '/decks/new' },
+  recent: [],
 };
 
 const completedTodayModel: TodayModel = {
@@ -42,6 +46,7 @@ const completedTodayModel: TodayModel = {
     },
     reportHref: '/reports/defense-2',
   },
+  recent: [],
 };
 
 const settingUpTodayModel: TodayModel = {
@@ -56,11 +61,13 @@ const settingUpTodayModel: TodayModel = {
       slides: [{ index: 1, text: 'Opening', imageUrl: '/slides/1.jpg' }],
     },
   },
+  recent: [],
 };
 
 const deckLessTodayModel: TodayModel = {
   empty: false,
-  primaryAction: { label: 'Import deck', href: '/decks/new' },
+  primaryAction: { label: 'Start rehearsing', href: '/decks/new' },
+  recent: [],
 };
 
 describe('StudioDesk', () => {
@@ -72,10 +79,23 @@ describe('StudioDesk', () => {
     expect(html).not.toContain('Daily speaking challenge');
   });
 
-  it('renders import as the only primary action for an empty workspace', () => {
+  it('renders the source-neutral start action as the only primary action for an empty workspace', () => {
     const html = renderToStaticMarkup(<StudioDesk model={emptyTodayModel} />);
-    expect(html).toContain('Import deck');
+    expect(html).toContain('Start rehearsing');
+    expect(html).not.toContain('Import deck');
     expect(html).not.toContain('Overall score');
+  });
+
+  it('lists sessions after the active one as resumable recent rows', () => {
+    const html = renderToStaticMarkup(<StudioDesk model={practicingTodayModel} />);
+    expect(html).toContain('Recent sessions');
+    expect(html).toContain('Prospectus rehearsal');
+    expect(html).toContain('href="/practice/defense-9?view=setup"');
+  });
+
+  it('omits the recent-session list entirely when there are no other sessions', () => {
+    const html = renderToStaticMarkup(<StudioDesk model={completedTodayModel} />);
+    expect(html).not.toContain('Recent sessions');
   });
 
   it('renders the deck source name, slide count, and a private slide preview when a deck is active', () => {
@@ -110,7 +130,7 @@ describe('StudioDesk', () => {
 
   it('omits any deck preview and coach content for a deck-less workspace', () => {
     const html = renderToStaticMarkup(<StudioDesk model={deckLessTodayModel} />);
-    expect(html).toContain('Import deck');
+    expect(html).toContain('Start rehearsing');
     expect(html).not.toContain('Coach note');
     expect(html).not.toContain('Loading private slide preview');
   });

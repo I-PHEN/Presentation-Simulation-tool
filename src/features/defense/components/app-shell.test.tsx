@@ -14,7 +14,7 @@ describe('AppShell', () => {
     expect(html).toContain('>Rehearse<');
     expect(html).toContain('>Progress<');
     expect(html).toContain('href="/dashboard"');
-    expect(html).toContain('href="/practice"');
+    expect(html).toContain('href="/decks/new"');
     expect(html).toContain('href="/review"');
     expect(html).not.toContain('>Today<');
     expect(html).not.toContain('/dashboard#trajectory');
@@ -68,7 +68,7 @@ describe('AppShell', () => {
     expect(aside).not.toMatch(/aria-label="Switch to (light|dark) mode"/);
   });
 
-  it('keeps a persistent New programme action outside primary navigation while still reachable from the rail', () => {
+  it('makes Rehearse the single start-a-rehearsal entry inside primary navigation', () => {
     const html = renderToStaticMarkup(
       <AppShell active="home"><p>Home</p></AppShell>,
     );
@@ -80,10 +80,9 @@ describe('AppShell', () => {
     expect(navSection).toContain('>Home<');
     expect(navSection).toContain('>Rehearse<');
     expect(navSection).toContain('>Progress<');
-    expect(navSection).not.toContain('/decks/new');
-
-    expect(html).toContain('href="/decks/new"');
-    expect(html).toContain('New programme');
+    // Rehearse now routes straight to the setup page - no separate New programme button.
+    expect(navSection).toContain('href="/decks/new"');
+    expect(html).not.toContain('New programme');
   });
 
   it('keeps every primary route free of the retired trajectory anchor, Progress label, and CoachHome component', () => {
