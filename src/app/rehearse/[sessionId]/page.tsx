@@ -7,7 +7,7 @@ import type { DeckContext, DefenseMode, ExaminerEvent, ExaminerStance, Transcrip
 import { defenseDeckSchema, examinerEventsSchema, transcriptSegmentsSchema } from '@/features/defense/session-schema';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
-type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string };
+type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic' };
 
 function parseSession(value: unknown): SimSession | null {
   if (!value || typeof value !== 'object' || !('defense' in value)) return null;
@@ -21,7 +21,7 @@ function parseSession(value: unknown): SimSession | null {
   if (s.mode !== 'diagnostic' && s.mode !== 'mock') return null;
   if (s.stance !== 'rigorous' && s.stance !== 'supportive') return null;
   if (typeof s.id !== 'string') return null;
-  return { id: s.id, deck: deck.data, mode: s.mode, stance: s.stance, transcriptSegments: segments.data, examinerEvents: events.data, status: typeof s.status === 'string' ? s.status : 'practicing' };
+  return { id: s.id, deck: deck.data, mode: s.mode, stance: s.stance, transcriptSegments: segments.data, examinerEvents: events.data, status: typeof s.status === 'string' ? s.status : 'practicing', source: s.source === 'topic' ? 'topic' : 'deck' };
 }
 
 export default function RehearseRoomPage({ params }: { params: Promise<{ sessionId: string }> }) {
