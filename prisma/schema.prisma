@@ -16,6 +16,8 @@ model Session {
   practiceMode String    @default("full")
   mode         String    @default("diagnostic")
   stance       String    @default("rigorous")
+  source       String    @default("deck") // deck | topic
+  topic        String?
   content      String    @default("")
   deckContext  String    @default("{}")
   transcriptSegments String @default("[]")
@@ -73,6 +75,8 @@ model User {
   id           String   @id
   email        String?
   displayName  String?
+  interests    String   @default("[]")
+  onboardedAt  DateTime?
   createdAt    DateTime @default(now())
 
   profile      SpeakerProfile?

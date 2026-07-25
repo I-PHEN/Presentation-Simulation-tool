@@ -28,4 +28,14 @@ describe('prisma schema longitudinal models', () => {
     expect(schema).toContain('outcomeRecorded');
     expect(schema).toMatch(/outcomeRecorded\s+Boolean\s+@default\(false\)/);
   });
+
+  it('captures onboarding interests on the User', () => {
+    expect(schema).toMatch(/interests\s+String\s+@default\("\[\]"\)/);
+    expect(schema).toMatch(/onboardedAt\s+DateTime\?/);
+  });
+
+  it('discriminates deck vs topic sessions with a source column and optional topic', () => {
+    expect(schema).toMatch(/source\s+String\s+@default\("deck"\)/);
+    expect(schema).toMatch(/topic\s+String\?/);
+  });
 });
