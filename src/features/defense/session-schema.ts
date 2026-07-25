@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { createExaminerEventSchema } from './examiner';
+import type { DeckContext } from './types';
 
 export const transcriptSegmentSchema = z.object({
   role: z.enum(['presenter', 'examiner']),
@@ -26,6 +27,24 @@ export const createDefenseSessionSchema = z.object({
   userId: z.string().nullable().optional(),
   deck: defenseDeckSchema,
 });
+
+export const createTopicSessionSchema = z.object({
+  topic: z.string().trim().min(1).max(300),
+  mode: z.enum(['diagnostic', 'mock']),
+  stance: z.enum(['supportive', 'rigorous']),
+});
+
+/**
+ * A deckless topic session is modeled to the Slice-1 engine as a synthetic
+ * one-card "deck" whose card text is the topic. This keeps the simulator, the
+ * report pipeline, and defenseDeckSchema (slides.min(1), imageUrl.min(1))
+ * unchanged; the room swaps SlideStage -> TopicStage on `source`, so the
+ * `imageUrl` sentinel is never fetched.
+ */
+export function syntheticTopicDeck(topic: string): DeckContext {
+  const trimmed = topic.trim();
+  return { sourceName: trimmed.slice(0, 180), slides: [{ index: 1, text: trimmed, imageUrl: 'topic' }] };
+}
 
 export const updateDefenseSessionSchema = z.object({
   mode: z.enum(['diagnostic', 'mock']).optional(),

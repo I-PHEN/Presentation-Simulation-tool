@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createDefenseSessionSchema, updateDefenseSessionSchema } from './session-schema';
+import { createDefenseSessionSchema, createTopicSessionSchema, defenseDeckSchema, syntheticTopicDeck, updateDefenseSessionSchema } from './session-schema';
 
 describe('createDefenseSessionSchema', () => {
   const validPayloadWithoutStance = {
@@ -25,6 +25,23 @@ describe('createDefenseSessionSchema', () => {
         deck: { sourceName: 'x.pptx', slides: [] },
       }),
     ).toThrow(/slide/i);
+  });
+});
+
+describe('createTopicSessionSchema', () => {
+  it('accepts a topic + mode + stance and rejects a blank topic', () => {
+    expect(createTopicSessionSchema.safeParse({ topic: 'Should AI be regulated?', mode: 'diagnostic', stance: 'rigorous' }).success).toBe(true);
+    expect(createTopicSessionSchema.safeParse({ topic: '   ', mode: 'diagnostic', stance: 'rigorous' }).success).toBe(false);
+    expect(createTopicSessionSchema.safeParse({ topic: 'x', mode: 'panel', stance: 'rigorous' }).success).toBe(false);
+  });
+});
+
+describe('syntheticTopicDeck', () => {
+  it('produces a one-card deck that satisfies defenseDeckSchema', () => {
+    const deck = syntheticTopicDeck('  Ban cars downtown  ');
+    expect(deck.slides).toHaveLength(1);
+    expect(deck.slides[0]).toMatchObject({ index: 1, text: 'Ban cars downtown', imageUrl: 'topic' });
+    expect(defenseDeckSchema.safeParse(deck).success).toBe(true);
   });
 });
 
