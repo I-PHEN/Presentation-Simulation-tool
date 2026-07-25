@@ -14,7 +14,9 @@ export function dimensionsFromMetrics(metrics: CoachingMetrics): Record<string, 
   if (metrics.paceWpm !== null) dimensions.pace = paceScore(metrics.paceWpm);
   if (metrics.fillerPerMin !== null) dimensions.fluency = Math.round(clamp(100 - metrics.fillerPerMin * 6, 0, 100));
   const spoken = metrics.slideTimes.length;
-  if (spoken > 0) dimensions.ownWords = Math.round(clamp(100 - (metrics.verbatimSlides / spoken) * 100, 0, 100));
+  // ownWords compares spoken words to slide text; a deckless (topic) session has
+  // no slides to read from, so it is omitted rather than computed from a synthetic card.
+  if (!metrics.deckless && spoken > 0) dimensions.ownWords = Math.round(clamp(100 - (metrics.verbatimSlides / spoken) * 100, 0, 100));
   if (metrics.questionsHandled.total > 0) dimensions.questionHandling = Math.round((metrics.questionsHandled.handled / metrics.questionsHandled.total) * 100);
   return dimensions;
 }

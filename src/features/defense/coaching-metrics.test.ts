@@ -22,6 +22,12 @@ describe('computeCoachingMetrics', () => {
     expect(m.slideTimes.find((s) => s.slideIndex === 1)).toEqual({ slideIndex: 1, ms: 30000, atMs: 0 });
     expect(m.slideTimes.find((s) => s.slideIndex === 2)).toEqual({ slideIndex: 2, ms: 30000, atMs: 60000 });
     expect(m.verbatimSlides).toBeGreaterThanOrEqual(0);
+    expect(m.deckless).toBe(false);
+  });
+
+  it('carries the deckless flag through for topic (slide-free) sessions', () => {
+    const m = computeCoachingMetrics({ deck, transcriptSegments: transcript, examinerEvents: events, deckless: true });
+    expect(m.deckless).toBe(true);
   });
 
   it('returns null pace and fillers when there is no presenter speech', () => {

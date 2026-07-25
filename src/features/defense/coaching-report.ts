@@ -16,14 +16,14 @@ export function validatePersonaVerdictLines(examinerEvents: ExaminerEvent[], raw
   return kept;
 }
 
-export function assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings, verdictLines, minimal }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; findings: DefenseFinding[]; verdictLines: Record<string, string>; minimal: boolean }): CoachingReport {
+export function assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings, verdictLines, minimal, deckless = false }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; findings: DefenseFinding[]; verdictLines: Record<string, string>; minimal: boolean; deckless?: boolean }): CoachingReport {
   // buildDefenseReport already orders findings, fills a grounded fallback, and computes strengths.
   const base = buildDefenseReport({ deck, transcriptSegments, examinerEvents, findings });
   const drills = findings.length ? [...findings].map((finding) => finding.drill) : [base.nextDrill];
   return {
     highestLeverage: base.highestLeverage,
     drills,
-    metrics: computeCoachingMetrics({ deck, transcriptSegments, examinerEvents }),
+    metrics: computeCoachingMetrics({ deck, transcriptSegments, examinerEvents, deckless }),
     timeline: buildTimeline({ transcriptSegments, examinerEvents }),
     personaVerdicts: buildPersonaVerdicts({ examinerEvents, transcriptSegments, verdictLines }),
     strengths: base.strengths,

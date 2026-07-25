@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildSessionOutcome, dimensionsFromMetrics, hasEvidence, paceScore } from './session-outcome';
 import type { CoachingMetrics } from '@/features/defense/types';
 
-const full: CoachingMetrics = { paceWpm: 135, fillerPerMin: 3, verbatimSlides: 1, slideTimes: [{ slideIndex: 1, ms: 1000, atMs: 0 }, { slideIndex: 2, ms: 1000, atMs: 2000 }], questionsHandled: { handled: 3, total: 4 } };
+const full: CoachingMetrics = { paceWpm: 135, fillerPerMin: 3, verbatimSlides: 1, slideTimes: [{ slideIndex: 1, ms: 1000, atMs: 0 }, { slideIndex: 2, ms: 1000, atMs: 2000 }], questionsHandled: { handled: 3, total: 4 }, deckless: false };
 
 describe('paceScore', () => {
   it('scores the ideal band at 100 and falls off outside it', () => {
@@ -25,8 +25,17 @@ describe('dimensionsFromMetrics', () => {
   });
 
   it('omits dimensions whose source metric is unavailable', () => {
-    const d = dimensionsFromMetrics({ paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 } });
+    const d = dimensionsFromMetrics({ paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false });
     expect(d).toEqual({});
+  });
+
+  it('omits ownWords for a deckless (topic) session even though it has speaking time', () => {
+    const d = dimensionsFromMetrics({ ...full, deckless: true });
+    expect(d.ownWords).toBeUndefined();
+    // The genuinely-measured dimensions still flow through.
+    expect(d.pace).toBe(100);
+    expect(d.fluency).toBe(82);
+    expect(d.questionHandling).toBe(75);
   });
 });
 
@@ -40,7 +49,7 @@ describe('buildSessionOutcome + hasEvidence', () => {
   });
 
   it('hasEvidence is false when there are no dimensions and no weaknesses', () => {
-    const o = buildSessionOutcome({ sessionId: 's1', metrics: { paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 } }, weaknessLabels: [], completedAt: '2026-07-23T00:00:00.000Z' });
+    const o = buildSessionOutcome({ sessionId: 's1', metrics: { paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false }, weaknessLabels: [], completedAt: '2026-07-23T00:00:00.000Z' });
     expect(hasEvidence(o)).toBe(false);
   });
 });

@@ -83,6 +83,8 @@ export interface CoachingMetrics {
   verbatimSlides: number;
   slideTimes: { slideIndex: number; ms: number; atMs: number }[];
   questionsHandled: { handled: number; total: number };
+  /** Topic (slide-free) sessions set this: slide-derived signals must be omitted. */
+  deckless: boolean;
 }
 
 export type TimelineMomentKind = 'presenter' | 'question' | 'interrupt' | 'follow_up';
@@ -125,6 +127,7 @@ const coachingMetricsSchema = z.object({
   verbatimSlides: z.number().int().nonnegative(),
   slideTimes: z.array(z.object({ slideIndex: z.number().int().positive(), ms: z.number().finite().nonnegative(), atMs: z.number().finite().nonnegative() }).strict()),
   questionsHandled: z.object({ handled: z.number().int().nonnegative(), total: z.number().int().nonnegative() }).strict(),
+  deckless: z.boolean().default(false),
 }).strict();
 
 const timelineMomentSchema = z.object({

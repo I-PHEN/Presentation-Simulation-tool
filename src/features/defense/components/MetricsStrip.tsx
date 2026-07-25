@@ -21,9 +21,10 @@ export function MetricsStrip({ metrics, onSeek }: { metrics: CoachingMetrics; on
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Metric label="Pace (wpm)" value={metrics.paceWpm === null ? '--' : String(metrics.paceWpm)} onSeek={onSeek} />
         <Metric label="Fillers / min" value={metrics.fillerPerMin === null ? '--' : metrics.fillerPerMin.toFixed(1)} onSeek={onSeek} />
-        <Metric label="Slides read near-verbatim" value={String(metrics.verbatimSlides)} onSeek={onSeek} />
+        {/* Slide-derived signals are meaningless without slides - omit them for topic sessions. */}
+        {!metrics.deckless && <Metric label="Slides read near-verbatim" value={String(metrics.verbatimSlides)} onSeek={onSeek} />}
         <Metric label="Questions handled" value={`${metrics.questionsHandled.handled} of ${metrics.questionsHandled.total}`} onSeek={onSeek} />
-        {longest ? <Metric label={`Longest on slide ${longest.slideIndex}`} value={`${Math.round(longest.ms / 1000)}s`} atMs={longest.atMs} onSeek={onSeek} /> : null}
+        {!metrics.deckless && longest ? <Metric label={`Longest on slide ${longest.slideIndex}`} value={`${Math.round(longest.ms / 1000)}s`} atMs={longest.atMs} onSeek={onSeek} /> : null}
       </div>
     </section>
   );
