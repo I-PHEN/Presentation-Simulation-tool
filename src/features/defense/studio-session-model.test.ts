@@ -117,6 +117,22 @@ describe('buildTodayModel', () => {
     const model = buildTodayModel([deckOnlySession, completedSession]);
     expect(model.active?.id).toBe('session-2');
   });
+
+  it('marks a topic session as its source and never derives a slide cue for it', () => {
+    const topicSession: StudioSession = {
+      id: 'topic-1',
+      title: 'Is AI overhyped?',
+      status: 'completed',
+      source: 'topic',
+      mode: 'diagnostic',
+      stance: 'rigorous',
+      deck: { sourceName: 'Is AI overhyped?', slides: [{ index: 1, text: 'Is AI overhyped?', imageUrl: 'topic' }] },
+      report: { nextDrill: 'Give the mechanism.', highestLeverage: { title: 'Support the claim', slideIndex: 1 } },
+    };
+    const model = buildTodayModel([topicSession]);
+    expect(model.active?.source).toBe('topic');
+    expect(model.active?.cue).toBeUndefined();
+  });
 });
 
 describe('buildReviewRows', () => {

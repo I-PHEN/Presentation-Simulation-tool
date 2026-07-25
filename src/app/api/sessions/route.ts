@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
           title: session.title,
           createdAt: session.createdAt,
           status: session.status,
+          source: session.source === 'topic' ? 'topic' : 'deck',
           mode: session.mode === 'mock' ? 'mock' : 'diagnostic',
           stance: session.stance === 'supportive' ? 'supportive' : 'rigorous',
           ...(deck ? { deck } : {}),

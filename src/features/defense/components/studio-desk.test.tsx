@@ -70,6 +70,19 @@ const deckLessTodayModel: TodayModel = {
   recent: [],
 };
 
+const topicTodayModel: TodayModel = {
+  empty: false,
+  primaryAction: { label: 'Resume rehearsal', href: '/practice/topic-1?view=room' },
+  active: {
+    id: 'topic-1',
+    title: 'Is AI overhyped?',
+    status: 'practicing',
+    source: 'topic',
+    deck: { sourceName: 'Is AI overhyped?', slides: [{ index: 1, text: 'Is AI overhyped?', imageUrl: 'topic' }] },
+  },
+  recent: [],
+};
+
 describe('StudioDesk', () => {
   it('renders an active rehearsal action, deck cue, and only an API-backed coach note', () => {
     const html = renderToStaticMarkup(<StudioDesk model={practicingTodayModel} />);
@@ -126,6 +139,16 @@ describe('StudioDesk', () => {
 
     const withoutReport = renderToStaticMarkup(<StudioDesk model={practicingTodayModel} />);
     expect(withoutReport).not.toContain('Open latest review');
+  });
+
+  it('frames a topic session without deck chrome or a slide preview', () => {
+    const html = renderToStaticMarkup(<StudioDesk model={topicTodayModel} />);
+    expect(html).toContain('Topic in play');
+    expect(html).toContain('Is AI overhyped?');
+    expect(html).not.toContain('Deck in play');
+    // No slide image is attempted for the synthetic one-card deck.
+    expect(html).not.toContain('Loading private slide preview');
+    expect(html).not.toContain('1 slide');
   });
 
   it('omits any deck preview and coach content for a deck-less workspace', () => {

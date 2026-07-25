@@ -5,6 +5,7 @@ export type StudioSession = {
   title: string;
   createdAt?: string;
   status: string;
+  source?: 'deck' | 'topic';
   mode: 'diagnostic' | 'mock';
   stance: 'supportive' | 'rigorous';
   deck?: DeckContext;
@@ -24,6 +25,7 @@ export type TodayModel = {
     id: string;
     title: string;
     status: string;
+    source: 'deck' | 'topic';
     deck: DeckContext;
     cue?: string;
     coachNote?: string;
@@ -73,8 +75,10 @@ export function buildTodayModel(sessions: StudioSession[]): TodayModel {
   const primaryAction = resolveAction(session);
   if (!session.deck) return { empty: false, primaryAction, recent };
 
+  const isTopic = session.source === 'topic';
   const coachNote = coachNoteFor(session);
-  const cue = cueFor(session);
+  // A slide cue is deck-only; a topic session's synthetic card must not surface one.
+  const cue = isTopic ? undefined : cueFor(session);
   const reportHref = session.status === 'completed' ? `/reports/${session.id}` : undefined;
 
   return {
@@ -84,6 +88,7 @@ export function buildTodayModel(sessions: StudioSession[]): TodayModel {
       id: session.id,
       title: session.title,
       status: session.status,
+      source: isTopic ? 'topic' : 'deck',
       deck: session.deck,
       ...(cue ? { cue } : {}),
       ...(coachNote ? { coachNote } : {}),

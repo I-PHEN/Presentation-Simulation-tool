@@ -41,7 +41,9 @@ function slideCountLabel(count: number): string {
  */
 export function StudioDesk({ model }: { model: TodayModel }) {
   const { active, recent } = model;
-  const previewSlide = active ? selectPreviewSlide(active.deck, active.cue) : undefined;
+  const isTopic = active?.source === 'topic';
+  // A topic session's synthetic card has no real slide image - never render one.
+  const previewSlide = active && !isTopic ? selectPreviewSlide(active.deck, active.cue) : undefined;
   // Only ever show this pane when there is real, API-backed content to put in
   // it (a coach note or a finished report) - never a filler sentence.
   const hasSupportPanel = Boolean(active?.coachNote || active?.reportHref);
@@ -76,7 +78,7 @@ export function StudioDesk({ model }: { model: TodayModel }) {
         >
           <div className="rounded-xl border border-border bg-card p-6 shadow-e1">
             <p id="deck-heading" className="text-xs font-medium text-muted-foreground">
-              Deck in play
+              {isTopic ? 'Topic in play' : 'Deck in play'}
             </p>
             {previewSlide && (
               <div className="relative mt-4 rounded-xl border border-border bg-card p-2 shadow-e2 before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent after:absolute after:inset-0 after:-z-10 after:rounded-xl after:bg-primary/10 after:blur-2xl">
@@ -93,7 +95,7 @@ export function StudioDesk({ model }: { model: TodayModel }) {
               </div>
             )}
             <p className="mt-4 text-sm text-muted-foreground">
-              {active.deck.sourceName} · {slideCountLabel(active.deck.slides.length)}
+              {isTopic ? active.deck.slides[0]?.text ?? active.deck.sourceName : `${active.deck.sourceName} · ${slideCountLabel(active.deck.slides.length)}`}
             </p>
             {active.cue && <p className="mt-1 text-sm font-medium text-accent-foreground">{active.cue}</p>}
           </div>

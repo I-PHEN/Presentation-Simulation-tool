@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
 import { NextFocusCard } from '@/features/defense/components/next-focus-card';
 import { StudioDesk } from '@/features/defense/components/studio-desk';
+import { TodaysTopicCard } from '@/features/defense/components/todays-topic-card';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { buildTodayModel } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
 import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
@@ -31,10 +33,36 @@ export default function DashboardPage() {
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
   const { profile } = useSpeakerProfile();
   const [resyncedAfterAuth, setResyncedAfterAuth] = useState(false);
+  const [todaysTopic, setTodaysTopic] = useState<string>();
+  const [hasInterests, setHasInterests] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
   }, [authLoading, router, user]);
+
+  // Surface one recommended topic once we know the user has interests. Never
+  // fetch a topic without interests - that would show a generic default as if
+  // it were tailored.
+  useEffect(() => {
+    if (authLoading || !user) return;
+    let active = true;
+    (async () => {
+      try {
+        const meResponse = await authenticatedFetch('/api/me');
+        const me = meResponse.ok ? await meResponse.json() : { interests: [] };
+        const interested = Array.isArray(me.interests) && me.interests.length > 0;
+        if (!active) return;
+        setHasInterests(interested);
+        if (!interested) return;
+        const topicsResponse = await authenticatedFetch('/api/topics', { method: 'POST' });
+        const body = topicsResponse.ok ? await topicsResponse.json() : { topics: [] };
+        if (active && Array.isArray(body.topics) && body.topics.length > 0) setTodaysTopic(body.topics[0]);
+      } catch {
+        /* the topic card is additive; a failure just leaves the invite state */
+      }
+    })();
+    return () => { active = false; };
+  }, [authLoading, user]);
 
   useEffect(() => {
     if (shouldResyncAfterAuth(authLoading, user, resyncedAfterAuth)) {
@@ -71,6 +99,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-6">
           <NextFocusCard profile={profile} />
           <StudioDesk model={buildTodayModel(sessions)} />
+          <TodaysTopicCard topic={todaysTopic} hasInterests={hasInterests} />
         </div>
       )}
     </AppShell>
