@@ -12,11 +12,10 @@ import {
   selectPowerPointConverter,
 } from '@/features/defense/deck-conversion';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
+import { resolvePythonInterpreter, type PythonRuntime } from '@/features/defense/python-runtime';
 
 const execFileAsync = promisify(execFile);
 
-// Use the system python or custom path
-const PYTHON = process.env.PYTHON_PATH || 'python';
 const POWERPOINT_PATH = 'C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE';
 
 async function commandPath(command: string): Promise<string | null> {
@@ -82,6 +81,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error, retryable: false }, { status: 400 });
     }
 
+    let python: PythonRuntime;
+    try {
+      python = await resolvePythonInterpreter();
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : 'Python is unavailable for deck processing.', retryable: false }, { status: 503 });
+    }
+
     const fileName = file.name.toLowerCase();
     const buffer = Buffer.from(await file.arrayBuffer());
     const uploadPath = path.join(tmpDir, path.basename(file.name));
@@ -90,6 +96,7 @@ export async function POST(req: NextRequest) {
     let text = '';
     let slideImages: string[] = [];
     let slideTexts: string[] = [];
+    let renderDiagnostic: string | null = null;
 
     if (fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
       try {
@@ -101,10 +108,11 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        const result = await processPDF(pdfPath, tmpDir);
+        const result = await processPDF(pdfPath, tmpDir, python);
         text = result.text;
         slideImages = result.images;
         slideTexts = result.slideTexts;
+        renderDiagnostic = result.diagnostic;
       } catch (e) {
         console.error('PowerPoint conversion error:', e);
         const retryable = isRetryablePowerPointConversionFailure(e);
@@ -119,17 +127,18 @@ export async function POST(req: NextRequest) {
         );
       }
     } else if (fileName.endsWith('.pdf')) {
-      const result = await processPDF(uploadPath, tmpDir);
+      const result = await processPDF(uploadPath, tmpDir, python);
       text = result.text;
       slideImages = result.images;
       slideTexts = result.slideTexts;
+      renderDiagnostic = result.diagnostic;
     } else {
       return NextResponse.json({ error: 'Unsupported file type', retryable: false }, { status: 400 });
     }
 
     if (slideImages.length === 0) {
       return NextResponse.json(
-        { error: 'No pages could be rendered from this deck.', retryable: false },
+        { error: renderDiagnostic ? `No pages could be rendered from this deck. (${renderDiagnostic})` : 'No pages could be rendered from this deck.', retryable: false },
         { status: 422 },
       );
     }
@@ -183,14 +192,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function processPDF(pdfPath: string, tmpDir: string): Promise<{ text: string; images: string[]; slideTexts: string[] }> {
+async function processPDF(pdfPath: string, tmpDir: string, python: PythonRuntime): Promise<{ text: string; images: string[]; slideTexts: string[]; diagnostic: string | null }> {
   let text = '';
   let images: string[] = [];
   let slideTexts: string[] = [];
+  let diagnostic: string | null = null;
 
   // Extract text using pdfplumber
   try {
-    const { stdout } = await execFileAsync(PYTHON, [
+    const { stdout } = await execFileAsync(python.command, [
+      ...python.baseArgs,
       '-c',
       `import sys
 import io
@@ -209,6 +220,7 @@ pdf.close()`,
     text = slideTexts.join('\n\n');
   } catch (e) {
     console.error('Text extraction error:', e);
+    diagnostic = `text extraction: ${(e as { stderr?: string }).stderr?.toString().trim() || (e instanceof Error ? e.message : 'unknown')}`;
   }
 
   const maxSlides = 30;
@@ -239,7 +251,7 @@ pdf.close()
   try {
     const scriptPath = path.join(tmpDir, 'render.py');
     await fs.promises.writeFile(scriptPath, script);
-    await execFileAsync(PYTHON, [scriptPath, pdfPath, imgDir], { timeout: 60000 });
+    await execFileAsync(python.command, [...python.baseArgs, scriptPath, pdfPath, imgDir], { timeout: 60000 });
 
     const files = (await fs.promises.readdir(imgDir))
       .filter(f => f.endsWith('.jpg') || f.endsWith('.png'))
@@ -256,7 +268,8 @@ pdf.close()
   } catch (e) {
     if ((e as { code?: string }).code === 'DECK_TOO_LARGE') throw e;
     console.error('Slide rendering error:', e);
+    diagnostic = `slide rendering: ${(e as { stderr?: string }).stderr?.toString().trim() || (e instanceof Error ? e.message : 'unknown')}`;
   }
 
-  return { text, images, slideTexts };
+  return { text, images, slideTexts, diagnostic };
 }
