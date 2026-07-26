@@ -18,9 +18,10 @@ describe('PracticeSetup', () => {
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
-    expect(html.match(/type="radio"/g)).toHaveLength(4);
+    expect(html).toContain('Hostile Heckler');
+    expect(html.match(/type="radio"/g)).toHaveLength(5);
     expect(html.match(/name="practice-mode"/g)).toHaveLength(2);
-    expect(html.match(/name="examiner-stance"/g)).toHaveLength(2);
+    expect(html.match(/name="examiner-stance"/g)).toHaveLength(3);
     expect(html).toContain('checked=""');
     expect(html).not.toContain('AI Panel Members');
     expect(html).not.toContain('Audience type');
