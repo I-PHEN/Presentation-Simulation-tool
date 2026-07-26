@@ -37,10 +37,9 @@ function BrandMark({ collapsed }: { collapsed: boolean }) {
       className="flex h-14 shrink-0 items-center gap-2.5 px-5 text-sm font-semibold tracking-tight text-sidebar-foreground"
     >
       <span className="relative flex size-7 shrink-0 items-center justify-center">
-        <span aria-hidden="true" className="absolute inset-0 rounded-lg bg-primary/40 blur-md" />
         <span
           aria-hidden="true"
-          className="relative flex size-7 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground shadow-e1"
+          className="relative flex size-7 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground"
         >
           SP
         </span>
@@ -114,7 +113,7 @@ export function AppShell({ active, children }: {
         suppressHydrationWarning
         data-collapsed={collapsed}
         className={cn(
-          'sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border/60 bg-sidebar/75 text-sidebar-foreground backdrop-blur-xl md:flex',
+          'sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex',
           animateWidth && 'transition-[width] duration-200 ease-in-out',
           collapsed ? 'w-20' : 'w-60',
         )}
@@ -128,7 +127,7 @@ export function AppShell({ active, children }: {
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/50 bg-background/60 px-4 backdrop-blur-xl">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>

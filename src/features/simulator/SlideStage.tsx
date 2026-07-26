@@ -10,8 +10,8 @@ export function SlideStage({ slide, position, total, onPrev, onNext }: {
 }) {
   return (
     <section aria-label="Active presentation slide" className="flex min-w-0 flex-col gap-3">
-      <div className="relative rounded-2xl border border-border bg-card p-2 shadow-e2 before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent after:absolute after:inset-0 after:-z-10 after:rounded-2xl after:bg-primary/10 after:blur-2xl">
-        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-muted/30">
+      <div className="relative rounded-xl border border-border bg-card p-2">
+        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted/30">
           <AuthenticatedSlideImage source={slide.imageUrl} alt={`Slide ${position + 1}: ${slide.text}`} className="h-full w-full object-contain" />
           <span className="absolute right-3 top-3 rounded-md bg-background/80 px-1.5 py-0.5 font-mono text-[11px] backdrop-blur">
             {String(position + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}

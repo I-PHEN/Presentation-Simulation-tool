@@ -8,7 +8,7 @@ export function SimulatorToolbar({ recording, micActive, onToggleMic, onTogglePa
   recording?: boolean; micActive: boolean; onToggleMic: () => void; onToggleParticipants: () => void; onToggleTranscript: () => void; onEnd: () => void; endDisabled?: boolean;
 }) {
   return (
-    <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-popover/90 px-3 py-2 shadow-e3 backdrop-blur-xl">
+    <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-popover px-3 py-2 shadow-e3">
       {recording && (
         <span aria-label="Recording in progress" className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
           <span className="size-2 rounded-full bg-destructive" aria-hidden="true" /> Rec

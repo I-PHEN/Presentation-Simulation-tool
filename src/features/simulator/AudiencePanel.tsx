@@ -12,8 +12,8 @@ export function AudiencePanel({ panel, speakingPersonaId, caption }: {
         const speaking = persona.id === speakingPersonaId;
         return (
           <div key={persona.id} data-state={speaking ? 'speaking' : 'listening'}
-            className={cn('rounded-xl border bg-card p-4 shadow-e1 transition-colors',
-              speaking ? 'border-primary shadow-e2 ring-1 ring-primary/40' : 'border-border')}>
+            className={cn('rounded-xl border border-border bg-card p-4 transition-colors',
+              speaking && 'border-l-2 border-l-primary')}>
             <div className="flex items-center gap-3">
               <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
                 speaking ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>

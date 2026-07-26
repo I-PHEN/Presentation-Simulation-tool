@@ -21,7 +21,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-background text-foreground">
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl sm:px-6">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 sm:px-6">
         <a href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">Exit rehearsal</a>
         <p className="min-w-0 truncate text-sm font-medium">{isTopic ? 'Topic rehearsal' : session.deck.sourceName}</p>
         <span className="text-sm text-muted-foreground">{isTopic ? 'Speaking to your topic' : `Slide ${engine.position + 1} / ${engine.total}`}</span>

@@ -50,7 +50,7 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   --background: #FBFBFD;
   --foreground: #14161B;
   --surface: #F4F5F8;
@@ -85,45 +85,47 @@
   --elev-1: 0 1px 2px -1px rgb(0 0 0/.08), 0 1px 3px rgb(0 0 0/.06);
   --elev-2: 0 6px 16px -6px rgb(0 0 0/.12);
   --elev-3: 0 18px 40px -12px rgb(0 0 0/.18);
-  --elev-focus: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in oklab, var(--ring) 22%, transparent), 0 8px 24px -8px color-mix(in oklab, var(--ring) 45%, transparent);
+  --elev-focus: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
 
 .dark {
-  --background: #0C0D11;
-  --foreground: #F2F3F6;
-  --surface: #1B1E26;
-  --surface-foreground: #F2F3F6;
-  --card: #15171E;
-  --card-foreground: #F2F3F6;
-  --popover: #1D202A;
-  --popover-foreground: #F2F3F6;
-  --primary: #4463E6;
-  --primary-foreground: #F8FAFF;
-  --secondary: #1B1E26;
-  --secondary-foreground: #F2F3F6;
-  --muted: #232732;
-  --muted-foreground: #98A0AE;
-  --accent: #171E33;
-  --accent-foreground: #BAC8FF;
-  --destructive: #EF4444;
-  --border: #282C36;
-  --input: #282C36;
-  --ring: #4C6FF5;
-  --sidebar: #0A0B0E;
-  --sidebar-foreground: #F2F3F6;
-  --sidebar-primary: #4C6FF5;
-  --sidebar-primary-foreground: #F8FAFF;
-  --sidebar-accent: #171E33;
-  --sidebar-accent-foreground: #BAC8FF;
-  --sidebar-border: #282C36;
-  --sidebar-ring: #4C6FF5;
+  /* Ink: near-black, flat. Definition comes from borders + surface steps, never glow. */
+  --background: #08090C;
+  --foreground: #E7EAF0;
+  --surface: #0C0E12;
+  --surface-foreground: #E7EAF0;
+  --card: #101217;
+  --card-foreground: #E7EAF0;
+  --popover: #171A20;
+  --popover-foreground: #E7EAF0;
+  --primary: #4C8DFF;
+  --primary-foreground: #08090C;
+  --secondary: #0C0E12;
+  --secondary-foreground: #E7EAF0;
+  --muted: #161920;
+  --muted-foreground: #868D99;
+  --accent: #141F33;
+  --accent-foreground: #A6C6FF;
+  --destructive: #E5484D;
+  --border: #282C35;
+  --input: #282C35;
+  --ring: #4C8DFF;
+  --sidebar: #060709;
+  --sidebar-foreground: #E7EAF0;
+  --sidebar-primary: #4C8DFF;
+  --sidebar-primary-foreground: #08090C;
+  --sidebar-accent: #141F33;
+  --sidebar-accent-foreground: #A6C6FF;
+  --sidebar-border: #20242C;
+  --sidebar-ring: #4C8DFF;
   --warning: #D9822B;
-  --success: #2FA97C;
+  --success: #3FB950;
   --chart-2: var(--success);
-  --elev-1: inset 0 1px 0 rgb(255 255 255/.03), 0 1px 2px rgb(0 0 0/.45);
-  --elev-2: inset 0 1px 0 rgb(255 255 255/.03), 0 8px 22px -8px rgb(0 0 0/.55);
-  --elev-3: 0 24px 50px -16px rgb(0 0 0/.7);
-  --elev-focus: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in oklab, var(--ring) 22%, transparent), 0 8px 24px -8px color-mix(in oklab, var(--ring) 45%, transparent);
+  /* Resting surfaces are flat; only overlays get a neutral (never colored) shadow. */
+  --elev-1: none;
+  --elev-2: 0 8px 24px -12px rgb(0 0 0/.6);
+  --elev-3: 0 16px 40px -16px rgb(0 0 0/.7);
+  --elev-focus: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
 
 @layer base {

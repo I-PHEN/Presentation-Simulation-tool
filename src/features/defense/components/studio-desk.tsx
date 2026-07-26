@@ -81,8 +81,8 @@ export function StudioDesk({ model }: { model: TodayModel }) {
               {isTopic ? 'Topic in play' : 'Deck in play'}
             </p>
             {previewSlide && (
-              <div className="relative mt-4 rounded-xl border border-border bg-card p-2 shadow-e2 before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent after:absolute after:inset-0 after:-z-10 after:rounded-xl after:bg-primary/10 after:blur-2xl">
-                <div className="aspect-video overflow-hidden rounded-lg bg-muted/30">
+              <div className="relative mt-4 rounded-lg border border-border bg-surface p-2">
+                <div className="aspect-video overflow-hidden rounded-md bg-muted/30">
                   <AuthenticatedSlideImage
                     source={previewSlide.imageUrl}
                     alt={`Slide ${previewSlide.index}: ${previewSlide.text}`}
