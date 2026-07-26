@@ -29,13 +29,14 @@ export interface Scores {
   overall: number;
 }
 
-export type PracticeMode = 'full' | 'pitch' | 'impromptu' | 'lecture';
+export type PracticeMode = 'full' | 'pitch' | 'impromptu' | 'lecture' | 'interview';
 
 export const practiceModeConfig: Record<PracticeMode, { label: string; desc: string; timeLimit: number | null; needsSlides: boolean }> = {
   full: { label: 'Full Presentation', desc: 'No time limit', timeLimit: null, needsSlides: false },
   pitch: { label: '3-Minute Pitch', desc: 'Elevator pitch', timeLimit: 180, needsSlides: false },
   impromptu: { label: 'Impromptu', desc: 'Random topic, 2 min', timeLimit: 120, needsSlides: false },
   lecture: { label: 'Lecture Mode', desc: 'Teach a class', timeLimit: null, needsSlides: false },
+  interview: { label: 'Interview Mode', desc: 'Job interview simulation', timeLimit: null, needsSlides: false },
 };
 
 // Voice mapping for each judge type — all IDs verified against Cartesia API
@@ -46,6 +47,8 @@ export const JUDGE_VOICE_MAP: Record<string, string> = {
   customer:        'a7a59115-2425-4192-844c-1e98ec7d6877', // Amber - Warm Support Agent (skeptical but fair)
   executive:       '533b2990-5b82-45a4-b9f2-367776972ca6', // Reed - Polished Professional (concise, decisive)
   student:         '62ae83ad-4f6a-430b-af41-a9bede9286ca', // Gemma - Decisive Agent (curious, engaged)
+  recruiter:       'a7a59115-2425-4192-844c-1e98ec7d6877', // Amber - Warm Support Agent (for recruiter)
+  tech_lead:       '710feaa3-b550-42f3-b3eb-6f37f2a7cc0a', // Tanner - Upbeat Assistant (for tech lead)
 };
 
 export function getVoiceForJudge(judgeType: string): string {
@@ -126,6 +129,16 @@ interface AppState {
   impromptuTopic: string;
   setImpromptuTopic: (topic: string) => void;
 
+  // Interview settings
+  targetRole: string;
+  targetCompany: string;
+  interviewStyle: 'behavioral' | 'technical' | 'case';
+  interviewStrictness: 'friendly' | 'rigorous';
+  setTargetRole: (role: string) => void;
+  setTargetCompany: (company: string) => void;
+  setInterviewStyle: (style: 'behavioral' | 'technical' | 'case') => void;
+  setInterviewStrictness: (strictness: 'friendly' | 'rigorous') => void;
+
   // Session
   sessionId: string | null;
   setSessionId: (id: string) => void;
@@ -179,6 +192,12 @@ interface AppState {
 
   // Reset
   reset: () => void;
+
+  customConfig: string | null;
+  setCustomConfig: (config: string | null) => void;
+
+  recordSession: boolean;
+  setRecordSession: (v: boolean) => void;
 }
 
 const initialState = {
@@ -186,6 +205,7 @@ const initialState = {
   inputMode: 'upload' as InputMode,
   title: '',
   content: '',
+  customConfig: null as string | null,
   hasContent: false,
   slides: [] as string[],
   currentSlide: 0,
@@ -198,6 +218,10 @@ const initialState = {
   interruptionMode: 'after' as 'during' | 'after',
   practiceMode: 'full' as PracticeMode,
   impromptuTopic: '',
+  targetRole: '',
+  targetCompany: '',
+  interviewStyle: 'behavioral' as 'behavioral' | 'technical' | 'case',
+  interviewStrictness: 'friendly' as 'friendly' | 'rigorous',
   sessionId: null as string | null,
   presentationTranscript: '',
   wordsPerMinute: 0,
@@ -214,6 +238,7 @@ const initialState = {
   judgeFeedback: [] as Array<{ judgeType: string; icon: string; title: string; feedback: string }>,
   isAnalyzing: false,
   isScoring: false,
+  recordSession: true,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -245,6 +270,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   setInterruptionMode: (mode) => set({ interruptionMode: mode }),
   setPracticeMode: (mode) => set({ practiceMode: mode }),
   setImpromptuTopic: (topic) => set({ impromptuTopic: topic }),
+  setTargetRole: (role) => set({ targetRole: role }),
+  setTargetCompany: (company) => set({ targetCompany: company }),
+  setInterviewStyle: (style) => set({ interviewStyle: style }),
+  setInterviewStrictness: (strictness) => set({ interviewStrictness: strictness }),
   setSessionId: (id) => set({ sessionId: id }),
 
   setPresentationTranscript: (t) => set({ presentationTranscript: t }),
@@ -286,5 +315,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   setIsAnalyzing: (v) => set({ isAnalyzing: v }),
   setIsScoring: (v) => set({ isScoring: v }),
 
-  reset: () => set({ ...initialState }),
+  setCustomConfig: (config) => set({ customConfig: config }),
+  setRecordSession: (v) => set({ recordSession: v }),
+
+  reset: () => set({ ...initialState, customConfig: null }),
 }));

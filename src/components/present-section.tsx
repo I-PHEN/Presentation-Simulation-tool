@@ -58,6 +58,20 @@ function getJudgeStatus(
   return 'listening';
 }
 
+const getEmojiForType = (type: string) => {
+  switch (type) {
+    case 'investor': return '💼';
+    case 'professor': return '👩‍🏫';
+    case 'hackathon_judge': return '🚀';
+    case 'customer': return '🛒';
+    case 'executive': return '👔';
+    case 'student': return '🎓';
+    case 'tech_lead': return '💻';
+    case 'recruiter': return '🤝';
+    default: return '👤';
+  }
+};
+
 // ─── Main Component ───
 export default function PresentSection() {
   const {
@@ -81,6 +95,14 @@ export default function PresentSection() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [slideAspect, setSlideAspect] = useState<number | null>(null);
   const [timeUp, setTimeUp] = useState(false);
+  const previousSlideRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isRecording && previousSlideRef.current !== null && previousSlideRef.current !== currentSlide) {
+      appendPresentationTranscript(`\n[Slide ${currentSlide + 1}]\n`);
+    }
+    previousSlideRef.current = currentSlide;
+  }, [appendPresentationTranscript, currentSlide, isRecording]);
 
   // ─── Camera state ───
   const [isCameraOn, setIsCameraOn] = useState(false);
@@ -597,6 +619,9 @@ export default function PresentSection() {
   // ─── Start recording ───
   const startRecording = async () => {
     try {
+      if (!presentationTranscript.trim()) {
+        appendPresentationTranscript(`[Slide ${currentSlide + 1}]\n`);
+      }
       if (!moonshineTranscriber) {
         if (!isEngineLoaded()) {
           toast.info('Initializing voice models... this may take a moment the first time.');
@@ -782,8 +807,8 @@ export default function PresentSection() {
                     >
                       <div className="flex items-center gap-2">
                         <div className="relative shrink-0">
-                          <div className="size-7 rounded-full flex items-center justify-center text-xs bg-muted/80 border border-border/50">
-                            {judge.icon}
+                          <div className="size-7 rounded-full flex items-center justify-center text-xs bg-[#16161a] border border-white/10 shadow-sm">
+                            {getEmojiForType(judge.type)}
                           </div>
                           {status === 'speaking' ? (
                             <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0a0a0c] animate-pulse" />

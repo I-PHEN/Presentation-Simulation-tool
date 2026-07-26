@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createSTT, generateTTS, playAudioData, unlockAudio } from '@/lib/voice-engine';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
-import type { DeckContext, DefenseMode, ExaminerEvent, ExaminerStance, TranscriptSegment } from '@/features/defense/types';
+import type { DeckContext, DefenseMode, DeliverySample, ExaminerEvent, ExaminerStance, TranscriptSegment } from '@/features/defense/types';
 import { analyseReading } from '@/features/defense/reading-analysis';
 import { spokenBySlide } from '@/features/defense/transcript';
 import { createSimulationController } from './simulation-controller';
@@ -141,10 +141,18 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   }, [captureState, startCapture, state.slideIndex, stopCapture]);
 
   const changeSlide = useCallback(async (pos: number) => { await controller.changeSlide(session.deck.slides[pos].index); }, [controller, session.deck.slides]);
-  const end = useCallback(async () => {
+  const end = useCallback(async (deliverySamples: DeliverySample[] = []) => {
     let failure: string | null = null;
     try {
       await controller.end();
+      // Camera evidence rides its own PATCH so a failure here can never lose the
+      // transcript; the report simply reports no camera evidence.
+      if (deliverySamples.length > 0) {
+        await authenticatedFetch(`/api/session/${session.id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deliverySamples }),
+        }).catch(() => undefined);
+      }
     } catch (e) {
       failure = e instanceof Error ? e.message : 'Your rehearsal could not be saved.';
     }
@@ -152,7 +160,7 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
     if (failure) setError(failure);
     setCaptureState('idle');
     setPhase(controller.getState().ended ? 'ended' : 'live');
-  }, [controller, recorder]);
+  }, [controller, recorder, session.id]);
 
   return {
     phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening', recording: recorder.isRecording(),

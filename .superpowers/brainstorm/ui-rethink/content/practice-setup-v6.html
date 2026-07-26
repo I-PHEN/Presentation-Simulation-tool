@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice setup</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f5; color: #18181b; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { max-width: 1620px; margin: 0 auto; padding: 32px 28px 56px; }
+    .eyebrow { margin: 0 0 9px; color: #71717a; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(27px, 3vw, 40px); letter-spacing: -.055em; line-height: 1.05; }
+    .intro { max-width: 835px; margin: 13px 0 28px; color: #52525b; font-size: 15px; line-height: 1.6; }
+    .rule { height: 1px; margin: 0 0 21px; background: #d4d4d8; }
+    .caption { display: flex; justify-content: space-between; margin-bottom: 11px; color: #52525b; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .caption span:last-child { color: #71717a; font-size: 10px; font-weight: 650; letter-spacing: 0; text-transform: none; }
+    .previews { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .preview { overflow: hidden; border: 1px solid #c4c4c8; border-radius: 10px; background: #fff; box-shadow: 0 4px 18px rgb(0 0 0 / .07); }
+    .screen { --canvas: #fff; --ink: #18181b; --muted: #71717a; --line: #e4e4e7; --soft: #f4f4f5; --selected: #18181b; --button: #18181b; --button-text: #fff; min-height: 635px; background: var(--canvas); color: var(--ink); }
+    .screen.dark { --canvas: #09090b; --ink: #fafafa; --muted: #a1a1aa; --line: #29292d; --soft: #16161a; --selected: #fafafa; --button: #fafafa; --button-text: #09090b; }
+    .nav { display: flex; align-items: center; gap: 22px; height: 58px; padding: 0 24px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 9px; margin-right: 10px; font-size: 13px; font-weight: 780; letter-spacing: -.02em; }
+    .mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; background: var(--ink); color: var(--canvas); font-size: 12px; font-weight: 800; }
+    .links { display: flex; align-items: stretch; align-self: stretch; gap: 19px; }
+    .links span { display: grid; place-items: center; position: relative; color: var(--muted); font-size: 11px; font-weight: 630; }
+    .links .active { color: var(--ink); font-weight: 780; }
+    .links .active::after { content: ""; position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: var(--ink); }
+    .utilities { display: flex; gap: 12px; align-items: center; margin-left: auto; color: var(--muted); font-size: 10px; }
+    .theme { padding: 5px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); font-weight: 700; }
+    .avatar { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); font-size: 9px; font-weight: 800; }
+    .content { max-width: 900px; margin: 0 auto; padding: 44px 34px 40px; }
+    .deck-context { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .deck-context strong { color: var(--ink); font-size: 11px; }
+    .deck-context a { color: var(--ink); font-weight: 750; }
+    .heading { margin: 28px 0 29px; }
+    .overline { margin: 0 0 9px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .heading h2 { margin: 0; font-size: clamp(29px, 3.3vw, 44px); letter-spacing: -.062em; line-height: 1.02; }
+    .heading p:last-child { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+    .setting { padding: 23px 0; border-top: 1px solid var(--line); }
+    .setting-title { display: grid; grid-template-columns: 35px 1fr; gap: 9px; margin-bottom: 14px; }
+    .number { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+    .setting-title h3 { margin: 0; font-size: 12px; }
+    .setting-title p { margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .choice-list { margin-left: 44px; }
+    .choice { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+    .choice:first-child { border-top: 0; }
+    .choice.selected { padding: 14px 12px; margin: 0 -12px; border-top: 1px solid var(--selected); border-bottom: 1px solid var(--selected); background: var(--soft); }
+    .choice + .choice.selected { margin-top: -1px; }
+    .choice strong { display: block; font-size: 13px; letter-spacing: -.02em; }
+    .choice span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .radio { display: grid; place-items: center; width: 17px; height: 17px; border: 1px solid var(--muted); border-radius: 50%; }
+    .choice.selected .radio { border-color: var(--selected); }
+    .choice.selected .radio::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--selected); }
+    .readout { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 18px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .readout p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .readout strong { color: var(--ink); }
+    .button { border: 0; border-radius: 5px; padding: 11px 14px; background: var(--button); color: var(--button-text); white-space: nowrap; font-size: 11px; font-weight: 780; }
+    .approval { max-width: 940px; margin: 24px auto 0; padding: 17px 20px; border-left: 3px solid #18181b; background: #fff; color: #52525b; font-size: 13px; line-height: 1.55; }
+    .approval strong { color: #18181b; }
+    @media (max-width: 900px) { .previews { grid-template-columns: 1fr; max-width: 720px; } }
+    @media (max-width: 580px) { .page { padding: 24px 14px 42px; } .nav { gap: 12px; padding: 0 14px; } .links { gap: 11px; } .links span:nth-child(3), .links span:nth-child(4) { display: none; } .content { padding: 32px 20px; } .choice-list { margin-left: 0; } .readout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">Screen 3 · session setup</p>
+    <h1>Two decisions, then practice.</h1>
+    <p class="intro">The complicated setup screen becomes a short preflight: choose the kind of rehearsal and the examiner’s posture. The deck is already understood, so there is no template gallery, role roster, custom prompt box, or arbitrary scoring checklist.</p>
+    <div class="rule"></div>
+    <div class="caption"><span>Pre-practice setup</span><span>Same component structure · shown in both true modes</span></div>
+    <section class="previews">
+      <article class="preview"><div class="screen">
+        <nav class="nav"><div class="brand"><span class="mark">D</span>Defense</div><div class="links"><span>Overview</span><span>Decks</span><span class="active">Practice</span><span>Reports</span></div><div class="utilities"><span class="theme">◐ Light</span><span class="avatar">ME</span></div></nav>
+        <main class="content">
+          <div class="deck-context"><span>Using <strong>Algorithmic Bias in Hiring</strong> · 18 slides</span><a>Change deck</a></div>
+          <div class="heading"><p class="overline">New rehearsal</p><h2>Set your practice.</h2><p>The system handles the context. You choose how you want to be challenged.</p></div>
+          <section class="setting"><div class="setting-title"><span class="number">01</span><div><h3>Session type</h3><p>Match the session to the preparation you need today.</p></div></div><div class="choice-list"><div class="choice selected"><div><strong>Diagnostic practice</strong><span>8 minutes · interruption at a specific weak claim · a precise drill after each issue</span></div><i class="radio"></i></div><div class="choice"><div><strong>Mock defense</strong><span>15 minutes · uninterrupted presentation, then examiner questions and a full report</span></div><i class="radio"></i></div></div></section>
+          <section class="setting"><div class="setting-title"><span class="number">02</span><div><h3>Examiner stance</h3><p>The question standard changes; the deck context does not.</p></div></div><div class="choice-list"><div class="choice selected"><div><strong>Rigorous</strong><span>Press on evidence, trade-offs and unsupported leaps—like a prepared examiner.</span></div><i class="radio"></i></div><div class="choice"><div><strong>Supportive</strong><span>Challenge clearly, but pause to help you recover and explain the improvement.</span></div><i class="radio"></i></div></div></section>
+          <div class="readout"><p><strong>Diagnostic · rigorous examiner</strong><br />We will interrupt only when a concrete claim needs evidence, explanation or structure.</p><button class="button">Begin practice →</button></div>
+        </main>
+      </div></article>
+      <article class="preview"><div class="screen dark">
+        <nav class="nav"><div class="brand"><span class="mark">D</span>Defense</div><div class="links"><span>Overview</span><span>Decks</span><span class="active">Practice</span><span>Reports</span></div><div class="utilities"><span class="theme">◐ Dark</span><span class="avatar">ME</span></div></nav>
+        <main class="content">
+          <div class="deck-context"><span>Using <strong>Algorithmic Bias in Hiring</strong> · 18 slides</span><a>Change deck</a></div>
+          <div class="heading"><p class="overline">New rehearsal</p><h2>Set your practice.</h2><p>The system handles the context. You choose how you want to be challenged.</p></div>
+          <section class="setting"><div class="setting-title"><span class="number">01</span><div><h3>Session type</h3><p>Match the session to the preparation you need today.</p></div></div><div class="choice-list"><div class="choice selected"><div><strong>Diagnostic practice</strong><span>8 minutes · interruption at a specific weak claim · a precise drill after each issue</span></div><i class="radio"></i></div><div class="choice"><div><strong>Mock defense</strong><span>15 minutes · uninterrupted presentation, then examiner questions and a full report</span></div><i class="radio"></i></div></div></section>
+          <section class="setting"><div class="setting-title"><span class="number">02</span><div><h3>Examiner stance</h3><p>The question standard changes; the deck context does not.</p></div></div><div class="choice-list"><div class="choice selected"><div><strong>Rigorous</strong><span>Press on evidence, trade-offs and unsupported leaps—like a prepared examiner.</span></div><i class="radio"></i></div><div class="choice"><div><strong>Supportive</strong><span>Challenge clearly, but pause to help you recover and explain the improvement.</span></div><i class="radio"></i></div></div></section>
+          <div class="readout"><p><strong>Diagnostic · rigorous examiner</strong><br />We will interrupt only when a concrete claim needs evidence, explanation or structure.</p><button class="button">Begin practice →</button></div>
+        </main>
+      </div></article>
+    </section>
+    <p class="approval"><strong>Proposed setup contract:</strong> a student configures only the experience that changes the rehearsal—diagnostic versus mock and supportive versus rigorous. The app derives the rest from their selected deck, then opens the rehearsal directly. This removes the old feature clutter without making the product generic.</p>
+  </main>
+</body>
+</html>

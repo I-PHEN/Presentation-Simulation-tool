@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deck intake</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f5; color: #18181b; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { max-width: 1620px; margin: 0 auto; padding: 32px 28px 56px; }
+    .eyebrow { margin: 0 0 9px; color: #71717a; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(27px, 3vw, 40px); letter-spacing: -.055em; line-height: 1.05; }
+    .intro { max-width: 830px; margin: 13px 0 28px; color: #52525b; font-size: 15px; line-height: 1.6; }
+    .rule { height: 1px; margin: 0 0 21px; background: #d4d4d8; }
+    .caption { display: flex; justify-content: space-between; margin-bottom: 11px; color: #52525b; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .caption span:last-child { color: #71717a; font-size: 10px; font-weight: 650; letter-spacing: 0; text-transform: none; }
+    .previews { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .preview { overflow: hidden; border: 1px solid #c4c4c8; border-radius: 10px; background: #fff; box-shadow: 0 4px 18px rgb(0 0 0 / .07); }
+    .screen { --canvas: #fff; --ink: #18181b; --muted: #71717a; --line: #e4e4e7; --soft: #f4f4f5; --button: #18181b; --button-text: #fff; min-height: 598px; background: var(--canvas); color: var(--ink); }
+    .screen.dark { --canvas: #09090b; --ink: #fafafa; --muted: #a1a1aa; --line: #29292d; --soft: #16161a; --button: #fafafa; --button-text: #09090b; }
+    .nav { display: flex; align-items: center; gap: 22px; height: 58px; padding: 0 24px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 9px; margin-right: 10px; font-size: 13px; font-weight: 780; letter-spacing: -.02em; }
+    .mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; background: var(--ink); color: var(--canvas); font-size: 12px; font-weight: 800; }
+    .links { display: flex; align-items: stretch; align-self: stretch; gap: 19px; }
+    .links span { display: grid; place-items: center; position: relative; color: var(--muted); font-size: 11px; font-weight: 630; }
+    .links .active { color: var(--ink); font-weight: 780; }
+    .links .active::after { content: ""; position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: var(--ink); }
+    .utilities { display: flex; gap: 12px; align-items: center; margin-left: auto; color: var(--muted); font-size: 10px; }
+    .theme { padding: 5px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); font-weight: 700; }
+    .avatar { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); font-size: 9px; font-weight: 800; }
+    .content { max-width: 900px; margin: 0 auto; padding: 47px 34px 40px; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
+    .heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 25px 0 28px; }
+    .heading .overline { margin: 0 0 9px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .heading h2 { max-width: 550px; margin: 0; font-size: clamp(28px, 3.3vw, 43px); letter-spacing: -.062em; line-height: 1.02; }
+    .heading .side-note { max-width: 180px; margin: 0 0 3px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .dropzone { display: grid; place-items: center; min-height: 245px; padding: 32px; border: 1px dashed var(--muted); background: color-mix(in srgb, var(--soft) 64%, transparent); text-align: center; }
+    .upload-icon { display: grid; place-items: center; width: 38px; height: 46px; margin-bottom: 14px; border: 1px solid var(--ink); color: var(--ink); font-size: 17px; }
+    .dropzone h3 { margin: 0; font-size: 17px; letter-spacing: -.03em; }
+    .dropzone p { max-width: 300px; margin: 8px 0 15px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .file-button, .primary { border: 0; border-radius: 5px; padding: 10px 13px; background: var(--button); color: var(--button-text); font-size: 11px; font-weight: 780; }
+    .formats { display: flex; gap: 7px; justify-content: center; margin-top: 17px; }
+    .formats span { padding: 4px 6px; border: 1px solid var(--line); color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .05em; }
+    .why { display: grid; grid-template-columns: 23px 1fr; gap: 11px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .why i { display: grid; place-items: center; width: 23px; height: 23px; border: 1px solid var(--ink); border-radius: 50%; font-style: normal; font-size: 12px; }
+    .why strong { display: block; font-size: 11px; }
+    .why p { margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .review { display: grid; grid-template-columns: 145px 1fr; min-height: 468px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .filmstrip { padding: 14px; border-right: 1px solid var(--line); }
+    .filmstrip .label { display: block; margin-bottom: 11px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .thumb { display: grid; grid-template-columns: 19px 1fr; gap: 7px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .thumb:first-of-type { border-top: 0; }
+    .thumb b { color: var(--muted); font-size: 9px; }
+    .mini-slide { height: 29px; border: 1px solid var(--line); background: var(--canvas); position: relative; overflow: hidden; }
+    .mini-slide i { position: absolute; left: 5px; right: 7px; top: 7px; height: 3px; background: var(--ink); }
+    .mini-slide i:nth-child(2) { top: 14px; right: 15px; height: 2px; background: var(--muted); }
+    .thumb.selected { margin: 0 -7px; padding: 8px 7px; background: var(--soft); }
+    .review-main { padding: 28px 30px; }
+    .file-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 10px; }
+    .file-meta strong { color: var(--ink); font-size: 12px; }
+    .review-main h2 { margin: 25px 0 10px; font-size: 30px; letter-spacing: -.055em; }
+    .review-main p { max-width: 380px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 27px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .stat { padding: 14px 0; border-right: 1px solid var(--line); }
+    .stat:not(:first-child) { padding-left: 14px; }
+    .stat:last-child { border: 0; }
+    .stat b { display: block; font-size: 16px; letter-spacing: -.04em; }
+    .stat span { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
+    .bottom-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .bottom-row a { color: var(--muted); font-size: 10px; font-weight: 700; }
+    .approval { max-width: 940px; margin: 24px auto 0; padding: 17px 20px; border-left: 3px solid #18181b; background: #fff; color: #52525b; font-size: 13px; line-height: 1.55; }
+    .approval strong { color: #18181b; }
+    @media (max-width: 900px) { .previews { grid-template-columns: 1fr; max-width: 720px; } }
+    @media (max-width: 580px) { .page { padding: 24px 14px 42px; } .nav { gap: 12px; padding: 0 14px; } .links { gap: 11px; } .links span:nth-child(3), .links span:nth-child(4) { display: none; } .content { padding: 32px 20px; } .heading { display: block; } .heading .side-note { margin-top: 13px; } .review { grid-template-columns: 95px 1fr; } .filmstrip { padding: 10px; } .review-main { padding: 20px 16px; } .stats { grid-template-columns: 1fr; } .stat, .stat:not(:first-child) { padding: 10px 0; border-right: 0; border-top: 1px solid var(--line); } .stat:first-child { border-top: 0; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">Screen 2 · deck intake</p>
+    <h1>Upload is a short, trustworthy path into a deck—not another configuration page.</h1>
+    <p class="intro">The first state accepts the file. The second confirms what the product understood before the student starts practicing. Both states live in the same continuous app shell, with PowerPoint—including legacy <code>.ppt</code>—and PDF visibly supported.</p>
+    <div class="rule"></div>
+    <div class="caption"><span>Import, then review</span><span>Same structure in both themes · shown here as light upload and dark review</span></div>
+
+    <section class="previews">
+      <article class="preview"><div class="screen">
+        <nav class="nav"><div class="brand"><span class="mark">D</span>Defense</div><div class="links"><span>Overview</span><span class="active">Decks</span><span>Practice</span><span>Reports</span></div><div class="utilities"><span class="theme">◐ Light</span><span class="avatar">ME</span></div></nav>
+        <main class="content">
+          <span class="back">← Your decks</span>
+          <div class="heading"><div><p class="overline">New deck</p><h2>Import your defense deck.</h2></div><p class="side-note">We use the slide content to make questions and feedback specific to your argument.</p></div>
+          <section class="dropzone"><div class="upload-icon">↑</div><h3>Drop your presentation here</h3><p>or choose a file from your computer. Your original deck stays yours.</p><button class="file-button">Choose presentation</button><div class="formats"><span>PPTX</span><span>PPT</span><span>PDF</span></div></section>
+          <div class="why"><i>i</i><div><strong>What we take from the deck</strong><p>Slide order, visible text and notes become the context for examiner questions. During practice, we can distinguish explanation from repeated slide text.</p></div></div>
+        </main>
+      </div></article>
+
+      <article class="preview"><div class="screen dark">
+        <nav class="nav"><div class="brand"><span class="mark">D</span>Defense</div><div class="links"><span>Overview</span><span class="active">Decks</span><span>Practice</span><span>Reports</span></div><div class="utilities"><span class="theme">◐ Dark</span><span class="avatar">ME</span></div></nav>
+        <main class="content">
+          <span class="back">← Your decks</span>
+          <div class="heading"><div><p class="overline">New deck · ready to review</p><h2>We found 18 slides.</h2></div><p class="side-note">Confirm the deck once. Every practice session then uses the same grounded context.</p></div>
+          <section class="review"><aside class="filmstrip"><span class="label">Slides</span><div class="thumb selected"><b>01</b><div class="mini-slide"><i></i><i></i></div></div><div class="thumb"><b>02</b><div class="mini-slide"><i></i><i></i></div></div><div class="thumb"><b>03</b><div class="mini-slide"><i></i><i></i></div></div><div class="thumb"><b>04</b><div class="mini-slide"><i></i><i></i></div></div><div class="thumb"><b>05</b><div class="mini-slide"><i></i><i></i></div></div></aside><div class="review-main"><div class="file-meta"><strong>algorithmic-bias-defense.pptx</strong><span>Imported just now</span></div><h2>Algorithmic Bias in Hiring</h2><p>We extracted slide content and kept the original ordering. You can now use this deck for diagnostic practice or a complete mock defense.</p><div class="stats"><div class="stat"><b>18</b><span>slides found</span></div><div class="stat"><b>12 min</b><span>suggested length</span></div><div class="stat"><b>3</b><span>claims to test</span></div></div><div class="bottom-row"><a>Replace deck</a><button class="primary">Continue to practice →</button></div></div></section>
+        </main>
+      </div></article>
+    </section>
+    <p class="approval"><strong>Proposed intake rule:</strong> upload → short review → practice. No template gallery, no audience builder, no panel-member form. The upload service will accept PowerPoint/PDF and return a visible deck with extracted context; the review screen makes that context transparent before it affects feedback.</p>
+  </main>
+</body>
+</html>

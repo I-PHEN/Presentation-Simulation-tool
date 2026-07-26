@@ -38,4 +38,8 @@ describe('prisma schema longitudinal models', () => {
     expect(schema).toMatch(/source\s+String\s+@default\("deck"\)/);
     expect(schema).toMatch(/topic\s+String\?/);
   });
+
+  it('stores analysed webcam frames per session, empty when the camera was off', () => {
+    expect(schema).toMatch(/deliverySamples\s+String\s+@default\("\[\]"\)/);
+  });
 });

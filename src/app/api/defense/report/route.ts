@@ -9,6 +9,8 @@ import { getZAI } from '@/lib/zai';
 import { defenseFindingSchema } from '@/features/defense/types';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 import { assembleCoachingReport, validatePersonaVerdictLines } from '@/features/defense/coaching-report';
+import { aggregateDelivery } from '@/features/defense/delivery-analysis';
+import { deliverySamplesSchema } from '@/features/defense/session-schema';
 import { recordSessionOutcome } from '@/features/coaching/speaker-profile-repository';
 import { buildSessionOutcome, hasEvidence } from '@/features/coaching/session-outcome';
 
@@ -40,6 +42,9 @@ export async function POST(request: Request) {
     const examinerEvents = parse(session.examinerEvents, eventSchema);
     if (!deck || !transcriptSegments || !examinerEvents) return NextResponse.json({ error: 'Defense session evidence is unavailable' }, { status: 422 });
     const deckless = session.source === 'topic';
+    // Camera evidence is optional and self-gating: aggregateDelivery returns null
+    // when the camera was off, unreadable, or on for too little of the session.
+    const delivery = aggregateDelivery(parse(session.deliverySamples, deliverySamplesSchema) ?? []);
     const spoken = spokenBySlide(transcriptSegments);
     const noSpeech = Object.keys(spoken).length === 0;
 

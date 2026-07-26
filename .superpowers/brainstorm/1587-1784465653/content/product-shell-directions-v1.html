@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sparring Partner — Product shell directions</title>
+  <style>
+    :root { --ink:#0d1728; --muted:#697386; --canvas:#f6f7f9; --line:#dce1e8; --panel:#fff; --blue:#2864dc; --blue-soft:#edf3ff; --green:#137a55; --dark:#121b2b; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#eef1f5; color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { max-width:1440px; margin:0 auto; padding:40px 36px 72px; }
+    .eyebrow { color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:790px; margin:9px 0 12px; font-size:clamp(31px,4vw,52px); letter-spacing:-.055em; line-height:1; }
+    .intro { max-width:760px; margin:0 0 34px; color:#4a5568; font-size:16px; line-height:1.55; }
+    .choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; }
+    .choice { position:relative; overflow:hidden; border:1px solid #c9d0db; border-radius:18px; background:#fff; cursor:pointer; box-shadow:0 14px 35px rgba(23,33,52,.08); transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
+    .choice:hover { transform:translateY(-5px); border-color:#8fa8d7; box-shadow:0 22px 44px rgba(23,33,52,.14); }
+    .choice.selected { border:2px solid var(--blue); box-shadow:0 0 0 4px rgba(40,100,220,.13),0 22px 44px rgba(23,33,52,.14); }
+    .choice-meta { display:flex; gap:14px; padding:18px 20px 20px; border-top:1px solid #e4e7ed; }
+    .letter { display:grid; flex:0 0 26px; height:26px; place-items:center; border-radius:50%; background:var(--dark); color:#fff; font-size:12px; font-weight:800; }
+    .choice h2 { margin:0 0 5px; font-size:17px; letter-spacing:-.03em; }
+    .choice p { margin:0; color:var(--muted); font-size:13px; line-height:1.45; }
+    .recommended { margin-left:7px; color:var(--blue); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .device { min-height:492px; overflow:hidden; background:var(--canvas); }
+    .topbar { height:49px; display:flex; align-items:center; justify-content:space-between; padding:0 17px; background:#fff; border-bottom:1px solid var(--line); font-size:10px; }
+    .brand { font-weight:800; letter-spacing:-.05em; font-size:13px; }
+    .avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#dce6fa; color:#16449d; font-size:9px; font-weight:800; }
+    .a-workspace { display:grid; grid-template-columns:114px 1fr; min-height:443px; }
+    .rail { padding:18px 10px; background:#fff; border-right:1px solid var(--line); }
+    .rail-group { margin-bottom:24px; }
+    .rail-label { padding:0 8px 7px; color:#98a2b3; font-size:8px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+    .rail-item { margin:2px 0; padding:8px; border-radius:7px; color:#667085; font-size:10px; }
+    .rail-item.active { background:var(--blue-soft); color:#16449d; font-weight:750; }
+    .rail-deck { margin:7px 2px; padding:10px; border:1px solid #dce2ed; border-radius:8px; background:#f8fafc; }
+    .rail-deck b { display:block; font-size:10px; }.rail-deck span{display:block;margin-top:4px;color:#8893a5;font-size:9px;}
+    .a-main { padding:27px 27px 18px; }
+    .quiet { color:#667085; font-size:10px; }
+    .a-title { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-top:6px; }
+    .a-title h3 { margin:0; font-size:24px; letter-spacing:-.055em; }.time { padding:5px 8px; border-radius:99px; background:#e9f6ef; color:var(--green); font-size:9px; font-weight:800; }
+    .a-copy { max-width:330px; margin:8px 0 17px; color:#667085; font-size:11px; line-height:1.45; }
+    .primary { display:inline-flex; align-items:center; gap:7px; padding:10px 13px; border-radius:7px; background:var(--blue); color:#fff; font-size:10px; font-weight:800; }.primary::before{content:'▶';font-size:8px;}
+    .cue { display:flex; align-items:center; gap:10px; margin-top:25px; padding-top:18px; border-top:1px solid var(--line); }
+    .slide { display:grid; width:48px; height:38px; place-items:center; border:1px solid #bfcae1; border-radius:4px; background:linear-gradient(145deg,#e7edfb,#fff); color:#4564a5; font-size:9px; }.cue b{display:block;font-size:10px}.cue span{display:block;margin-top:3px;color:#8590a3;font-size:9px}
+    .a-lower { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:24px; }.line-item{padding:10px 0;border-top:1px solid var(--line);font-size:10px}.line-item span{float:right;color:#8590a3;font-size:9px}.score-arc{display:flex;gap:8px;align-items:end;height:46px;padding-top:8px}.bar{width:12px;border-radius:3px 3px 0 0;background:#d9e3f8}.bar.on{background:#406fd1}.bar:nth-child(1){height:23px}.bar:nth-child(2){height:31px}.bar:nth-child(3){height:19px}.bar:nth-child(4){height:38px}.bar:nth-child(5){height:33px}
+    .b-shell { display:grid; grid-template-columns:1fr 83px; min-height:443px; }.b-main{padding:28px 26px 18px;background:#fff}.b-side{padding:17px 10px;background:#182236;color:#d6dfef}.b-logo{font-size:12px;font-weight:850;letter-spacing:-.06em;color:#fff}.b-nav{margin-top:26px}.b-nav div{padding:9px 7px;margin:3px 0;border-radius:6px;font-size:9px}.b-nav .active{background:#304261;color:#fff;font-weight:800}.b-foot{margin-top:159px;border-top:1px solid #344461;padding-top:14px;color:#9cacbf;font-size:8px;line-height:1.5}.b-top{display:flex;justify-content:space-between;align-items:center}.b-top span{font-size:9px;color:#7b8799}.b-main h3{margin:23px 0 6px;font-size:24px;letter-spacing:-.06em}.b-main>.copy{max-width:300px;color:#687386;font-size:11px;line-height:1.5}.session-row{display:flex;gap:10px;margin-top:25px;padding:13px 0;border-top:1px solid #e1e6ee;border-bottom:1px solid #e1e6ee}.session-icon{display:grid;place-items:center;width:33px;height:33px;border-radius:50%;background:#f0f4fb;color:#3e65af;font-size:12px}.session-row b{display:block;font-size:11px}.session-row span{display:block;margin-top:3px;color:#8390a4;font-size:9px}.session-row button{margin-left:auto;align-self:center;border:0;border-radius:5px;background:#182236;color:#fff;padding:8px 9px;font-size:9px;font-weight:800}.coach-note{margin-top:24px;padding:14px 15px;border-left:3px solid #527ee2;background:#f7f9fd}.coach-note .note-label{color:#527ee2;font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.coach-note p{margin:7px 0 0;font-size:10px;line-height:1.45}.b-timeline{display:flex;gap:6px;margin-top:24px}.dot{width:9px;height:9px;border:2px solid #b9c5da;border-radius:50%}.dot.done{background:#476fd1;border-color:#476fd1}.segment{width:36px;height:2px;margin-top:4px;background:#c8d3e7}.segment.done{background:#476fd1}
+    .c-workspace{padding:21px 20px 18px}.c-welcome{display:flex;align-items:center;justify-content:space-between}.c-welcome b{font-size:12px}.streak{padding:5px 7px;border:1px solid #ead7b8;border-radius:99px;background:#fffbf4;color:#9c621c;font-size:8px;font-weight:800}.c-workspace h3{margin:19px 0 5px;font-size:22px;letter-spacing:-.06em}.c-sub{color:#6f7a8c;font-size:10px}.focus-card{position:relative;overflow:hidden;margin-top:19px;padding:17px;border-radius:12px;background:#17243b;color:#fff}.focus-card:after{content:'';position:absolute;right:-11px;bottom:-21px;width:117px;height:117px;border:1px solid rgba(151,183,255,.35);border-radius:50%;box-shadow:0 0 0 16px rgba(151,183,255,.08),0 0 0 34px rgba(151,183,255,.05)}.focus-label{position:relative;z-index:1;color:#a5bff7;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.focus-card h4{position:relative;z-index:1;margin:8px 0 7px;font-size:16px;letter-spacing:-.045em}.focus-card p{position:relative;z-index:1;max-width:215px;margin:0;color:#cbd6eb;font-size:9px;line-height:1.45}.focus-action{position:relative;z-index:1;display:inline-block;margin-top:13px;padding:8px 10px;border-radius:6px;background:#fff;color:#14223a;font-size:9px;font-weight:800}.c-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:17px}.micro{padding:12px 0;border-top:1px solid #dce1e8}.micro b{font-size:10px}.micro p{margin:5px 0 0;color:#8490a1;font-size:9px;line-height:1.35}.mic-line{margin-top:9px;height:4px;border-radius:4px;background:#e2e7ef}.mic-line i{display:block;width:68%;height:100%;border-radius:4px;background:#6d92e9}.bottom-nav{display:flex;justify-content:space-between;margin-top:20px;padding-top:13px;border-top:1px solid #dce1e8;color:#718096;font-size:9px}.bottom-nav b{color:#1a386d}
+    .prompt { margin:36px auto 0; max-width:740px; padding:16px 19px; border-radius:11px; background:#e8edf6; color:#2d3b52; font-size:14px; line-height:1.45; }
+    @media(max-width:1000px){.choices{grid-template-columns:1fr}.device{min-height:430px}.page{padding:28px 17px 48px}.choice{max-width:620px;margin:auto;width:100%;}.a-workspace{grid-template-columns:145px 1fr}.b-shell{grid-template-columns:1fr 110px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">Sparring Partner · product-shell reset</div>
+    <h1>Which experience feels like a real speaking product someone would return to?</h1>
+    <p class="intro">All three remove the fake “Progress” destination. They differ in what the home screen is fundamentally for: managing a serious program, receiving a coach’s direction, or coming back daily for a focused voice habit.</p>
+    <div class="choices">
+      <article class="choice" data-choice="studio-desk" onclick="toggleSelect(this)">
+        <div class="device">
+          <div class="topbar"><span class="brand">sparring</span><span>⌘ K&nbsp;&nbsp;&nbsp; ◐</span><span class="avatar">MG</span></div>
+          <div class="a-workspace">
+            <aside class="rail"><div class="rail-group"><div class="rail-label">Workspace</div><div class="rail-item active">Today</div><div class="rail-item">Practice</div><div class="rail-item">Review</div></div><div class="rail-group"><div class="rail-label">Current program</div><div class="rail-deck"><b>Thesis defense</b><span>10 slides · Round 3</span></div></div></aside>
+            <div class="a-main"><div class="quiet">Monday, 14 July</div><div class="a-title"><h3>Defense rehearsal<br>round 3</h3><span class="time">12 min</span></div><p class="a-copy">Your coach has one priority today: make your methodology explanation easier to follow under pressure.</p><span class="primary">Resume rehearsal</span><div class="cue"><div class="slide">04</div><div><b>Slide 4 · Method</b><span>Next cue: explain why you chose this approach</span></div></div><div class="a-lower"><div><div class="line-item">Last rehearsal <span>7m ago</span></div><div class="line-item">Coach note <span>1 new</span></div></div><div><div class="line-item">Clarity trend</div><div class="score-arc"><i class="bar"></i><i class="bar on"></i><i class="bar"></i><i class="bar on"></i><i class="bar on"></i></div></div></div></div>
+          </div>
+        </div>
+        <div class="choice-meta"><div class="letter">A</div><div><h2>Studio desk <span class="recommended">Recommended</span></h2><p>A real workspace around one active programme. It makes the deck, the next rehearsal, and coaching history feel connected—not like dashboard widgets.</p></div></div>
+      </article>
+      <article class="choice" data-choice="coach-brief" onclick="toggleSelect(this)">
+        <div class="device"><div class="b-shell"><div class="b-main"><div class="b-top"><div class="avatar">MG</div><span>Tue, 15 Jul</span></div><h3>Your coach’s brief</h3><p class="copy">One focused action today will make your next defense answer more convincing.</p><div class="session-row"><div class="session-icon">◉</div><div><b>Explain your method without slides</b><span>4 minute guided voice drill</span></div><button>Start</button></div><div class="coach-note"><div class="note-label">From your last rehearsal</div><p>“Your answer had the evidence. The opening sentence needs to make the point first.”</p></div><div class="b-timeline"><i class="dot done"></i><i class="segment done"></i><i class="dot done"></i><i class="segment"></i><i class="dot"></i><i class="segment"></i><i class="dot"></i></div></div><aside class="b-side"><div class="b-logo">SP</div><div class="b-nav"><div class="active">Brief</div><div>Practice</div><div>Library</div><div>Review</div></div><div class="b-foot">THESIS DEFENSE<br><br>Round 3 of 5<br>Due Friday</div></aside></div></div>
+        <div class="choice-meta"><div class="letter">B</div><div><h2>Coach brief</h2><p>A deliberately guided daily experience. It feels personal and focused, but has less room for the deck and wider programme context on the first screen.</p></div></div>
+      </article>
+      <article class="choice" data-choice="practice-loop">
+        <div class="device"><div class="topbar"><span class="brand">sparring</span><span class="streak">4 day streak</span><span class="avatar">MG</span></div><div class="c-workspace"><div class="c-welcome"><b>Good afternoon, Michael</b><span>⋯</span></div><h3>Build the answer<br>you want remembered.</h3><p class="c-sub">Your practice loop for today</p><div class="focus-card"><div class="focus-label">Today’s defense focus</div><h4>Make the method make sense.</h4><p>Turn a technically correct explanation into one an examiner can follow on the first listen.</p><span class="focus-action">Begin 5-min drill</span></div><div class="c-grid"><div class="micro"><b>Defense plan</b><p>10 slides imported</p><div class="mic-line"><i></i></div></div><div class="micro"><b>Latest signal</b><p>Structure is improving</p><div class="mic-line"><i style="width:76%"></i></div></div></div><div class="bottom-nav"><b>Today</b><span>Practice</span><span>Review</span></div></div></div>
+        <div class="choice-meta"><div class="letter">C</div><div><h2>Practice loop</h2><p>A lighter, habit-led home for daily speaking drills. Most inviting, but the thesis-defense product can feel secondary rather than structurally central.</p></div></div>
+      </article>
+    </div>
+    <p class="prompt"><strong>My recommendation is A: Studio desk.</strong> It gives us a proper application shell and room for a serious thesis programme now, while the same frame can later hold interviews, pitches, and daily challenges. Click a direction, then tell me what feels right or wrong.</p>
+  </main>
+</body>
+</html>

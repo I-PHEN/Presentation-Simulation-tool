@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home screen directions</title>
+  <style>
+    :root { color-scheme: light; --ink:#16161a; --muted:#65656d; --line:#e5e5e8; --canvas:#f6f6f7; --paper:#fff; --soft:#efeff1; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--canvas); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .frame { max-width:1480px; margin:0 auto; padding:44px 32px 64px; }
+    .eyebrow { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:10px 0 8px; font-size:34px; letter-spacing:-.055em; line-height:1.05; }
+    .intro { max-width:700px; margin:0 0 30px; color:var(--muted); font-size:15px; line-height:1.55; }
+    .directions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+    .direction { appearance:none; display:block; width:100%; padding:0; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:var(--paper); text-align:left; color:inherit; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.02); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .direction:hover, .direction.selected { transform:translateY(-3px); border-color:#9d9da5; box-shadow:0 12px 30px rgba(0,0,0,.08); }
+    .label { display:flex; align-items:center; gap:9px; padding:15px 17px 12px; border-bottom:1px solid var(--line); }
+    .letter { display:grid; place-items:center; width:23px; height:23px; border-radius:50%; background:var(--ink); color:#fff; font-size:11px; font-weight:800; }
+    .label strong { font-size:14px; letter-spacing:-.02em; }
+    .label span { margin-left:auto; color:var(--muted); font-size:11px; }
+    .preview { min-height:486px; padding:13px; background:#fcfcfc; }
+    .app { min-height:460px; overflow:hidden; border:1px solid #e7e7ea; border-radius:11px; background:#fff; box-shadow:0 7px 18px rgba(25,25,30,.06); }
+    .appnav { display:flex; height:40px; align-items:center; gap:14px; border-bottom:1px solid #ececef; padding:0 13px; font-size:8px; }
+    .brand { font-size:9px; font-weight:800; letter-spacing:-.02em; }
+    .nav-muted { color:#85858c; }
+    .nav-spacer { flex:1; }
+    .avatar { display:grid; place-items:center; width:17px; height:17px; border-radius:50%; background:#1d1d21; color:#fff; font-size:7px; }
+    .home { padding:26px; }
+    .mini-eyebrow { color:#777780; font-size:7px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    .hello { margin:8px 0 5px; font-size:23px; letter-spacing:-.06em; line-height:1; }
+    .subtle { color:#73737c; font-size:9px; line-height:1.45; }
+    .hero { margin-top:20px; padding:20px; border-radius:12px; background:#1b1b20; color:white; }
+    .hero .mini-eyebrow { color:#b6b6bd; }
+    .hero-title { max-width:240px; margin:8px 0 13px; font-size:18px; font-weight:650; letter-spacing:-.05em; line-height:1.05; }
+    .hero-foot { display:flex; align-items:center; gap:10px; }
+    .primary { border:0; border-radius:7px; background:#fff; padding:8px 11px; color:#18181b; font-size:8px; font-weight:750; }
+    .quiet { color:#c4c4ca; font-size:8px; }
+    .trajectory { display:flex; align-items:center; gap:14px; margin-top:20px; padding-top:16px; border-top:1px solid #ebebee; }
+    .ring { display:grid; place-items:center; width:37px; height:37px; border:4px solid #202025; border-right-color:#e1e1e5; border-radius:50%; font-size:8px; font-weight:800; }
+    .trajectory strong { display:block; margin-bottom:3px; font-size:9px; }
+    .deck-line { display:flex; align-items:center; gap:10px; margin-top:17px; padding:11px 0 0; border-top:1px solid #ebebee; }
+    .deck-thumb { width:29px; height:24px; border-radius:4px; background:linear-gradient(135deg,#e9e9ec,#b3b3ba); }
+    .deck-title { font-size:8px; font-weight:700; }
+    .deck-meta { color:#85858c; font-size:7px; margin-top:3px; }
+    .plan-shell { display:grid; grid-template-columns:76px 1fr; min-height:420px; }
+    .rail { padding:17px 10px; border-right:1px solid #ececef; }
+    .rail-brand { margin:0 0 22px; font-size:8px; font-weight:800; }
+    .rail-item { margin:9px 0; padding:6px 7px; border-radius:5px; color:#7f7f88; font-size:7px; }
+    .rail-item.current { background:#1d1d21; color:#fff; }
+    .plan-main { padding:24px 20px; }
+    .plan-title { margin:7px 0 18px; font-size:20px; letter-spacing:-.055em; }
+    .today-card { padding:14px; border:1px solid #dfdfe3; border-radius:9px; }
+    .today-card strong { display:block; margin:7px 0 4px; font-size:11px; letter-spacing:-.025em; }
+    .task { display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid #efeff1; }
+    .task:last-child { border-bottom:0; }
+    .check { width:11px; height:11px; border:1px solid #a8a8b0; border-radius:50%; }
+    .check.done { position:relative; background:#212126; border-color:#212126; }
+    .check.done:after { content:""; width:4px; height:2px; border-left:1px solid white; border-bottom:1px solid white; transform:rotate(-45deg); }
+    .task-copy { font-size:8px; }
+    .task-copy small { display:block; margin-top:2px; color:#85858d; font-size:7px; }
+    .resume { width:100%; margin-top:14px; border:0; border-radius:6px; background:#1b1b20; padding:9px; color:#fff; font-size:8px; font-weight:750; }
+    .progress-top { display:flex; gap:8px; margin-top:20px; }
+    .metric { flex:1; padding:10px; border-radius:8px; background:#f2f2f4; }
+    .metric strong { display:block; font-size:12px; letter-spacing:-.04em; }
+    .metric span { color:#777780; font-size:7px; }
+    .growth { padding:25px; }
+    .growth-head { display:flex; align-items:flex-start; gap:12px; }
+    .growth h2 { margin:6px 0 3px; font-size:21px; letter-spacing:-.055em; }
+    .week { margin-left:auto; padding:5px 7px; border:1px solid #dedee2; border-radius:5px; color:#71717a; font-size:7px; }
+    .graph-card { margin-top:20px; padding:15px; border:1px solid #e5e5e8; border-radius:10px; }
+    .graph-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .graph-head strong { font-size:9px; }
+    .graph-head span { color:#777780; font-size:7px; }
+    .bars { display:flex; align-items:end; gap:7px; height:80px; margin-top:14px; border-bottom:1px solid #dedee2; }
+    .bar { width:17px; border-radius:3px 3px 0 0; background:#d7d7dc; }
+    .bar.current { background:#1c1c21; }
+    .insight { margin-top:17px; padding:12px; border-left:2px solid #232328; background:#f5f5f6; }
+    .insight strong { display:block; margin-bottom:5px; font-size:8px; }
+    .next-session { display:flex; align-items:center; justify-content:space-between; margin-top:17px; padding-top:15px; border-top:1px solid #ebebee; }
+    .next-session strong { display:block; font-size:9px; }
+    .go { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#202025; color:#fff; font-size:12px; }
+    .copy { padding:15px 17px 18px; border-top:1px solid var(--line); }
+    .copy h3 { margin:0 0 5px; font-size:13px; letter-spacing:-.025em; }
+    .copy p { margin:0; color:var(--muted); font-size:12px; line-height:1.45; }
+    .recommendation { display:flex; gap:8px; align-items:flex-start; margin-top:24px; padding:13px 15px; border-radius:10px; border:1px solid #dedee3; background:#fff; }
+    .recommendation strong { font-size:12px; }
+    .recommendation p { margin:3px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
+    @media (max-width:1000px) { .directions { grid-template-columns:1fr; max-width:520px; } .preview { min-height:0; } }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="eyebrow">Voice coach / first-screen direction</div>
+    <h1>Which home feels like a real personal speaking coach?</h1>
+    <p class="intro">All three keep the current thesis-defense focus, but leave room for interview and presentation programmes later. Click the direction that feels most like the product you want students to return to.</p>
+    <section class="directions">
+      <button class="direction" data-choice="guided-today" onclick="toggleSelect(this)">
+        <div class="label"><div class="letter">A</div><strong>Guided today</strong><span>Recommended</span></div>
+        <div class="preview"><div class="app">
+          <div class="appnav"><span class="brand">Voice Coach</span><span class="nav-muted">Today</span><span class="nav-muted">Practice</span><span class="nav-muted">Progress</span><span class="nav-spacer"></span><span class="avatar">M</span></div>
+          <div class="home"><div class="mini-eyebrow">Tuesday, 18 July</div><div class="hello">Good afternoon, Michael.</div><div class="subtle">A short, focused rehearsal will make your defense stronger today.</div>
+            <div class="hero"><div class="mini-eyebrow">Your next best practice · 12 min</div><div class="hero-title">Make your opening claim defendable.</div><div class="hero-foot"><span class="primary">Start guided rehearsal</span><span class="quiet">Slide 1–3 · Rigorous examiner</span></div></div>
+            <div class="trajectory"><div class="ring">2/3</div><div><strong>Your trajectory</strong><div class="subtle">Two practice sessions this week. Your explanations are getting more specific.</div></div></div>
+            <div class="deck-line"><div class="deck-thumb"></div><div><div class="deck-title">Final thesis defense</div><div class="deck-meta">12 slides · Last practiced yesterday</div></div></div>
+          </div>
+        </div></div>
+        <div class="copy"><h3>A calm daily prompt</h3><p>One clear recommended action, with progress and deck context deliberately secondary.</p></div>
+      </button>
+      <button class="direction" data-choice="practice-plan" onclick="toggleSelect(this)">
+        <div class="label"><div class="letter">B</div><strong>Practice plan</strong><span>Structured</span></div>
+        <div class="preview"><div class="app"><div class="plan-shell">
+          <aside class="rail"><div class="rail-brand">Voice Coach</div><div class="rail-item current">Today</div><div class="rail-item">My defense</div><div class="rail-item">Practice</div><div class="rail-item">Progress</div></aside>
+          <div class="plan-main"><div class="mini-eyebrow">Your defense programme</div><div class="plan-title">A focused week, one step at a time.</div><div class="today-card"><div class="mini-eyebrow">Today’s plan</div><strong>Prepare your defense opening</strong><div class="subtle">25 minutes total · You are on step 2 of 4</div><div class="task"><span class="check done"></span><div class="task-copy">Review your argument<small>3 minutes</small></div></div><div class="task"><span class="check"></span><div class="task-copy">Rehearse your opening<small>12 minutes</small></div></div><div class="task"><span class="check"></span><div class="task-copy">Answer one examiner challenge<small>10 minutes</small></div></div><button class="resume">Resume today’s practice</button></div><div class="progress-top"><div class="metric"><strong>2</strong><span>sessions this week</span></div><div class="metric"><strong>3</strong><span>days to defense</span></div></div></div>
+        </div></div></div>
+        <div class="copy"><h3>A coaching programme</h3><p>Turns preparation into an understandable plan. More structured, with a slightly more academic feel.</p></div>
+      </button>
+      <button class="direction" data-choice="growth-record" onclick="toggleSelect(this)">
+        <div class="label"><div class="letter">C</div><strong>Growth record</strong><span>Reflective</span></div>
+        <div class="preview"><div class="app">
+          <div class="appnav"><span class="brand">Voice Coach</span><span class="nav-muted">Today</span><span class="nav-muted">Practice</span><span class="nav-muted">Progress</span><span class="nav-spacer"></span><span class="avatar">M</span></div>
+          <div class="growth"><div class="growth-head"><div><div class="mini-eyebrow">Your coaching record</div><h2>Progress, not pressure.</h2><div class="subtle">You are building a clearer, more defendable explanation.</div></div><div class="week">This week</div></div>
+            <div class="graph-card"><div class="graph-head"><strong>Practice rhythm</strong><span>3 of 4 planned sessions</span></div><div class="bars"><div class="bar" style="height:32%"></div><div class="bar" style="height:48%"></div><div class="bar" style="height:67%"></div><div class="bar current" style="height:83%"></div><div class="bar" style="height:18%"></div></div></div>
+            <div class="insight"><strong>Coach’s note</strong><div class="subtle">Your strongest improvement is explaining the “why” behind your method. Keep that detail when an examiner pushes back.</div></div>
+            <div class="next-session"><div><div class="mini-eyebrow">Next session</div><strong>Defend your method · 15 min</strong></div><div class="go">→</div></div>
+          </div>
+        </div></div>
+        <div class="copy"><h3>A record of improvement</h3><p>Makes growth visible and motivating, but risks feeling like a progress dashboard before the student can begin.</p></div>
+      </button>
+    </section>
+    <div class="recommendation"><div class="letter">→</div><div><strong>My recommendation: Direction A, with a small piece of Direction B.</strong><p>Lead with one meaningful next action, then use a concise practice rhythm underneath. It is the calmest, most coach-like, and easiest to extend beyond thesis defense.</p></div></div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard structure</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f5; color: #18181b; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { max-width: 1500px; margin: 0 auto; padding: 32px 26px 52px; }
+    .eyebrow { margin: 0 0 8px; color: #71717a; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(25px, 3vw, 38px); letter-spacing: -.045em; line-height: 1.05; }
+    .intro { max-width: 760px; margin: 13px 0 30px; color: #52525b; font-size: 15px; line-height: 1.6; }
+    .pick-note { margin: 0 0 20px; color: #3f3f46; font-size: 13px; }
+    .pick-note strong { color: #111827; }
+    .options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .option { overflow: hidden; border: 1px solid #d4d4d8; border-radius: 12px; background: #fff; cursor: pointer; box-shadow: 0 1px 2px rgb(0 0 0 / .03); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+    .option:hover, .option.selected { border-color: #18181b; box-shadow: 0 10px 26px rgb(0 0 0 / .1); transform: translateY(-2px); }
+    .option.selected { outline: 2px solid #18181b; outline-offset: 2px; }
+    .mock-label { display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 0 14px; border-bottom: 1px solid #e4e4e7; background: #fafafa; color: #52525b; font-size: 10px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+    .recommended { padding: 3px 7px; border-radius: 999px; background: #18181b; color: #fff; font-size: 9px; letter-spacing: .07em; }
+    .app { display: grid; grid-template-columns: 54px 1fr; min-height: 300px; background: #fff; color: #18181b; text-align: left; }
+    .rail { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 13px 0; border-right: 1px solid #e4e4e7; background: #fafafa; }
+    .mark { width: 22px; height: 22px; border: 2px solid #18181b; border-radius: 50%; }
+    .rail i { width: 19px; height: 3px; border-radius: 2px; background: #d4d4d8; }
+    .rail i.active { background: #18181b; }
+    .workspace { padding: 19px 18px; }
+    .bar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 17px; border-bottom: 1px solid #e4e4e7; }
+    .product { font-size: 11px; font-weight: 750; }
+    .theme { display: flex; gap: 6px; color: #71717a; font-size: 10px; }
+    .theme b { color: #18181b; }
+    .title { margin: 19px 0 7px; font-size: 23px; font-weight: 750; letter-spacing: -.045em; }
+    .caption { margin: 0; color: #71717a; font-size: 10px; line-height: 1.45; }
+    .rule { height: 1px; margin: 18px 0; background: #e4e4e7; }
+    .deck-line { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .meta { color: #71717a; font-size: 9px; }
+    .deck-name { margin: 4px 0 0; font-size: 13px; font-weight: 750; }
+    .button { padding: 8px 10px; border: 0; border-radius: 5px; background: #18181b; color: #fff; font-size: 9px; font-weight: 750; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 18px; }
+    .action { padding: 11px 0; border-top: 1px solid #d4d4d8; }
+    .action strong { display: block; margin-bottom: 3px; font-size: 10px; }
+    .action span { color: #71717a; font-size: 9px; }
+    .project-app { display: grid; grid-template-columns: 54px 1fr; min-height: 300px; background: #fff; color: #18181b; text-align: left; }
+    .table-head, .row { display: grid; grid-template-columns: 1.4fr .8fr .65fr; gap: 8px; align-items: center; }
+    .table-head { padding: 15px 0 9px; color: #71717a; font-size: 8px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .row { padding: 12px 0; border-top: 1px solid #e4e4e7; font-size: 10px; }
+    .row small { color: #71717a; }
+    .status { color: #3f3f46; font-size: 9px; }
+    .calendar-app { min-height: 300px; background: #fff; color: #18181b; text-align: left; }
+    .calendar-top { display: flex; justify-content: space-between; align-items: center; padding: 17px 18px; border-bottom: 1px solid #e4e4e7; }
+    .calendar-title { font-size: 14px; font-weight: 750; }
+    .week { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; padding: 18px; background: #e4e4e7; }
+    .day { min-height: 118px; padding: 8px; background: #fff; }
+    .day b { color: #71717a; font-size: 8px; letter-spacing: .06em; }
+    .session { margin-top: 15px; padding: 7px 0; border-top: 2px solid #18181b; font-size: 8px; line-height: 1.35; }
+    .session span { color: #71717a; display: block; margin-top: 3px; }
+    .body { padding: 16px 18px; }
+    .body h2 { margin: 0 0 7px; font-size: 16px; letter-spacing: -.03em; }
+    .body p { margin: 0; color: #71717a; font-size: 11px; line-height: 1.45; }
+    .theme-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    .mode { padding: 8px; border: 1px solid #e4e4e7; font-size: 9px; }
+    .mode.dark { border-color: #292929; background: #111113; color: #fafafa; }
+    .mode span { display: block; margin-top: 4px; color: #71717a; }
+    .mode.dark span { color: #a1a1aa; }
+    .principle { margin-top: 26px; padding: 15px 17px; border-left: 3px solid #18181b; background: #fff; color: #52525b; font-size: 13px; line-height: 1.55; }
+    @media (max-width: 900px) { .options { grid-template-columns: 1fr; max-width: 560px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">Screen 1 · dashboard structure</p>
+    <h1>Choose the product shape before we style it.</h1>
+    <p class="intro">All three use the same neutral system: real white/light surfaces, real near-black dark surfaces, grayscale hierarchy, one sans-serif typeface, and thin functional dividers. There is no tinted “theme” and no collection of floating cards.</p>
+    <p class="pick-note"><strong>My recommendation: A — Current workbench.</strong> It makes the product feel like a serious preparation tool with one clear next action, while still giving the student access to their decks and reports.</p>
+
+    <section class="options">
+      <article class="option" data-choice="workbench" onclick="toggleSelect(this)">
+        <div class="mock-label"><span>A · Current workbench</span><span class="recommended">Recommended</span></div>
+        <div class="app">
+          <aside class="rail"><div class="mark"></div><i class="active"></i><i></i><i></i><i></i></aside>
+          <div class="workspace">
+            <div class="bar"><span class="product">Defense</span><span class="theme"><b>Light</b> / Dark</span></div>
+            <div class="title">Continue preparation</div>
+            <p class="caption">One place for the thesis you are actively defending.</p>
+            <div class="rule"></div>
+            <div class="deck-line"><div><div class="meta">CURRENT DECK · 18 SLIDES</div><div class="deck-name">Algorithmic Bias in Hiring</div></div><button class="button">Start rehearsal</button></div>
+            <div class="actions"><div class="action"><strong>Review weak claims</strong><span>3 items need evidence</span></div><div class="action"><strong>Next session</strong><span>Mock defense · 12 min</span></div></div>
+          </div>
+        </div>
+        <div class="body"><h2>Focused, not empty.</h2><p>The home screen behaves like a working desk, not a gallery of unrelated widgets.</p><div class="theme-demo"><div class="mode"><b>Light</b><span>#FFF · #18181B · #E4E4E7</span></div><div class="mode dark"><b>Dark</b><span>#111113 · #FAFAFA · #3F3F46</span></div></div></div>
+      </article>
+
+      <article class="option" data-choice="project-hub" onclick="toggleSelect(this)">
+        <div class="mock-label"><span>B · Project hub</span><span>Library-first</span></div>
+        <div class="project-app">
+          <aside class="rail"><div class="mark"></div><i></i><i class="active"></i><i></i><i></i></aside>
+          <div class="workspace">
+            <div class="bar"><span class="product">Your decks</span><span class="theme">+ New deck</span></div>
+            <div class="title">Preparation library</div>
+            <p class="caption">Every deck, rehearsal and report in one index.</p>
+            <div class="table-head"><span>Deck</span><span>Readiness</span><span>Last session</span></div>
+            <div class="row"><strong>Algorithmic Bias</strong><span class="status">Needs work</span><small>Today</small></div>
+            <div class="row"><strong>Research proposal</strong><span class="status">Ready</span><small>Jul 15</small></div>
+            <div class="row"><strong>Methods chapter</strong><span class="status">Draft</span><small>—</small></div>
+          </div>
+        </div>
+        <div class="body"><h2>Best for multiple projects.</h2><p>Strong information architecture, but less motivating when one defense is the real priority.</p></div>
+      </article>
+
+      <article class="option" data-choice="coach-plan" onclick="toggleSelect(this)">
+        <div class="mock-label"><span>C · Coach plan</span><span>Schedule-first</span></div>
+        <div class="calendar-app">
+          <div class="calendar-top"><span class="calendar-title">This week</span><span class="theme">18 days to defense</span></div>
+          <div class="week">
+            <div class="day"><b>MON</b><div class="session">Claim review<span>20 min</span></div></div>
+            <div class="day"><b>TUE</b></div>
+            <div class="day"><b>WED</b><div class="session">Diagnostic<span>12 min</span></div></div>
+            <div class="day"><b>THU</b></div>
+            <div class="day"><b>FRI</b><div class="session">Mock defense<span>30 min</span></div></div>
+          </div>
+        </div>
+        <div class="body"><h2>Best as a later layer.</h2><p>Useful after the core rehearsal flow is working, but it should not become the app’s first screen.</p></div>
+      </article>
+    </section>
+    <p class="principle">Across every option, the visual rule is: the canvas belongs to the page. Surfaces only appear when they represent an object or an action; navigation, history and setup are arranged by structure and spacing—not by stacking rounded boxes.</p>
+  </main>
+</body>
+</html>

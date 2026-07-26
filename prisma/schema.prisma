@@ -22,6 +22,7 @@ model Session {
   deckContext  String    @default("{}")
   transcriptSegments String @default("[]")
   examinerEvents String @default("[]")
+  deliverySamples String @default("[]") // analysed webcam frames; empty when the camera was off
   findings     String    @default("[]")
   summary      String    @default("")
   keyPoints    String    @default("[]")

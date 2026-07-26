@@ -1,15 +1,9 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-const groq = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY || 'missing_key',
-  baseURL: 'https://api.groq.com/openai/v1',
-});
 
 export async function POST(request: Request) {
   try {
     if (!process.env.GROQ_API_KEY) {
-       throw new Error("Missing GROQ_API_KEY in environment variables");
+      throw new Error("Missing GROQ_API_KEY in environment variables");
     }
 
     const formData = await request.formData();
@@ -19,17 +13,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
     }
 
-    // Convert Blob to File object which the OpenAI SDK requires
-    const audioFile = new File([file], 'recording.webm', { type: file.type || 'audio/webm' });
+    const formDataToSend = new FormData();
+    formDataToSend.append('file', file, 'recording.webm');
+    formDataToSend.append('model', 'whisper-large-v3-turbo');
 
-    const transcription = await groq.audio.transcriptions.create({
-      file: audioFile,
-      model: 'whisper-large-v3-turbo',
+    const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: formDataToSend,
     });
 
-    return NextResponse.json({ text: transcription.text });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Groq API Error Response:', errText);
+      throw new Error(`Groq API returned status ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    return NextResponse.json({ text: data.text });
   } catch (error: any) {
     console.error('Groq STT Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Connection error.' }, { status: 500 });
   }
 }

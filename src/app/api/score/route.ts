@@ -59,13 +59,47 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (session.practiceMode === 'defense') {
+      return NextResponse.json(
+        { error: 'Defense sessions use the evidence-led defense report.', reportUrl: `/api/defense/report` },
+        { status: 409 },
+      );
+    }
+
+    const isInterview = session.practiceMode === 'interview';
+
+    let customCriteriaSection = '';
+    if (session.customConfig) {
+      try {
+        const configObj = JSON.parse(session.customConfig);
+        if (configObj) {
+          if (configObj.focusAreas && configObj.focusAreas.length > 0) {
+            customCriteriaSection += `\nVALUED FOCUS AREAS SPECIFIED BY USER:\nThe candidate specifically requested evaluation feedback on these dimensions:\n`;
+            configObj.focusAreas.forEach((area: string) => {
+              customCriteriaSection += `- Focus on: ${area}\n`;
+            });
+            customCriteriaSection += `Ensure the final "feedback", "weaknesses", and "recommendations" strongly target and evaluate these dimensions.\n`;
+          }
+          if (configObj.customPrompt) {
+            customCriteriaSection += `\nUSER CUSTOM EVALUATION INSTRUCTIONS:\n${configObj.customPrompt}\n`;
+          }
+        }
+      } catch (err) {
+        console.error('Error parsing session customConfig in score/route:', err);
+      }
+    }
+
     // Build a transcript of the conversation
     const conversationTranscript = session.messages
-      .map((msg) => `${msg.role === 'user' ? 'Presenter' : 'Judge'}: ${msg.content}`)
+      .map((msg) => `${msg.role === 'user' ? (isInterview ? 'Candidate' : 'Presenter') : (isInterview ? 'Interviewer' : 'Judge')}: ${msg.content}`)
       .join('\n\n');
 
     // Build the verbatim reading detection section
-    const verbatimSection = session.content
+    const verbatimSection = isInterview
+      ? `
+VERBATIM READING DETECTION:
+This is a job interview practice session. No slides are being presented. Please set verbatimReading to 100.`
+      : session.content
       ? `
 VERBATIM READING DETECTION:
 The original presentation content is provided below. Compare the presenter's speech transcript against this material carefully. Detect whether the presenter was simply reading the slides verbatim instead of explaining or expanding on the content in their own words.
@@ -113,7 +147,66 @@ The "judgeFeedback" array must contain one entry per judge with their specific p
 MULTI-JUDGE FEEDBACK:
 No specific judges were provided. Return an empty array for "judgeFeedback".`;
 
-    const systemPrompt = `You are an expert presentation coach evaluating a practice session. This is a COACHING TOOL designed to help people genuinely improve their presentation skills — not just score them. Your evaluation should feel like personalized coaching feedback.
+    const systemPrompt = isInterview
+      ? `You are an expert technical and behavioral recruiter and hiring coach evaluating a mock job interview. This is a COACHING TOOL designed to help candidates genuinely improve their interview skills — not just score them. Your evaluation should feel like professional, personalized coaching feedback.
+
+${customCriteriaSection}
+
+You MUST return your response as a valid JSON object with the following structure:
+{
+  "clarity": <0-100>,
+  "confidence": <0-100>,
+  "technical": <0-100>,
+  "storytelling": <0-100>,
+  "persuasiveness": <0-100>,
+  "conciseness": <0-100>,
+  "verbatimReading": 100,
+  "eyeContact": <0-100>,
+  "posture": <0-100>,
+  "cameraPresence": <0-100>,
+  "overall": <0-100>,
+  "feedback": "<detailed coaching feedback>",
+  "weaknesses": ["weakness1", "weakness2", ...],
+  "recommendations": ["recommendation1", "recommendation2", ...],
+  "knowledgeGaps": ["gap1", "gap2", ...],
+  "judgeFeedback": [
+    { "judgeType": "recruiter", "icon": "🤝", "title": "Recruiter", "feedback": "..." }
+  ]
+}
+
+Scoring Criteria:
+- Clarity (0-100): Communication/Clarity: How clear, structured, and easy to follow were the candidate's answers?
+- Confidence (0-100): Poise/Confidence: Did the candidate speak with poise, conviction, and professionalism?
+- Technical Understanding (0-100): Technical depth: How well did the candidate show their technical knowledge, coding background, or functional expertise for the target role?
+- Storytelling (0-100): STAR Method: Did the candidate structure their examples well (Situation, Task, Action, Result)?
+- Persuasiveness (0-100): Culture Fit: How convincing was the candidate? Did they demonstrate soft skills and cultural alignment?
+- Conciseness (0-100): Conciseness: Did the candidate answer directly or ramble?
+- Verbatim Reading (0-100): Always set to 100 (not applicable for interviews).
+- Eye Contact (0-100): How well did the candidate maintain eye contact with the camera? 100 = consistent eye contact, 0 = no eye contact or camera not used.
+- Posture (0-100): How was the candidate's posture on camera? 100 = upright, confident, professional, 0 = poor posture or camera not used.
+- Camera Presence (0-100): Overall camera presence and professionalism. 100 = excellent on-camera presence, well-framed, engaging, 0 = camera not used.
+- Overall (0-100): A weighted average of the interview performance metrics.
+
+${verbatimSection}
+
+${cameraSection}
+
+${judgeSection}
+
+KNOWLEDGE GAP DETECTION:
+Compare the candidate's answers against the target role requirements and their CV/Resume. Identify areas where they struggled to answer, showed technical gaps, or lacked depth. List 1-3 specific gaps in "knowledgeGaps".
+
+Additional requirements:
+- feedback: A detailed coaching paragraph (4-6 sentences) that feels like a supportive but honest interviewer/coach talking to them. Mention what they did well (e.g. structured answers, technical clarity) AND what needs work.
+- weaknesses: 2-4 specific weaknesses. Be specific, not generic.
+- recommendations: 2-4 actionable, specific recommendations for improvement (e.g., "Use concrete metrics when describing your impact in past coding projects").
+- knowledgeGaps: 1-3 specific topics or skills the candidate should study or prepare more on.
+- judgeFeedback: One entry per interviewer present with perspective-specific coaching feedback (2-3 sentences each), or empty array if no interviewers.
+
+Return ONLY the JSON object, no other text.`
+      : `You are an expert presentation coach evaluating a practice session. This is a COACHING TOOL designed to help people genuinely improve their presentation skills — not just score them. Your evaluation should feel like personalized coaching feedback.
+
+${customCriteriaSection}
 
 You MUST return your response as a valid JSON object with the following structure:
 {
@@ -168,7 +261,18 @@ Additional requirements:
 
 Return ONLY the JSON object, no other text.`;
 
-    const userMessage = `Session Title: ${session.title}
+    const userMessage = isInterview
+      ? `Target Job & Company: ${session.title}
+Interviewer Types: ${judgesList.map(j => j.title).join(', ')}
+
+Candidate's CV/Resume:
+${session.content || 'None provided'}
+
+Conversation Transcript:
+${conversationTranscript || 'No conversation recorded yet.'}
+
+Please evaluate this mock job interview practice session. Focus on coaching them to improve their answers — be specific, honest, and supportive.`
+      : `Session Title: ${session.title}
 Audience Type: ${session.audienceType}
 
 ${session.summary ? `Presentation Summary: ${session.summary}` : ''}

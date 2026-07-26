@@ -11,6 +11,7 @@ import { TranscriptPanel } from './TranscriptPanel';
 import { SimulatorToolbar } from './SimulatorToolbar';
 import { CameraPip } from './CameraPip';
 import { useCamera } from './use-camera';
+import { useDeliverySamples } from './use-delivery-samples';
 import { nextSlideForKey } from './slide-keys';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,10 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   const isTopic = session.source === 'topic';
 
   const { changeSlide, position, total, phase } = engine;
+  const delivery = useDeliverySamples({
+    enabled: camera.enabled, live: phase === 'live',
+    getVideo: camera.getVideo, startedAtMs: engine.startedAtMs,
+  });
   const navEnabled = !isTopic && (phase === 'live' || phase === 'introducing');
 
   /**
@@ -127,7 +132,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-3'
           : 'shrink-0 border-t border-border bg-background px-4 py-2',
       )}>
-        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={phase !== 'live'}
+        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end(delivery.getSamples())} endDisabled={phase !== 'live'}
           timer={phase === 'ready' ? undefined : { startedAtMs: engine.startedAtMs, targetMs, onCycleTarget: setTargetMs }}
           camera={{ enabled: camera.enabled, onToggle: () => void camera.toggle() }}
           slideNav={isTopic ? undefined : {

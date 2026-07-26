@@ -46,10 +46,19 @@ export function syntheticTopicDeck(topic: string): DeckContext {
   return { sourceName: trimmed.slice(0, 180), slides: [{ index: 1, text: trimmed, imageUrl: 'topic' }] };
 }
 
+/** Analysed webcam frames, on the same session clock as every other timestamp. */
+export const deliverySamplesSchema = z.array(z.object({
+  atMs: z.number().finite().nonnegative(),
+  eyeContact: z.number().finite().min(0).max(100),
+  posture: z.number().finite().min(0).max(100),
+  presence: z.number().finite().min(0).max(100),
+}).strict()).max(2_000);
+
 export const updateDefenseSessionSchema = z.object({
   mode: z.enum(['diagnostic', 'mock']).optional(),
   stance: z.enum(['supportive', 'rigorous']).optional(),
   transcriptSegments: transcriptSegmentsSchema.optional(),
   examinerEvents: examinerEventsSchema.optional(),
+  deliverySamples: deliverySamplesSchema.optional(),
   status: z.enum(['upload', 'analyzed', 'practicing', 'completed']).optional(),
 }).strict().refine((update) => Object.keys(update).length > 0, { message: 'At least one update is required' });
