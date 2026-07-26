@@ -1,12 +1,12 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Users, Captions, PhoneOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Users, Captions, PhoneOff } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { ActivityBars } from './ActivityBars';
 import { SessionTimer } from './SessionTimer';
 import { cn } from '@/lib/utils';
 
-export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer }: {
+export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer, camera }: {
   recording?: boolean; micActive: boolean;
   /** The recogniser is producing words right now — i.e. you are being heard. */
   hearing?: boolean;
@@ -16,6 +16,8 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
   maximized?: boolean; onToggleMaximized?: () => void;
   /** Present once the rehearsal is under way; absent before Begin. */
   timer?: { startedAtMs: number; targetMs: number | null; onCycleTarget: (next: number | null) => void };
+  /** Camera is opt-in: the control only appears when the room supplies it. */
+  camera?: { enabled: boolean; onToggle: () => void };
 }) {
   const round = (variant: 'default' | 'secondary' | 'destructive') =>
     cn(buttonVariants({ variant, size: 'icon' }), 'size-8 rounded-full');
@@ -48,6 +50,11 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
           <ActivityBars active={hearing} />
           <span className="hidden sm:inline">{hearing ? 'Speaking' : 'Listening'}</span>
         </span>
+      )}
+      {camera && (
+        <button type="button" aria-label={camera.enabled ? 'Turn off camera' : 'Turn on camera'} onClick={camera.onToggle} className={round(camera.enabled ? 'default' : 'secondary')}>
+          {camera.enabled ? <Video className="size-4" aria-hidden="true" /> : <VideoOff className="size-4" aria-hidden="true" />}
+        </button>
       )}
       <button type="button" aria-label="Show participants" onClick={onToggleParticipants} className={round('secondary')}>
         <Users className="size-4" aria-hidden="true" />

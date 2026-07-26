@@ -9,6 +9,8 @@ import { StageCaption } from './StageCaption';
 import { AudiencePanel } from './AudiencePanel';
 import { TranscriptPanel } from './TranscriptPanel';
 import { SimulatorToolbar } from './SimulatorToolbar';
+import { CameraPip } from './CameraPip';
+import { useCamera } from './use-camera';
 import { nextSlideForKey } from './slide-keys';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,6 +29,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   const [showParticipants, setShowParticipants] = useState(true);
   const [maximized, setMaximized] = useState(false);
   const [targetMs, setTargetMs] = useState<number | null>(null);
+  const camera = useCamera();
   const roomRef = useRef<HTMLDivElement>(null);
   const isTopic = session.source === 'topic';
 
@@ -95,10 +98,11 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         maximized ? 'gap-0 p-0' : 'gap-2 p-2 lg:mx-auto lg:max-w-[1600px] lg:gap-3',
         showAside && 'max-lg:grid-rows-[minmax(0,1fr)_minmax(0,auto)] lg:grid-cols-[minmax(0,1fr)_22rem]',
       )}>
-        <div className={cn('flex min-h-0 min-w-0 flex-col', !maximized && 'gap-2')}>
+        <div className={cn('relative flex min-h-0 min-w-0 flex-col', !maximized && 'gap-2')}>
           {isTopic
             ? <TopicStage topic={session.deck.slides[0]?.text ?? ''} />
             : <SlideStage slide={engine.slide} position={position} total={total} />}
+          {camera.enabled && <CameraPip attach={camera.attach} />}
           <StageCaption
             text={engine.caption}
             fullText={engine.captionFull}
@@ -112,7 +116,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           <aside className="flex min-h-0 flex-col gap-3 overflow-hidden max-lg:max-h-[40dvh]">
             {showParticipants && <AudiencePanel panel={engine.panel} speakingPersonaId={engine.speakingPersonaId} self={{ micActive: engine.micActive, hearing }} />}
             {showTranscript && <TranscriptPanel segments={engine.transcript} interim={engine.interim} metrics={engine.metrics} />}
-            {engine.error && <p role="alert" className="shrink-0 text-sm text-destructive">{engine.error}</p>}
+            {(engine.error || camera.error) && <p role="alert" className="shrink-0 text-sm text-destructive">{engine.error ?? camera.error}</p>}
           </aside>
         )}
       </main>
@@ -125,6 +129,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
       )}>
         <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={phase !== 'live'}
           timer={phase === 'ready' ? undefined : { startedAtMs: engine.startedAtMs, targetMs, onCycleTarget: setTargetMs }}
+          camera={{ enabled: camera.enabled, onToggle: () => void camera.toggle() }}
           slideNav={isTopic ? undefined : {
             onPrev: () => void changeSlide(Math.max(0, position - 1)),
             onNext: () => void changeSlide(Math.min(total - 1, position + 1)),

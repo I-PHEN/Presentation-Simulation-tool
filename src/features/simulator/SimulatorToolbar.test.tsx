@@ -98,6 +98,38 @@ describe('SimulatorToolbar', () => {
     expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(3);
   });
 
+  it('offers the camera only when the room wires it, and reflects its state', () => {
+    const without = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(without).not.toContain('camera');
+
+    const off = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        camera={{ enabled: false, onToggle: () => undefined }} />,
+    );
+    expect(off).toContain('aria-label="Turn on camera"');
+
+    const on = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        camera={{ enabled: true, onToggle: () => undefined }} />,
+    );
+    expect(on).toContain('aria-label="Turn off camera"');
+  });
+
+  it('shows the clock only once the rehearsal has begun', () => {
+    const before = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(before).not.toContain('Set a time target');
+
+    const during = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        timer={{ startedAtMs: Date.now() - 134_000, targetMs: null, onCycleTarget: () => undefined }} />,
+    );
+    expect(during).toContain('2:14');
+  });
+
   it('omits slide navigation entirely in topic mode, which has one card', () => {
     const html = renderToStaticMarkup(
       <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
