@@ -2,7 +2,7 @@ import { buildDefenseReport } from './report';
 import { computeCoachingMetrics } from './coaching-metrics';
 import { buildTimeline } from './coaching-timeline';
 import { buildPersonaVerdicts } from './persona-verdicts';
-import type { CoachingReport, DeckContext, DefenseFinding, ExaminerEvent, TranscriptSegment } from './types';
+import type { CoachingReport, DeckContext, DefenseFinding, DeliveryMetrics, ExaminerEvent, TranscriptSegment } from './types';
 
 export function validatePersonaVerdictLines(examinerEvents: ExaminerEvent[], raw: { personaId: string; line: string }[] | undefined): Record<string, string> {
   if (!raw) return {};
@@ -16,14 +16,14 @@ export function validatePersonaVerdictLines(examinerEvents: ExaminerEvent[], raw
   return kept;
 }
 
-export function assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings, verdictLines, minimal, deckless = false }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; findings: DefenseFinding[]; verdictLines: Record<string, string>; minimal: boolean; deckless?: boolean }): CoachingReport {
+export function assembleCoachingReport({ deck, transcriptSegments, examinerEvents, findings, verdictLines, minimal, deckless = false, delivery = null }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; findings: DefenseFinding[]; verdictLines: Record<string, string>; minimal: boolean; deckless?: boolean; delivery?: DeliveryMetrics | null }): CoachingReport {
   // buildDefenseReport already orders findings, fills a grounded fallback, and computes strengths.
   const base = buildDefenseReport({ deck, transcriptSegments, examinerEvents, findings });
   const drills = findings.length ? [...findings].map((finding) => finding.drill) : [base.nextDrill];
   return {
     highestLeverage: base.highestLeverage,
     drills,
-    metrics: computeCoachingMetrics({ deck, transcriptSegments, examinerEvents, deckless }),
+    metrics: computeCoachingMetrics({ deck, transcriptSegments, examinerEvents, deckless, delivery }),
     timeline: buildTimeline({ transcriptSegments, examinerEvents }),
     personaVerdicts: buildPersonaVerdicts({ examinerEvents, transcriptSegments, verdictLines }),
     strengths: base.strengths,

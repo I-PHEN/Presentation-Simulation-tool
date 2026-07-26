@@ -6,7 +6,7 @@ import { PersonaVerdictCards } from './PersonaVerdictCards';
 import { DrillsPanel } from './DrillsPanel';
 import type { CoachingMetrics, PersonaVerdict, TimelineMoment } from '@/features/defense/types';
 
-const metrics: CoachingMetrics = { paceWpm: 142, fillerPerMin: 6, verbatimSlides: 2, slideTimes: [{ slideIndex: 4, ms: 190000, atMs: 130000 }], questionsHandled: { handled: 3, total: 5 } };
+const metrics: CoachingMetrics = { paceWpm: 142, fillerPerMin: 6, verbatimSlides: 2, slideTimes: [{ slideIndex: 4, ms: 190000, atMs: 130000 }], questionsHandled: { handled: 3, total: 5 }, deckless: false, delivery: null };
 const timeline: TimelineMoment[] = [
   { atMs: 0, kind: 'presenter', slideIndex: 1, text: 'Opening line' },
   { atMs: 134000, kind: 'question', slideIndex: 4, text: 'Why alpha', personaTitle: 'Professor' },
@@ -22,6 +22,29 @@ describe('MetricsStrip', () => {
     expect(html).toContain('Pace');
     expect(html).toContain('Questions handled');
     expect(html).toContain('3 of 5');
+  });
+
+  it('says nothing at all about the camera when it produced no evidence', () => {
+    const html = renderToStaticMarkup(<MetricsStrip metrics={metrics} onSeek={() => undefined} />);
+    expect(html).not.toContain('Eye contact');
+    expect(html).not.toContain('Posture');
+    expect(html).not.toContain('Camera scores');
+  });
+
+  it('reports camera scores with the coverage they are based on, and seekable moments', () => {
+    const html = renderToStaticMarkup(
+      <MetricsStrip
+        metrics={{ ...metrics, delivery: { samples: 54, eyeContact: 72, posture: 64, presence: 80, coverageMs: 1_100_000, lowMoments: [{ atMs: 400_000, kind: 'eyeContact' }] } }}
+        onSeek={() => undefined}
+      />,
+    );
+    expect(html).toContain('Eye contact');
+    expect(html).toContain('72');
+    expect(html).toContain('Posture');
+    // The claim is bounded by what the camera actually saw.
+    expect(html).toContain('54 frames over 18:20');
+    expect(html).toContain('6:40');
+    expect(html).toContain('Looked away from camera');
   });
   it('renders a dash when a metric is null', () => {
     const html = renderToStaticMarkup(<MetricsStrip metrics={{ ...metrics, paceWpm: null, fillerPerMin: null }} onSeek={() => undefined} />);

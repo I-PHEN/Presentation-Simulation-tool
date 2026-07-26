@@ -1,9 +1,9 @@
 import { computeMetrics } from '@/features/simulator/metrics';
 import { analyseReading } from './reading-analysis';
 import { spokenBySlide } from './transcript';
-import type { CoachingMetrics, DeckContext, ExaminerEvent, TranscriptSegment } from './types';
+import type { CoachingMetrics, DeckContext, DeliveryMetrics, ExaminerEvent, TranscriptSegment } from './types';
 
-export function computeCoachingMetrics({ deck, transcriptSegments, examinerEvents, deckless = false }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; deckless?: boolean }): CoachingMetrics {
+export function computeCoachingMetrics({ deck, transcriptSegments, examinerEvents, deckless = false, delivery = null }: { deck: DeckContext; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; deckless?: boolean; delivery?: DeliveryMetrics | null }): CoachingMetrics {
   const speech = computeMetrics(transcriptSegments);
   const hasSpeech = speech.spokenMs > 0;
   const paceWpm = hasSpeech ? speech.wpm : null;
@@ -25,5 +25,5 @@ export function computeCoachingMetrics({ deck, transcriptSegments, examinerEvent
   const handled = examinerEvents.filter((event) => presenter.some((segment) => segment.slideIndex === event.slideIndex && segment.startedAtMs > event.occurredAtMs)).length;
   const questionsHandled = { handled, total: examinerEvents.length };
 
-  return { paceWpm, fillerPerMin, verbatimSlides, slideTimes, questionsHandled, deckless };
+  return { paceWpm, fillerPerMin, verbatimSlides, slideTimes, questionsHandled, deckless, delivery };
 }

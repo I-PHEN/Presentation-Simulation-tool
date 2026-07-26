@@ -77,6 +77,28 @@ export const defenseFindingSchema = z.object({ title: z.string().trim().min(1).m
 export const defenseEvidenceTrailSchema = z.object({ slideIndex: z.number().int().positive(), slideClaim: z.string(), presenterSpeech: z.string(), examinerEvent: z.string().optional(), responseGap: z.string(), drill: z.string() }).strict();
 export const defenseReportSchema = z.object({ highestLeverage: defenseFindingSchema, evidenceTrail: z.array(defenseEvidenceTrailSchema).min(1), strengths: z.array(z.string()), slideReliance: z.object({ available: z.boolean(), summary: z.string(), evidence: z.array(readingEvidenceSchema) }).strict(), nextDrill: z.string().trim().min(1) }).strict();
 
+/** One analysed webcam frame, timestamped on the session clock. */
+export interface DeliverySample {
+  atMs: number;
+  eyeContact: number;
+  posture: number;
+  presence: number;
+}
+
+/**
+ * Aggregated camera evidence. Only ever present when enough frames actually
+ * contained a person — see aggregateDelivery. `coverageMs` keeps the claim
+ * proportionate to what the camera saw.
+ */
+export interface DeliveryMetrics {
+  samples: number;
+  eyeContact: number;
+  posture: number;
+  presence: number;
+  coverageMs: number;
+  lowMoments: { atMs: number; kind: 'eyeContact' | 'posture' }[];
+}
+
 export interface CoachingMetrics {
   paceWpm: number | null;
   fillerPerMin: number | null;
@@ -85,6 +107,8 @@ export interface CoachingMetrics {
   questionsHandled: { handled: number; total: number };
   /** Topic (slide-free) sessions set this: slide-derived signals must be omitted. */
   deckless: boolean;
+  /** Null whenever the camera was off or saw too little to be evidence. */
+  delivery: DeliveryMetrics | null;
 }
 
 export type TimelineMomentKind = 'presenter' | 'question' | 'interrupt' | 'follow_up';
@@ -128,6 +152,15 @@ const coachingMetricsSchema = z.object({
   slideTimes: z.array(z.object({ slideIndex: z.number().int().positive(), ms: z.number().finite().nonnegative(), atMs: z.number().finite().nonnegative() }).strict()),
   questionsHandled: z.object({ handled: z.number().int().nonnegative(), total: z.number().int().nonnegative() }).strict(),
   deckless: z.boolean().default(false),
+  // Defaulted so reports cached before camera support still parse.
+  delivery: z.object({
+    samples: z.number().int().nonnegative(),
+    eyeContact: z.number().finite().min(0).max(100),
+    posture: z.number().finite().min(0).max(100),
+    presence: z.number().finite().min(0).max(100),
+    coverageMs: z.number().finite().nonnegative(),
+    lowMoments: z.array(z.object({ atMs: z.number().finite().nonnegative(), kind: z.enum(['eyeContact', 'posture']) }).strict()),
+  }).strict().nullable().default(null),
 }).strict();
 
 const timelineMomentSchema = z.object({

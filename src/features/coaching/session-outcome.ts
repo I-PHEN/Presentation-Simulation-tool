@@ -18,6 +18,14 @@ export function dimensionsFromMetrics(metrics: CoachingMetrics): Record<string, 
   // no slides to read from, so it is omitted rather than computed from a synthetic card.
   if (!metrics.deckless && spoken > 0) dimensions.ownWords = Math.round(clamp(100 - (metrics.verbatimSlides / spoken) * 100, 0, 100));
   if (metrics.questionsHandled.total > 0) dimensions.questionHandling = Math.round((metrics.questionsHandled.handled / metrics.questionsHandled.total) * 100);
+  // Camera dimensions only exist when the camera was on and saw enough of the
+  // session to be evidence (aggregateDelivery decides); a camera-less rehearsal
+  // must not dilute the longitudinal profile with invented visual scores.
+  if (metrics.delivery) {
+    dimensions.eyeContact = metrics.delivery.eyeContact;
+    dimensions.posture = metrics.delivery.posture;
+    dimensions.cameraPresence = metrics.delivery.presence;
+  }
   return dimensions;
 }
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildSessionOutcome, dimensionsFromMetrics, hasEvidence, paceScore } from './session-outcome';
 import type { CoachingMetrics } from '@/features/defense/types';
 
-const full: CoachingMetrics = { paceWpm: 135, fillerPerMin: 3, verbatimSlides: 1, slideTimes: [{ slideIndex: 1, ms: 1000, atMs: 0 }, { slideIndex: 2, ms: 1000, atMs: 2000 }], questionsHandled: { handled: 3, total: 4 }, deckless: false };
+const full: CoachingMetrics = { paceWpm: 135, fillerPerMin: 3, verbatimSlides: 1, slideTimes: [{ slideIndex: 1, ms: 1000, atMs: 0 }, { slideIndex: 2, ms: 1000, atMs: 2000 }], questionsHandled: { handled: 3, total: 4 }, deckless: false, delivery: null };
 
 describe('paceScore', () => {
   it('scores the ideal band at 100 and falls off outside it', () => {
@@ -25,7 +25,7 @@ describe('dimensionsFromMetrics', () => {
   });
 
   it('omits dimensions whose source metric is unavailable', () => {
-    const d = dimensionsFromMetrics({ paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false });
+    const d = dimensionsFromMetrics({ paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false, delivery: null });
     expect(d).toEqual({});
   });
 
@@ -36,6 +36,25 @@ describe('dimensionsFromMetrics', () => {
     expect(d.pace).toBe(100);
     expect(d.fluency).toBe(82);
     expect(d.questionHandling).toBe(75);
+  });
+
+  it('omits every camera dimension when the camera produced no usable evidence', () => {
+    const d = dimensionsFromMetrics(full); // delivery: null
+    expect(d.eyeContact).toBeUndefined();
+    expect(d.posture).toBeUndefined();
+    expect(d.cameraPresence).toBeUndefined();
+  });
+
+  it('carries camera dimensions into the profile only when delivery evidence exists', () => {
+    const d = dimensionsFromMetrics({
+      ...full,
+      delivery: { samples: 40, eyeContact: 72, posture: 64, presence: 80, coverageMs: 800_000, lowMoments: [] },
+    });
+    expect(d.eyeContact).toBe(72);
+    expect(d.posture).toBe(64);
+    expect(d.cameraPresence).toBe(80);
+    // and the spoken dimensions are untouched by it
+    expect(d.pace).toBe(100);
   });
 });
 
@@ -49,7 +68,7 @@ describe('buildSessionOutcome + hasEvidence', () => {
   });
 
   it('hasEvidence is false when there are no dimensions and no weaknesses', () => {
-    const o = buildSessionOutcome({ sessionId: 's1', metrics: { paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false }, weaknessLabels: [], completedAt: '2026-07-23T00:00:00.000Z' });
+    const o = buildSessionOutcome({ sessionId: 's1', metrics: { paceWpm: null, fillerPerMin: null, verbatimSlides: 0, slideTimes: [], questionsHandled: { handled: 0, total: 0 }, deckless: false, delivery: null }, weaknessLabels: [], completedAt: '2026-07-23T00:00:00.000Z' });
     expect(hasEvidence(o)).toBe(false);
   });
 });
