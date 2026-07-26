@@ -20,4 +20,11 @@ describe('RecentSessionsCard', () => {
   it('renders nothing when there are no earlier sessions', () => {
     expect(renderToStaticMarkup(<RecentSessionsCard recent={[]} />)).toBe('');
   });
+
+  it('offers removal per row only when the page wires it up', () => {
+    expect(renderToStaticMarkup(<RecentSessionsCard recent={rows} />)).not.toContain('aria-label="Remove');
+    const removable = renderToStaticMarkup(<RecentSessionsCard recent={rows} onRemove={() => undefined} />);
+    expect(removable).toContain('aria-label="Remove Dissertation walkthrough"');
+    expect(removable).toContain('aria-label="Remove Qualifying exam"');
+  });
 });

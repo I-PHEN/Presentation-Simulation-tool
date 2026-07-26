@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { PracticeRow } from '@/features/defense/studio-session-model';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { RemoveSessionButton } from './remove-session-button';
 
 const STATUS_LABELS: Record<string, string> = {
   upload: 'Setup needed',
@@ -11,7 +12,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 /** A compact list of resumable earlier sessions. Renders nothing when there are none. */
-export function RecentSessionsCard({ recent }: { recent: PracticeRow[] }) {
+export function RecentSessionsCard({ recent, onRemove }: { recent: PracticeRow[]; onRemove?: (id: string) => void }) {
   if (recent.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-card p-3" aria-labelledby="recent-sessions-heading">
@@ -25,9 +26,12 @@ export function RecentSessionsCard({ recent }: { recent: PracticeRow[] }) {
               <p className="truncate text-sm font-medium">{row.title}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{STATUS_LABELS[row.status] ?? row.status}</p>
             </div>
-            <Link href={row.action.href} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'shrink-0')}>
-              {row.action.label}
-            </Link>
+            <div className="flex shrink-0 items-center gap-1">
+              <Link href={row.action.href} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>
+                {row.action.label}
+              </Link>
+              {onRemove && <RemoveSessionButton title={row.title} onConfirm={() => onRemove(row.id)} />}
+            </div>
           </li>
         ))}
       </ul>

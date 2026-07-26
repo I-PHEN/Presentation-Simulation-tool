@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { loadDefenseSessions } from './use-defense-sessions';
+import { describe, expect, it, vi } from 'vitest';
+import { deleteDefenseSession, loadDefenseSessions } from './use-defense-sessions';
 import type { StudioSession } from './studio-session-model';
 
 const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -19,5 +19,18 @@ describe('loadDefenseSessions', () => {
 
   it('throws when the authenticated session request fails', async () => {
     await expect(loadDefenseSessions(async () => new Response('{}', { status: 500 }))).rejects.toThrow('Unable to load your sessions.');
+  });
+});
+
+describe('deleteDefenseSession', () => {
+  it('deletes the session through the authenticated route', async () => {
+    const fetcher = vi.fn(async () => jsonResponse({ success: true }));
+    await deleteDefenseSession('session-1', fetcher);
+    expect(fetcher).toHaveBeenCalledWith('/api/session/session-1', { method: 'DELETE' });
+  });
+
+  it('throws when the delete is rejected, so the caller can surface it', async () => {
+    await expect(deleteDefenseSession('session-1', async () => new Response('{}', { status: 404 })))
+      .rejects.toThrow('Unable to remove that rehearsal.');
   });
 });

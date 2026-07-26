@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import type { ProgressModel } from '@/features/coaching/progress-model';
 import { DimensionSparkline } from './dimension-sparkline';
+import { RemoveSessionButton } from './remove-session-button';
 
-export function ProgressWorkspace({ model }: { model: ProgressModel }) {
+export function ProgressWorkspace({ model, onRemove }: { model: ProgressModel; onRemove?: (id: string) => void }) {
   if (model.history.length === 0 && model.totalSessions === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-surface/40 p-10">
@@ -48,11 +49,14 @@ export function ProgressWorkspace({ model }: { model: ProgressModel }) {
         <ol className="mt-4 flex flex-col divide-y divide-border">
           {model.history.map((h) => (
             <li key={h.id} className="flex items-center justify-between gap-4 px-1 py-3">
-              <span className="flex flex-col">
-                <span className="text-sm font-medium text-foreground">{h.title}</span>
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-medium text-foreground">{h.title}</span>
                 <span className="text-xs text-muted-foreground">{h.date}</span>
               </span>
-              <Link href={h.href} className="text-sm font-medium text-primary underline-offset-4 hover:underline">Open report</Link>
+              <span className="flex shrink-0 items-center gap-2">
+                <Link href={h.href} className="text-sm font-medium text-primary underline-offset-4 hover:underline">Open report</Link>
+                {onRemove && <RemoveSessionButton title={h.title} onConfirm={() => onRemove(h.id)} />}
+              </span>
             </li>
           ))}
         </ol>

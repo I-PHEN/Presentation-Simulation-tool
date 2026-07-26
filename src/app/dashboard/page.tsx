@@ -11,7 +11,7 @@ import { RecentSessionsCard } from '@/features/defense/components/recent-session
 import { StatsSnapshot } from '@/features/defense/components/stats-snapshot';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { buildTodayModel } from '@/features/defense/studio-session-model';
-import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
+import { deleteDefenseSession, useDefenseSessions } from '@/features/defense/use-defense-sessions';
 import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,18 @@ export default function DashboardPage() {
   const [resyncedAfterAuth, setResyncedAfterAuth] = useState(false);
   const [todaysTopic, setTodaysTopic] = useState<string>();
   const [hasInterests, setHasInterests] = useState(false);
+  const [removeError, setRemoveError] = useState<string>();
+
+  // Refetch rather than filter locally, so Home never disagrees with the server.
+  const removeSession = async (id: string) => {
+    setRemoveError(undefined);
+    try {
+      await deleteDefenseSession(id);
+      retry();
+    } catch (caught) {
+      setRemoveError(caught instanceof Error ? caught.message : 'Unable to remove that rehearsal.');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
@@ -104,10 +116,11 @@ export default function DashboardPage() {
           return (
             <div className="flex flex-col gap-8">
               <Greeting name={displayName} hasActive={Boolean(model.active)} />
-              <StudioDesk model={model} focus={profile.nextFocus} />
+              <StudioDesk model={model} focus={profile.nextFocus} onRemove={(id) => void removeSession(id)} />
+              {removeError && <p role="alert" className="text-sm text-destructive">{removeError}</p>}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <TodaysTopicCard topic={todaysTopic} hasInterests={hasInterests} />
-                <RecentSessionsCard recent={model.recent} />
+                <RecentSessionsCard recent={model.recent} onRemove={(id) => void removeSession(id)} />
                 <StatsSnapshot profile={profile} />
               </div>
             </div>

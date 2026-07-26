@@ -4,6 +4,7 @@ import type { TodayModel } from '@/features/defense/studio-session-model';
 import { AuthenticatedSlideImage } from '@/lib/authenticated-asset';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { RemoveSessionButton } from './remove-session-button';
 
 const STATUS_LABELS: Record<string, string> = {
   upload: 'Setup needed',
@@ -35,7 +36,7 @@ function displayTitle(title: string): string {
  * preview, the active session, its status, the coaching focus, and the primary action
  * into a single focused card - never a stack of empty boxes, never fabricated content.
  */
-export function StudioDesk({ model, focus }: { model: TodayModel; focus?: string }) {
+export function StudioDesk({ model, focus, onRemove }: { model: TodayModel; focus?: string; onRemove?: (id: string) => void }) {
   const { active } = model;
 
   if (!active) {
@@ -94,10 +95,12 @@ export function StudioDesk({ model, focus }: { model: TodayModel; focus?: string
               <span className="font-medium text-foreground">Focus:</span> {focusLine}
             </p>
           )}
-          <div className="mt-auto flex flex-wrap gap-2 pt-5">
+          <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
             <Link href={model.primaryAction.href} className={cn(buttonVariants({ size: 'lg' }))}>
               {model.primaryAction.label}
             </Link>
+            {/* The way out when this session keeps holding the top of Home. */}
+            {onRemove && <RemoveSessionButton title={displayTitle(active.title)} onConfirm={() => onRemove(active.id)} showLabel />}
           </div>
         </div>
       </div>

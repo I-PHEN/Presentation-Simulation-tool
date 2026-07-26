@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
 import { ProgressWorkspace } from '@/features/defense/components/progress-workspace';
 import { buildProgressModel } from '@/features/coaching/progress-model';
-import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
+import { deleteDefenseSession, useDefenseSessions } from '@/features/defense/use-defense-sessions';
 import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,18 @@ export default function ProgressPage() {
   const { sessions, loading: sessionsLoading, error, retry } = useDefenseSessions();
   const { profile } = useSpeakerProfile();
   const [resyncedAfterAuth, setResyncedAfterAuth] = useState(false);
+  const [removeError, setRemoveError] = useState<string>();
+
+  // Refetch rather than filter locally, so the workspace never disagrees with the server.
+  const removeSession = async (id: string) => {
+    setRemoveError(undefined);
+    try {
+      await deleteDefenseSession(id);
+      retry();
+    } catch (caught) {
+      setRemoveError(caught instanceof Error ? caught.message : 'Unable to remove that rehearsal.');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/login');
@@ -67,12 +79,16 @@ export default function ProgressPage() {
           </div>
         </div>
       ) : (
-        <ProgressWorkspace
-          model={buildProgressModel(
-            profile,
-            sessions.map((s) => ({ ...s, createdAt: String(s.createdAt) }))
-          )}
-        />
+        <div className="flex flex-col gap-4">
+          {removeError && <p role="alert" className="text-sm text-destructive">{removeError}</p>}
+          <ProgressWorkspace
+            model={buildProgressModel(
+              profile,
+              sessions.map((s) => ({ ...s, createdAt: String(s.createdAt) }))
+            )}
+            onRemove={(id) => void removeSession(id)}
+          />
+        </div>
       )}
     </AppShell>
   );

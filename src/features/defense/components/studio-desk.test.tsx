@@ -91,6 +91,13 @@ describe('StudioDesk continue hero', () => {
     expect(withFocus).not.toContain('Explain the evidence.');
   });
 
+  it('lets you remove the session holding the top of Home, when the page wires it up', () => {
+    expect(renderToStaticMarkup(<StudioDesk model={practicingTodayModel} />)).not.toContain('aria-label="Remove');
+    const removable = renderToStaticMarkup(<StudioDesk model={practicingTodayModel} onRemove={() => undefined} />);
+    // The presentable title, matching the heading rather than the raw filename.
+    expect(removable).toContain('aria-label="Remove Final thesis defense"');
+  });
+
   it('shows the get-started hero and the source-neutral action for an empty workspace', () => {
     const html = renderToStaticMarkup(<StudioDesk model={emptyTodayModel} />);
     expect(html).toContain('Start your first rehearsal');

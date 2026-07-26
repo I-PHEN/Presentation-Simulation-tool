@@ -11,6 +11,13 @@ export async function loadDefenseSessions(fetcher: typeof authenticatedFetch = a
   return body.sessions ?? [];
 }
 
+/** Removes a rehearsal for good. The route is ownership-checked server-side, so a
+ * 404 here means it was someone else's or already gone. */
+export async function deleteDefenseSession(id: string, fetcher: typeof authenticatedFetch = authenticatedFetch): Promise<void> {
+  const response = await fetcher(`/api/session/${id}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error('Unable to remove that rehearsal.');
+}
+
 export type UseDefenseSessionsResult = {
   sessions: StudioSession[];
   loading: boolean;

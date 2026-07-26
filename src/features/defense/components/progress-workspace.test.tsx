@@ -40,4 +40,10 @@ describe('ProgressWorkspace', () => {
     const html = renderToStaticMarkup(<ProgressWorkspace model={{ totalSessions: 0, nextFocus: '', series: [], recurringWeaknesses: [], history: [] }} />);
     expect(html).toContain('No rehearsals');
   });
+
+  it('offers removal on history rows only when the page wires it up', () => {
+    expect(renderToStaticMarkup(<ProgressWorkspace model={model} />)).not.toContain('aria-label="Remove');
+    const removable = renderToStaticMarkup(<ProgressWorkspace model={model} onRemove={() => undefined} />);
+    expect(removable).toContain('aria-label="Remove Third"');
+  });
 });
