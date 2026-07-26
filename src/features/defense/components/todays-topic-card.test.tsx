@@ -8,7 +8,11 @@ describe('TodaysTopicCard', () => {
     expect(html).toContain('Today&#x27;s topic');
     expect(html).toContain('Should AI be regulated?');
     expect(html).toContain('Rehearse this');
-    expect(html).toContain('href="/decks/new"');
+  });
+
+  it('carries the topic into setup so Rehearse never lands on the deck upload', () => {
+    const html = renderToStaticMarkup(<TodaysTopicCard topic="Should AI be regulated?" hasInterests />);
+    expect(html).toContain('href="/decks/new?source=topic&amp;topic=Should%20AI%20be%20regulated%3F"');
   });
 
   it('invites a user with no interests to pick them', () => {

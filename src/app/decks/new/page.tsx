@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/features/defense/components/app-shell';
 import { RehearseSetup, buildRehearseSessionPayload, type RehearseConfig } from '@/features/defense/components/rehearse-setup';
 import { RehearseSourcePicker, type RehearseSource } from '@/features/defense/components/rehearse-source-picker';
@@ -31,13 +31,17 @@ export function SignInRecovery(): React.ReactElement {
   );
 }
 
-export default function NewDeckPage() {
-  useOnboardingGuard();
+function RehearseSetupFlow() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Arriving from Today's topic: open on that topic instead of the deck upload.
+  const requestedTopic = searchParams.get('topic')?.trim() ?? '';
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string>();
-  const [source, setSource] = useState<RehearseSource>('deck');
+  const [source, setSource] = useState<RehearseSource>(
+    searchParams.get('source') === 'topic' || requestedTopic ? 'topic' : 'deck',
+  );
 
   const createSession = async (payload: unknown) => {
     setCreating(true);
@@ -64,17 +68,27 @@ export default function NewDeckPage() {
   const startTopic = (config: TopicConfig) => void createSession(buildTopicSessionPayload(config));
 
   if (loading) return null;
-  if (!user) return <AppShell active="rehearse"><SignInRecovery /></AppShell>;
+  if (!user) return <SignInRecovery />;
+  return (
+    <div className="flex flex-col gap-6">
+      <RehearseSourcePicker source={source} onSelect={setSource} />
+      {source === 'deck' ? (
+        <RehearseSetup creating={creating} startError={error} onStart={start} onDeckChange={() => setError(undefined)} />
+      ) : (
+        <TopicSetup creating={creating} startError={error} onStart={startTopic} initialTopic={requestedTopic} />
+      )}
+    </div>
+  );
+}
+
+export default function NewDeckPage() {
+  useOnboardingGuard();
   return (
     <AppShell active="rehearse">
-      <div className="flex flex-col gap-6">
-        <RehearseSourcePicker source={source} onSelect={setSource} />
-        {source === 'deck' ? (
-          <RehearseSetup creating={creating} startError={error} onStart={start} onDeckChange={() => setError(undefined)} />
-        ) : (
-          <TopicSetup creating={creating} startError={error} onStart={startTopic} />
-        )}
-      </div>
+      {/* useSearchParams needs a boundary or this prerendered route fails to build. */}
+      <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading rehearsal setup...</p>}>
+        <RehearseSetupFlow />
+      </Suspense>
     </AppShell>
   );
 }

@@ -32,6 +32,25 @@ describe('TopicSetup', () => {
     expect(html.match(/name="topic-choice"/g)).toHaveLength(2);
   });
 
+  it('preselects a topic handed in from elsewhere and enables Start straight away', () => {
+    const html = renderToStaticMarkup(
+      <TopicSetup onStart={() => undefined} initialTopic="Should AI be regulated?" />,
+    );
+    expect(html).toContain('Should AI be regulated?');
+    expect(html).toMatch(/name="topic-choice"[^>]*checked=""/);
+    // Nothing left to choose, so the start button is live on arrival.
+    expect(html).not.toMatch(/disabled=""[^>]*>Start rehearsal/);
+  });
+
+  it('keeps the handed-in topic in the list even when the suggestions do not include it', () => {
+    const html = renderToStaticMarkup(
+      <TopicSetup onStart={() => undefined} initialTopics={['Is remote work better?']} initialTopic="Should AI be regulated?" />,
+    );
+    expect(html).toContain('Should AI be regulated?');
+    expect(html).toContain('Is remote work better?');
+    expect(html.match(/name="topic-choice"/g)).toHaveLength(2);
+  });
+
   it('shows the creating label and the start error when provided', () => {
     const html = renderToStaticMarkup(
       <TopicSetup onStart={() => undefined} initialTopics={['A topic']} creating startError="The service is busy." />,

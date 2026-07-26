@@ -14,7 +14,11 @@ export function TodaysTopicCard({ topic, hasInterests }: { topic?: string; hasIn
       {topic ? (
         <>
           <p className="mt-3 font-display text-xl font-medium tracking-tight">{topic}</p>
-          <Link href="/decks/new" className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'mt-4 w-fit')}>
+          {/* Carry the topic through, so Rehearse opens on it instead of the deck upload. */}
+          <Link
+            href={`/decks/new?source=topic&topic=${encodeURIComponent(topic)}`}
+            className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'mt-4 w-fit')}
+          >
             Rehearse this
           </Link>
         </>

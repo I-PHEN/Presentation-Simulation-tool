@@ -20,22 +20,32 @@ const STANCES: ReadonlyArray<readonly [ExaminerStance, string, string]> = [
 const RADIO_CARD =
   'cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary';
 
+/** A topic arriving from elsewhere (Today's topic) has to survive the /api/topics
+ * fetch, which would otherwise replace the list and orphan the selection. */
+function withTopic(topics: string[], initialTopic: string): string[] {
+  if (!initialTopic) return topics;
+  return topics.includes(initialTopic) ? topics : [initialTopic, ...topics];
+}
+
 export function TopicSetup({
   creating = false,
   startError,
   onStart,
   topicsFetcher = authenticatedFetch,
   initialTopics = [],
+  initialTopic = '',
 }: {
   creating?: boolean;
   startError?: string;
   onStart: (config: TopicConfig) => void;
   topicsFetcher?: typeof fetch;
   initialTopics?: string[];
+  /** Preselected topic, e.g. arriving from Home's Today's topic card. */
+  initialTopic?: string;
 }): React.ReactElement {
-  const [topics, setTopics] = useState<string[]>(initialTopics);
+  const [topics, setTopics] = useState<string[]>(() => withTopic(initialTopics, initialTopic));
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState(initialTopic);
   const [custom, setCustom] = useState('');
   const [mode, setMode] = useState<DefenseMode>('diagnostic');
   const [stance, setStance] = useState<ExaminerStance>('rigorous');
@@ -45,7 +55,7 @@ export function TopicSetup({
     try {
       const response = await topicsFetcher('/api/topics', { method: 'POST' });
       const data = await response.json();
-      if (Array.isArray(data.topics)) setTopics(data.topics.filter((topic: unknown): topic is string => typeof topic === 'string'));
+      if (Array.isArray(data.topics)) setTopics(withTopic(data.topics.filter((topic: unknown): topic is string => typeof topic === 'string'), initialTopic));
     } catch {
       /* the route already falls back to defaults; a network miss just leaves type-your-own */
     } finally {

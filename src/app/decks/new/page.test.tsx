@@ -23,6 +23,15 @@ describe('rehearse setup route', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
     expect(source).toContain('onDeckChange={() => setError(undefined)}');
   });
+
+  it('opens on the topic step with the topic prefilled when one arrives in the query', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/app/decks/new/page.tsx'), 'utf8');
+    expect(source).toContain("searchParams.get('topic')");
+    expect(source).toContain("searchParams.get('source') === 'topic'");
+    expect(source).toContain('initialTopic={requestedTopic}');
+    // useSearchParams on a prerendered route needs a boundary or the build fails.
+    expect(source).toContain('<Suspense');
+  });
 });
 
 describe('sessionCreateFailureMessage', () => {
