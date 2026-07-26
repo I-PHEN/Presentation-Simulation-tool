@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AppShell } from '@/features/defense/components/app-shell';
-import { NextFocusCard } from '@/features/defense/components/next-focus-card';
+import { Greeting } from '@/features/defense/components/greeting';
 import { StudioDesk } from '@/features/defense/components/studio-desk';
 import { TodaysTopicCard } from '@/features/defense/components/todays-topic-card';
+import { RecentSessionsCard } from '@/features/defense/components/recent-sessions-card';
+import { StatsSnapshot } from '@/features/defense/components/stats-snapshot';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { buildTodayModel } from '@/features/defense/studio-session-model';
 import { useDefenseSessions } from '@/features/defense/use-defense-sessions';
@@ -96,11 +98,21 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          <NextFocusCard profile={profile} />
-          <StudioDesk model={buildTodayModel(sessions)} />
-          <TodaysTopicCard topic={todaysTopic} hasInterests={hasInterests} />
-        </div>
+        (() => {
+          const model = buildTodayModel(sessions);
+          const displayName = user.displayName && user.displayName !== 'Guest User' ? user.displayName.split(' ')[0] : undefined;
+          return (
+            <div className="flex flex-col gap-8">
+              <Greeting name={displayName} hasActive={Boolean(model.active)} />
+              <StudioDesk model={model} focus={profile.nextFocus} />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <TodaysTopicCard topic={todaysTopic} hasInterests={hasInterests} />
+                <RecentSessionsCard recent={model.recent} />
+                <StatsSnapshot profile={profile} />
+              </div>
+            </div>
+          );
+        })()
       )}
     </AppShell>
   );
