@@ -83,6 +83,25 @@ describe('POST /api/defense/examiner', () => {
     expect(body.event.text).toContain('Say this in plain terms');
   });
 
+  it('stamps the event on the session clock the client supplies, never a server wall clock', async () => {
+    findFirst.mockResolvedValue(session);
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment, elapsedMs: 134000 }) }));
+    const body = await response.json();
+    expect(body.event.occurredAtMs).toBe(134000);
+  });
+
+  it('falls back to the end of the segment being answered, which is on the same clock', async () => {
+    findFirst.mockResolvedValue(session);
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment }) }));
+    const body = await response.json();
+    expect(body.event.occurredAtMs).toBe(segment.endedAtMs);
+    expect(body.event.occurredAtMs).toBeLessThan(Date.now() / 2); // emphatically not an epoch stamp
+  });
+
   it('omits persona from the event and keeps legacy lead phrasing when no persona is supplied', async () => {
     findFirst.mockResolvedValue(session);
     create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'interrupt' }) } }] });

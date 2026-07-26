@@ -21,6 +21,10 @@ const requestSchema = z.object({
     copiedPhrases: z.array(z.string().max(500)).max(50), explanationSignals: z.array(z.string().max(500)).max(50),
   }).optional(),
   persona: z.object({ id: z.string().trim().min(1).max(50), title: z.string().trim().min(1).max(80), promptFragment: z.string().trim().min(1).max(2_000) }).optional(),
+  /** Milliseconds since the rehearsal began. Every other time in a session is on
+   * this clock, so the event has to be stamped on it too - a server Date.now()
+   * would make the report's timestamps, seeks, and "responded" checks nonsense. */
+  elapsedMs: z.number().finite().nonnegative().optional(),
 }).strict().refine((request) => !request.readingEvidence || request.readingEvidence.slideIndex === request.currentSegment.slideIndex);
 
 function parseDeck(value: string): { slides: Array<{ index: number; text: string }> } | null {
@@ -45,6 +49,7 @@ function createServerGroundedEvent(
   slideIndex: number,
   slideText: string,
   speech: string,
+  occurredAtMs: number,
   persona?: { id: string; title: string },
 ) {
   const claim = excerpt(slideText);
@@ -58,7 +63,7 @@ function createServerGroundedEvent(
     text: `${action}: the slide states "${claim}" and you said "${spoken}". ${lead}`,
     slideIndex,
     evidence: `Slide claim: ${claim} Presenter speech: ${spoken}`,
-    occurredAtMs: Date.now(),
+    occurredAtMs,
     ...(persona ? { persona: { id: persona.id, title: persona.title } } : {}),
   };
 }
@@ -72,7 +77,7 @@ export async function POST(request: Request) {
   if (!parsedRequest.success) return NextResponse.json({ error: 'Invalid examiner request' }, { status: 400 });
 
   try {
-    const { sessionId, currentSegment, readingEvidence, persona } = parsedRequest.data;
+    const { sessionId, currentSegment, readingEvidence, persona, elapsedMs } = parsedRequest.data;
     const session = await db.session.findFirst({ where: { id: sessionId, userId: identity.userId } });
     if (!session || session.practiceMode !== 'defense') return NextResponse.json({ error: 'Defense session not found' }, { status: 404 });
     const deck = parseDeck(session.deckContext);
@@ -94,7 +99,11 @@ Only decide whether an event is warranted and its kind. Do not write a question,
     try { candidate = JSON.parse(content); } catch { return NextResponse.json({ event: null }); }
     const decision = examinerDecisionSchema.safeParse(candidate);
     if (!decision.success) return NextResponse.json({ event: null });
-    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text, persona ? { id: persona.id, title: persona.title } : undefined));
+    // Without an explicit elapsedMs, the end of the segment being answered is the
+    // truest moment on the session clock - and it beats a server Date.now(), which
+    // is a different clock entirely.
+    const occurredAtMs = elapsedMs ?? currentSegment.endedAtMs;
+    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text, occurredAtMs, persona ? { id: persona.id, title: persona.title } : undefined));
     return NextResponse.json({ event: event.success ? event.data : null });
   } catch (error) {
     console.error('Examiner generation failed', error);

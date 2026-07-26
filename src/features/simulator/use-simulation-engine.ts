@@ -99,7 +99,7 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
       requestTurn: async (segment, persona) => {
         const state = controllerRef.current!.getState();
         const evidence = analyseReading(session.deck.slides, spokenBySlide(state.segments)).find((item) => item.slideIndex === segment.slideIndex);
-        const response = await authenticatedFetch('/api/defense/examiner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: session.id, currentSegment: segment, readingEvidence: evidence, persona: { id: persona.id, title: persona.title, promptFragment: persona.promptFragment } }) });
+        const response = await authenticatedFetch('/api/defense/examiner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: session.id, currentSegment: segment, readingEvidence: evidence, persona: { id: persona.id, title: persona.title, promptFragment: persona.promptFragment }, elapsedMs: Math.max(0, Date.now() - startedAtRef.current) }) });
         const body = await response.json().catch(() => ({}));
         return response.ok && body.event ? body.event as ExaminerEvent : null;
       },

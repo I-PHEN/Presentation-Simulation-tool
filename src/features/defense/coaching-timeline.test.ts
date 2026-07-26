@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, formatTimestamp } from './coaching-timeline';
+import { buildTimeline, formatTimestamp, isSessionRelativeMs } from './coaching-timeline';
 import type { ExaminerEvent, TranscriptSegment } from './types';
 
 describe('formatTimestamp', () => {
@@ -8,6 +8,24 @@ describe('formatTimestamp', () => {
     expect(formatTimestamp(5000)).toBe('0:05');
     expect(formatTimestamp(134000)).toBe('2:14');
     expect(formatTimestamp(605000)).toBe('10:05');
+  });
+});
+
+describe('isSessionRelativeMs', () => {
+  it('accepts offsets into a rehearsal', () => {
+    expect(isSessionRelativeMs(0)).toBe(true);
+    expect(isSessionRelativeMs(134000)).toBe(true);
+  });
+
+  it('rejects the epoch stamps older sessions recorded, which format as nonsense', () => {
+    expect(isSessionRelativeMs(1785018305000)).toBe(false);
+    expect(formatTimestamp(1785018305000)).toBe('29750305:05'); // what the guard exists to suppress
+  });
+
+  it('rejects negative and non-finite values', () => {
+    expect(isSessionRelativeMs(-1)).toBe(false);
+    expect(isSessionRelativeMs(Number.NaN)).toBe(false);
+    expect(isSessionRelativeMs(Number.POSITIVE_INFINITY)).toBe(false);
   });
 });
 

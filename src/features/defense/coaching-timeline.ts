@@ -1,5 +1,15 @@
 import type { ExaminerEvent, TimelineMoment, TranscriptSegment } from './types';
 
+/** A rehearsal offset, not a wall clock. Sessions recorded before examiner
+ * events moved onto the session clock hold `Date.now()` values, which render as
+ * absurd timestamps like 29750305:23 and seek nowhere. Anything past a day is
+ * one of those, so callers can omit the timestamp instead of printing nonsense. */
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+export function isSessionRelativeMs(ms: number): boolean {
+  return Number.isFinite(ms) && ms >= 0 && ms < ONE_DAY_MS;
+}
+
 export function formatTimestamp(ms: number): string {
   const totalSeconds = Math.floor(Math.max(0, ms) / 1000);
   const minutes = Math.floor(totalSeconds / 60);
