@@ -124,6 +124,21 @@ export function AppShell({ active, children }: {
             <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
           ))}
         </nav>
+        <div className="border-t border-sidebar-border p-3">
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+              collapsed && 'justify-center',
+            )}
+          >
+            {collapsed ? <PanelLeftOpen className="size-4 shrink-0" aria-hidden="true" /> : <PanelLeftClose className="size-4 shrink-0" aria-hidden="true" />}
+            <span className={cn('truncate transition-opacity duration-200', collapsed ? 'sr-only' : 'opacity-100')}>Collapse</span>
+          </button>
+        </div>
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
@@ -158,14 +173,6 @@ export function AppShell({ active, children }: {
                 </nav>
               </SheetContent>
             </Sheet>
-            <button
-              type="button"
-              onClick={toggleCollapsed}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'hidden md:inline-flex')}
-            >
-              {collapsed ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
-            </button>
             <span className="text-sm font-semibold tracking-tight">{navTitles[active]}</span>
           </div>
           <div className="flex items-center gap-1">
