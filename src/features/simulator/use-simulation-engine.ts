@@ -78,7 +78,8 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
 
   if (!voiceRef.current) {
     voiceRef.current = createPanelVoiceController({
-      pauseCapture, resumeCapture, generateSpeech: generateTTS, playSpeech: playAudioData,
+      pauseCapture, resumeCapture, generateSpeech: generateTTS,
+      playSpeech: (audio, onDuration) => playAudioData(audio as { audio: Blob }, onDuration),
       appendSegment: async (segment) => { await controllerRef.current?.appendExaminerSegment(segment); },
       defaultVoiceId: panel[0].voiceId, voiceForPersona, now: () => Math.max(0, Date.now() - startedAtRef.current),
     });
@@ -154,7 +155,9 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
 
   return {
     phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening', recording: recorder.isRecording(),
-    panel, speakingPersonaId: voiceState.speakingPersonaId, caption: voiceState.caption, events: state.events, transcript: state.segments, interim, metrics,
+    panel, speakingPersonaId: voiceState.speakingPersonaId,
+    caption: voiceState.caption, captionFull: voiceState.captionFull, captionDone: voiceState.captionDone, captionPersonaId: voiceState.captionPersonaId,
+    events: state.events, transcript: state.segments, interim, metrics,
     error: error ?? voiceState.lastError, begin, toggleMic, changeSlide, end, replayIntro,
     canFinish: controller.canFinish(), finish: controller.finish,
   };

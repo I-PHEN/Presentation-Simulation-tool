@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { TranscriptSegment } from '@/features/defense/types';
 import type { SpeechMetrics } from './metrics';
 import { cn } from '@/lib/utils';
@@ -15,13 +16,20 @@ function Chip({ label, value }: { label: string; value: string }) {
 export function TranscriptPanel({ segments, interim, metrics }: {
   segments: TranscriptSegment[]; interim: string; metrics: SpeechMetrics;
 }) {
+  const listRef = useRef<HTMLOListElement>(null);
+  // The page never scrolls, so the transcript has to follow the conversation itself.
+  useEffect(() => {
+    const list = listRef.current;
+    if (list) list.scrollTop = list.scrollHeight;
+  }, [segments.length, interim]);
+
   return (
-    <section aria-label="Live transcript" className="flex min-h-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-e1">
-      <div className="flex flex-wrap gap-2">
+    <section aria-label="Live transcript" className="flex min-h-0 flex-1 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-e1">
+      <div className="flex shrink-0 flex-wrap gap-2">
         <Chip label="WPM" value={String(metrics.wpm)} />
         <Chip label="Fillers" value={String(metrics.fillerCount)} />
       </div>
-      <ol className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <ol ref={listRef} className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {segments.map((segment, index) => (
           <li key={index} className={cn('rounded-lg px-3 py-2 text-sm leading-6',
             segment.role === 'presenter' ? 'bg-surface' : 'bg-accent/60 text-accent-foreground')}>
