@@ -26,6 +26,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   const [showTranscript, setShowTranscript] = useState(true);
   const [showParticipants, setShowParticipants] = useState(true);
   const [maximized, setMaximized] = useState(false);
+  const [targetMs, setTargetMs] = useState<number | null>(null);
   const roomRef = useRef<HTMLDivElement>(null);
   const isTopic = session.source === 'topic';
 
@@ -123,6 +124,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           : 'shrink-0 border-t border-border bg-background px-4 py-2',
       )}>
         <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={phase !== 'live'}
+          timer={phase === 'ready' ? undefined : { startedAtMs: engine.startedAtMs, targetMs, onCycleTarget: setTargetMs }}
           slideNav={isTopic ? undefined : {
             onPrev: () => void changeSlide(Math.max(0, position - 1)),
             onNext: () => void changeSlide(Math.min(total - 1, position + 1)),

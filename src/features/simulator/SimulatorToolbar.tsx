@@ -3,9 +3,10 @@
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Users, Captions, PhoneOff } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { ActivityBars } from './ActivityBars';
+import { SessionTimer } from './SessionTimer';
 import { cn } from '@/lib/utils';
 
-export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized }: {
+export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer }: {
   recording?: boolean; micActive: boolean;
   /** The recogniser is producing words right now — i.e. you are being heard. */
   hearing?: boolean;
@@ -13,6 +14,8 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
   /** Omitted in topic mode, which has a single card and nothing to page through. */
   slideNav?: { onPrev: () => void; onNext: () => void; prevDisabled: boolean; nextDisabled: boolean };
   maximized?: boolean; onToggleMaximized?: () => void;
+  /** Present once the rehearsal is under way; absent before Begin. */
+  timer?: { startedAtMs: number; targetMs: number | null; onCycleTarget: (next: number | null) => void };
 }) {
   const round = (variant: 'default' | 'secondary' | 'destructive') =>
     cn(buttonVariants({ variant, size: 'icon' }), 'size-8 rounded-full');
@@ -31,6 +34,7 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
           <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
         </>
       )}
+      {timer && <SessionTimer startedAtMs={timer.startedAtMs} targetMs={timer.targetMs} onCycleTarget={timer.onCycleTarget} />}
       {recording && (
         <span aria-label="Recording in progress" className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
           <span className="size-2 rounded-full bg-destructive" aria-hidden="true" /> Rec

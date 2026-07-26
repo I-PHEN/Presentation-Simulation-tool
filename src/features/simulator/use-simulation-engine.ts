@@ -156,6 +156,9 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
 
   return {
     phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening', recording: recorder.isRecording(),
+    // The one session clock: wall-clock start, so elapsed time and every
+    // session-relative timestamp are measured against the same origin.
+    startedAtMs: startedAtRef.current,
     panel, speakingPersonaId: voiceState.speakingPersonaId,
     caption: voiceState.caption, captionFull: voiceState.captionFull, captionDone: voiceState.captionDone, captionPersonaId: voiceState.captionPersonaId,
     events: state.events, transcript: state.segments, interim, metrics,
