@@ -5,7 +5,7 @@ import type { Persona } from './personas';
 import { ActivityBars } from './ActivityBars';
 import { cn } from '@/lib/utils';
 
-const ROW = 'flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors';
+const ROW = 'flex items-center gap-3 rounded-xl glass-panel p-3 transition-all duration-200 hover:border-primary/40 shadow-sm';
 
 /** What the microphone is doing right now, from real capture state. */
 export type SelfState = { micActive: boolean; hearing: boolean };

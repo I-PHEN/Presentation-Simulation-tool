@@ -104,6 +104,14 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         showAside && 'max-lg:grid-rows-[minmax(0,1fr)_minmax(0,auto)] lg:grid-cols-[minmax(0,1fr)_22rem]',
       )}>
         <div className={cn('relative flex min-h-0 min-w-0 flex-col', !maximized && 'gap-2')}>
+          {/* Dynamic Ambient Backlight Glow */}
+          <div
+            className={cn(
+              'ambient-glow transition-all duration-700',
+              engine.speakingPersonaId ? 'opacity-30 scale-105' : engine.micActive ? 'opacity-20' : 'opacity-10',
+            )}
+            aria-hidden="true"
+          />
           {isTopic
             ? <TopicStage topic={session.deck.slides[0]?.text ?? ''} />
             : <SlideStage slide={engine.slide} position={position} total={total} />}

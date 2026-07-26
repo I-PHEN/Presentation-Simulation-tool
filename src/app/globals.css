@@ -141,8 +141,55 @@
   }
 }
 
-/* Speaking / listening activity bars. Height and colour only — no halo, no glow.
-   The reduced-motion rule below flattens these to a static bar. */
+@layer components {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(229, 231, 238, 0.6);
+  }
+
+  .dark .glass-panel {
+    background: rgba(16, 18, 23, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(40, 44, 53, 0.6);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(229, 231, 238, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .glass-card {
+    background: rgba(16, 18, 23, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(40, 44, 53, 0.7);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5);
+  }
+
+  .ambient-glow {
+    position: absolute;
+    inset: -12px;
+    border-radius: 1.5rem;
+    background: radial-gradient(circle at 50% 50%, var(--primary), transparent 70%);
+    opacity: 0.15;
+    filter: blur(24px);
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .dark .ambient-glow {
+    opacity: 0.22;
+    filter: blur(32px);
+  }
+}
+
+/* Speaking / listening activity bars. */
 @keyframes sp-eq {
   0%, 100% { transform: scaleY(0.3); }
   50%      { transform: scaleY(1); }
@@ -154,3 +201,4 @@
     transition-duration: .01ms !important;
   }
 }
+

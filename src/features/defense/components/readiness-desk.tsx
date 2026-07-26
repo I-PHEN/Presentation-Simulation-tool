@@ -35,7 +35,7 @@ export function ReadinessDesk({ userName, latestSession }: ReadinessDeskProps) {
         </Link>
       </section>
 
-      <aside className="border border-border bg-card p-6 sm:p-7">
+      <aside className="glass-card rounded-2xl p-6 sm:p-7 shadow-lg">
         <p className="defense-kicker">Rehearsal record</p>
         <h2 className="defense-title mt-3 text-3xl">What needs attention</h2>
         <dl className="mt-6 divide-y divide-border border-y border-border">

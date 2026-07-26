@@ -95,7 +95,7 @@ describe('SimulatorToolbar', () => {
       <SimulatorToolbar micActive hearing onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
     );
     expect(speaking).toContain('Speaking');
-    expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(3);
+    expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(4);
   });
 
   it('offers the camera only when the room wires it, and reflects its state', () => {

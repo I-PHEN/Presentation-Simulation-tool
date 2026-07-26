@@ -22,9 +22,9 @@ describe('AudiencePanel', () => {
   it('animates only the voice that is actually active', () => {
     const idle = renderToStaticMarkup(<AudiencePanel panel={panel} speakingPersonaId={null} />);
     expect(idle).not.toContain('animate-[sp-eq');
-    // One speaker => exactly one set of three animated bars.
+    // One speaker => exactly one set of four animated bars.
     const speaking = renderToStaticMarkup(<AudiencePanel panel={panel} speakingPersonaId="professor" />);
-    expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(3);
+    expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(4);
   });
 
   it('adds a You row for the presenter only when capture state is supplied', () => {
