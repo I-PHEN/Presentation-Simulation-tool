@@ -11,13 +11,16 @@ import { cn } from '@/lib/utils';
  * `text` is the progressively revealed prefix; `fullText` is announced once to
  * assistive tech so screen readers hear whole lines, not every partial word.
  */
-export function StageCaption({ text, fullText, speaker, speaking, idleText }: {
+export function StageCaption({ text, fullText, speaker, speaking, idleText, overlay = false }: {
   text: string | null;
   fullText: string | null;
   speaker: string | null;
   speaking: boolean;
   /** Shown when the panel has not spoken yet: the slide text, or a topic hint. */
   idleText?: string;
+  /** Maximized mode has no room below the slide, so the caption floats over its
+   * bottom edge like video subtitles — and only while someone is speaking. */
+  overlay?: boolean;
 }) {
   const bodyRef = useRef<HTMLParagraphElement>(null);
   // A long caption outgrows two lines mid-reveal; follow the newest words
@@ -28,8 +31,20 @@ export function StageCaption({ text, fullText, speaker, speaking, idleText }: {
   }, [text]);
 
   const showCaption = Boolean(text);
+  if (overlay && !showCaption) {
+    // Nothing to say and no space to spare: keep only the live region.
+    return <span aria-live="polite" className="sr-only">{fullText ?? ''}</span>;
+  }
   return (
-    <div aria-label="Panel caption" className="flex h-16 shrink-0 items-center gap-3 rounded-lg border border-border bg-card px-3 sm:px-4">
+    <div
+      aria-label="Panel caption"
+      className={cn(
+        'flex items-center gap-3 rounded-lg border border-border px-3 sm:px-4',
+        overlay
+          ? 'pointer-events-none absolute inset-x-4 bottom-16 z-10 mx-auto max-w-4xl bg-popover/95 py-3 backdrop-blur-sm'
+          : 'h-16 shrink-0 bg-card',
+      )}
+    >
       <span aria-live="polite" className="sr-only">{fullText ?? ''}</span>
       {showCaption && speaker && (
         <span className="flex shrink-0 items-center gap-2 self-start pt-0.5 text-[11px] font-medium uppercase tracking-wide">

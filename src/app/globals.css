@@ -141,6 +141,13 @@
   }
 }
 
+/* Speaking / listening activity bars. Height and colour only — no halo, no glow.
+   The reduced-motion rule below flattens these to a static bar. */
+@keyframes sp-eq {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;

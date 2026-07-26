@@ -1,13 +1,18 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Mic, MicOff, Users, Captions, PhoneOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Users, Captions, PhoneOff } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { ActivityBars } from './ActivityBars';
 import { cn } from '@/lib/utils';
 
-export function SimulatorToolbar({ recording, micActive, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav }: {
-  recording?: boolean; micActive: boolean; onToggleMic: () => void; onToggleParticipants: () => void; onToggleTranscript: () => void; onEnd: () => void; endDisabled?: boolean;
+export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized }: {
+  recording?: boolean; micActive: boolean;
+  /** The recogniser is producing words right now — i.e. you are being heard. */
+  hearing?: boolean;
+  onToggleMic: () => void; onToggleParticipants: () => void; onToggleTranscript: () => void; onEnd: () => void; endDisabled?: boolean;
   /** Omitted in topic mode, which has a single card and nothing to page through. */
   slideNav?: { onPrev: () => void; onNext: () => void; prevDisabled: boolean; nextDisabled: boolean };
+  maximized?: boolean; onToggleMaximized?: () => void;
 }) {
   const round = (variant: 'default' | 'secondary' | 'destructive') =>
     cn(buttonVariants({ variant, size: 'icon' }), 'size-8 rounded-full');
@@ -34,12 +39,23 @@ export function SimulatorToolbar({ recording, micActive, onToggleMic, onTogglePa
       <button type="button" aria-label={micActive ? 'Mute microphone' : 'Turn on microphone'} onClick={onToggleMic} className={round(micActive ? 'default' : 'secondary')}>
         {micActive ? <Mic className="size-4" aria-hidden="true" /> : <MicOff className="size-4" aria-hidden="true" />}
       </button>
+      {micActive && (
+        <span className={cn('flex items-center gap-1.5 pr-1 text-xs font-medium', hearing ? 'text-primary' : 'text-muted-foreground')}>
+          <ActivityBars active={hearing} />
+          <span className="hidden sm:inline">{hearing ? 'Speaking' : 'Listening'}</span>
+        </span>
+      )}
       <button type="button" aria-label="Show participants" onClick={onToggleParticipants} className={round('secondary')}>
         <Users className="size-4" aria-hidden="true" />
       </button>
       <button type="button" aria-label="Show transcript" onClick={onToggleTranscript} className={round('secondary')}>
         <Captions className="size-4" aria-hidden="true" />
       </button>
+      {onToggleMaximized && (
+        <button type="button" aria-label={maximized ? 'Exit full screen' : 'Maximize presentation'} title={maximized ? 'Exit full screen (Esc)' : 'Maximize presentation (F)'} onClick={onToggleMaximized} className={round('secondary')}>
+          {maximized ? <Minimize2 className="size-4" aria-hidden="true" /> : <Maximize2 className="size-4" aria-hidden="true" />}
+        </button>
+      )}
       <button type="button" onClick={onEnd} disabled={endDisabled} className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }), 'h-8 rounded-full')}>
         <PhoneOff className="size-4" aria-hidden="true" /> End rehearsal
       </button>

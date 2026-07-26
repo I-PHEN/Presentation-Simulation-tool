@@ -1,0 +1,26 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+
+/**
+ * Three bars that rise and fall while a voice is active, and sit flat when it is
+ * not. Driven entirely by real room state (who is speaking, whether the
+ * recogniser is producing words) — it is a state indicator, not a fabricated
+ * level meter, and it inherits the global reduced-motion rule.
+ */
+export function ActivityBars({ active, className }: { active: boolean; className?: string }) {
+  return (
+    <span aria-hidden="true" className={cn('flex h-3 shrink-0 items-end gap-[2px]', className)}>
+      {[0, 1, 2].map((bar) => (
+        <span
+          key={bar}
+          className={cn(
+            'w-[2px] origin-bottom rounded-full bg-current',
+            active ? 'h-3 animate-[sp-eq_900ms_ease-in-out_infinite]' : 'h-[3px] opacity-60',
+          )}
+          style={active ? { animationDelay: `${bar * 140}ms` } : undefined}
+        />
+      ))}
+    </span>
+  );
+}

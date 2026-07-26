@@ -62,6 +62,42 @@ describe('SimulatorToolbar', () => {
     expect(last).not.toMatch(/aria-label="Previous slide"[^>]*disabled=""/);
   });
 
+  it('offers a maximize control only when the room wires one up', () => {
+    const without = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(without).not.toContain('Maximize presentation');
+
+    const collapsed = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} onToggleMaximized={() => undefined} />,
+    );
+    expect(collapsed).toContain('aria-label="Maximize presentation"');
+
+    const expanded = renderToStaticMarkup(
+      <SimulatorToolbar micActive maximized onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} onToggleMaximized={() => undefined} />,
+    );
+    expect(expanded).toContain('aria-label="Exit full screen"');
+  });
+
+  it('shows live mic activity, and only while the mic is on', () => {
+    const muted = renderToStaticMarkup(
+      <SimulatorToolbar micActive={false} hearing onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(muted).not.toContain('animate-[sp-eq'); // muted never animates, whatever `hearing` says
+
+    const listening = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(listening).toContain('Listening');
+    expect(listening).not.toContain('animate-[sp-eq');
+
+    const speaking = renderToStaticMarkup(
+      <SimulatorToolbar micActive hearing onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(speaking).toContain('Speaking');
+    expect(speaking.match(/animate-\[sp-eq/g)).toHaveLength(3);
+  });
+
   it('omits slide navigation entirely in topic mode, which has one card', () => {
     const html = renderToStaticMarkup(
       <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
