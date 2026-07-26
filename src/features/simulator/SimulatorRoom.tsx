@@ -63,9 +63,10 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         <span className="shrink-0 text-sm text-muted-foreground">{isTopic ? 'Speaking to your topic' : `Slide ${position + 1} / ${total}`}</span>
       </header>
 
+      {/* One screen: the stage owns a 1fr row, the aside is capped and scrolls inside. */}
       <main className={cn(
-        'grid min-h-0 w-full flex-1 gap-3 overflow-hidden p-3 sm:p-4 lg:mx-auto lg:max-w-[1600px] lg:gap-5 lg:p-5',
-        showAside && 'grid-rows-[minmax(0,1fr)_minmax(0,auto)] lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-1',
+        'grid min-h-0 w-full flex-1 grid-rows-1 gap-3 overflow-hidden p-3 sm:p-4 lg:mx-auto lg:max-w-[1600px] lg:gap-5 lg:p-5',
+        showAside && 'max-lg:grid-rows-[minmax(0,1fr)_minmax(0,auto)] lg:grid-cols-[minmax(0,1fr)_22rem]',
       )}>
         <div className="flex min-h-0 min-w-0 flex-col">
           {isTopic
