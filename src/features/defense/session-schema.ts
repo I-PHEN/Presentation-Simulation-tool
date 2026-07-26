@@ -23,7 +23,7 @@ export const transcriptSegmentsSchema = z.array(transcriptSegmentSchema).max(10_
 export const createDefenseSessionSchema = z.object({
   title: z.string().trim().min(1).max(180),
   mode: z.enum(['diagnostic', 'mock']),
-  stance: z.enum(['supportive', 'rigorous']),
+  stance: z.enum(['supportive', 'rigorous', 'hostile']),
   userId: z.string().nullable().optional(),
   deck: defenseDeckSchema,
 });
@@ -31,7 +31,7 @@ export const createDefenseSessionSchema = z.object({
 export const createTopicSessionSchema = z.object({
   topic: z.string().trim().min(1).max(300),
   mode: z.enum(['diagnostic', 'mock']),
-  stance: z.enum(['supportive', 'rigorous']),
+  stance: z.enum(['supportive', 'rigorous', 'hostile']),
 });
 
 /**
@@ -56,7 +56,7 @@ export const deliverySamplesSchema = z.array(z.object({
 
 export const updateDefenseSessionSchema = z.object({
   mode: z.enum(['diagnostic', 'mock']).optional(),
-  stance: z.enum(['supportive', 'rigorous']).optional(),
+  stance: z.enum(['supportive', 'rigorous', 'hostile']).optional(),
   transcriptSegments: transcriptSegmentsSchema.optional(),
   examinerEvents: examinerEventsSchema.optional(),
   deliverySamples: deliverySamplesSchema.optional(),

@@ -66,6 +66,27 @@ export function AudiencePanel({ panel, speakingPersonaId, self }: {
           </div>
         );
       })}
+
+      {/* Room Temperature & Tension Meter */}
+      <div className="mt-1 rounded-xl glass-panel p-3">
+        <div className="flex items-center justify-between text-[11px] font-medium">
+          <span className="text-muted-foreground uppercase tracking-wider font-mono text-[10px]">Room Mood</span>
+          <span className={cn('font-semibold', speakingPersonaId ? 'text-amber-500' : 'text-emerald-500')}>
+            {speakingPersonaId ? 'Probing / High Pressure' : 'Listening'}
+          </span>
+        </div>
+        <div className="mt-2 space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+            <span>Skepticism</span>
+            <span>{speakingPersonaId ? '78%' : '35%'}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className={cn('h-full transition-all duration-500 rounded-full', speakingPersonaId ? 'bg-amber-500 w-[78%]' : 'bg-primary/60 w-[35%]')}
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

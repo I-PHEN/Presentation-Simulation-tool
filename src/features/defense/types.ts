@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export type DefenseMode = 'diagnostic' | 'mock';
-export type ExaminerStance = 'supportive' | 'rigorous';
+export type ExaminerStance = 'supportive' | 'rigorous' | 'hostile';
 export type TranscriptRole = 'presenter' | 'examiner';
 
 export interface TranscriptSegment {

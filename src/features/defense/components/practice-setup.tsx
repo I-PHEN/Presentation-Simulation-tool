@@ -89,13 +89,17 @@ export function PracticeSetup({
 
         <fieldset className="py-6">
           <legend className="text-base font-medium">Examiner stance</legend>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Rigorous examiners probe assumptions and evidence. Supportive examiners ask clear questions while still testing your understanding.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Choose your room pressure level. Hostile Heckler mode challenges premises aggressively with curveballs and frequent interjections.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {([
               ['rigorous', 'Rigorous'],
               ['supportive', 'Supportive'],
+              ['hostile', '🔥 Hostile Heckler'],
             ] as const).map(([value, label]) => (
-              <label key={value} className={cn('cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary', stance === value && 'border-primary bg-accent shadow-e1')}>
+              <label key={value} className={cn(
+                'cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary',
+                stance === value && (value === 'hostile' ? 'border-destructive bg-destructive/10 text-destructive shadow-e1' : 'border-primary bg-accent shadow-e1'),
+              )}>
                 <input type="radio" name="examiner-stance" value={value} checked={stance === value} onChange={() => setStance(value)} className="sr-only" />
                 {label}
               </label>

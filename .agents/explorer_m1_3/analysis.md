@@ -95,15 +95,16 @@ Cartesia Text-to-Speech synthesis and audio output playback are structured as fo
 - **Testing Framework**: Vitest 4 (`vitest.config.ts`).
 - **Linter**: ESLint 9 (`eslint.config.mjs`).
 
-### Command Summary Table
+### Command Summary & Execution Results
 
-| Action | Exact Command | Config File / Location | Description |
-|---|---|---|---|
-| **Build Project** | `npm run build` *(or `bun run build`)* | `package.json` line 7 | Compiles Next.js app and copies static assets to standalone directory |
-| **Run Unit Tests** | `npm test` *(or `npx vitest run` / `bun run test`)* | `vitest.config.ts` | Runs Vitest test suite on `src/**/*.test.ts` and `src/**/*.test.tsx` |
-| **Run Linter** | `npm run lint` *(or `npx eslint .`)* | `eslint.config.mjs` | Executes ESLint analysis with Next.js & TS rules |
-| **Type Check** | `npx tsc --noEmit` | `tsconfig.json` | Runs TypeScript compiler type checking without emitting files |
-| **Database Sync** | `npm run db:generate` | `prisma/schema.prisma` | Generates Prisma Client types |
+| Action | Exact Command | Execution Status / Details |
+|---|---|---|
+| **Build Project** | `npm run build` *(or `bun run build`)* | Next.js production build + standalone output packaging |
+| **Run Unit Tests** | `npm test` *(or `npx vitest run` / `bun run test`)* | Executed 96 test files (417 tests total). **94 passed (415 tests)**, 2 failed due to bar count assertion mismatches in `ActivityBars.test.tsx` and `AudiencePanel.test.tsx` (expecting 3 bars while component renders 4). |
+| **Run Linter** | `npm run lint` *(or `npx eslint .`)* | Executes ESLint 9 analysis. Detects strict React 19 hook lint errors (`react-hooks/refs` in `use-simulation-engine.ts` and `react-hooks/set-state-in-effect` in auth/asset hooks). |
+| **Type Check** | `npx tsc --noEmit` | Validates TypeScript compilation across `src/`. |
+| **Database Sync** | `npm run db:generate` | Generates Prisma Client types for `@prisma/client`. |
+
 
 ---
 

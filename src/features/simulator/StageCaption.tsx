@@ -39,10 +39,10 @@ export function StageCaption({ text, fullText, speaker, speaking, idleText, over
     <div
       aria-label="Panel caption"
       className={cn(
-        'flex items-center gap-3 rounded-lg border border-border px-3 sm:px-4',
+        'flex items-center gap-3 rounded-xl border border-border px-4 transition-all duration-200',
         overlay
-          ? 'pointer-events-none absolute inset-x-4 bottom-16 z-10 mx-auto max-w-4xl bg-popover/95 py-3 backdrop-blur-sm'
-          : 'h-16 shrink-0 bg-card',
+          ? 'pointer-events-none absolute inset-x-4 bottom-16 z-10 mx-auto max-w-xl glass-card py-3 shadow-xl'
+          : 'h-16 shrink-0 mx-auto w-full max-w-2xl glass-panel shadow-sm',
       )}
     >
       <span aria-live="polite" className="sr-only">{fullText ?? ''}</span>
