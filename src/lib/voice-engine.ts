@@ -79,7 +79,9 @@ export function isAudioUnlocked() {
 
 export type AudioPlayResult = { played: true } | { played: false; error: 'autoplay' | 'playback' };
 
-export function playAudioData(audioResult: { audio: Blob }): Promise<AudioPlayResult> {
+/** `onDuration` fires once the clip's length is known, so callers can pace a
+ * caption reveal to the actual speech instead of guessing. */
+export function playAudioData(audioResult: { audio: Blob }, onDuration?: (durationMs: number) => void): Promise<AudioPlayResult> {
   if (activePlayback) stopAudioPlayback();
   return new Promise((resolve) => {
     let settled = false;
@@ -102,6 +104,11 @@ export function playAudioData(audioResult: { audio: Blob }): Promise<AudioPlayRe
       activeAudioElement = audio;
       activePlayback = { audio, url, finish };
       
+      audio.onloadedmetadata = () => {
+        const seconds = audio?.duration;
+        if (onDuration && typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0) onDuration(seconds * 1000);
+      };
+
       audio.onended = () => {
         finish({ played: true });
       };
