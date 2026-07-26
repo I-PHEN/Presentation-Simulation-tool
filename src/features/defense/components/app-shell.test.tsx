@@ -28,6 +28,20 @@ describe('AppShell', () => {
     expect(html).toContain('aria-label="Collapse sidebar"');
   });
 
+  it('puts the collapse toggle at the top of the rail it controls, not in the content header', () => {
+    const html = renderToStaticMarkup(
+      <AppShell active="home"><p>Home</p></AppShell>,
+    );
+    const asideStart = html.indexOf('<aside');
+    const aside = html.slice(asideStart, html.indexOf('</aside>', asideStart));
+    const header = html.slice(html.indexOf('<header'), html.indexOf('</header>'));
+
+    expect(aside).toContain('aria-label="Collapse sidebar"');
+    expect(header).not.toContain('aria-label="Collapse sidebar"');
+    // Above the destinations, the way a hamburger sits atop a nav rail.
+    expect(aside.indexOf('aria-label="Collapse sidebar"')).toBeLessThan(aside.indexOf('<nav'));
+  });
+
   it('renders a labelled navigation landmark and marks the active destination', () => {
     const html = renderToStaticMarkup(
       <AppShell active="progress"><p>Report</p></AppShell>,

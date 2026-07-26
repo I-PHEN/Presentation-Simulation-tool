@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Home, LineChart, Menu, Mic, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Home, LineChart, Menu, Mic } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { buttonVariants } from '@/components/ui/button';
@@ -30,24 +30,39 @@ const navTitles: Record<StudioNavItem, string> = {
   progress: 'Progress',
 };
 
-function BrandMark({ collapsed }: { collapsed: boolean }) {
+function BrandMark({ className }: { className?: string }) {
   return (
     <Link
       href="/dashboard"
-      className="flex h-14 shrink-0 items-center gap-2.5 px-5 text-sm font-semibold tracking-tight text-sidebar-foreground"
+      className={cn('flex h-14 min-w-0 items-center gap-2.5 text-sm font-semibold tracking-tight text-sidebar-foreground', className)}
     >
-      <span className="relative flex size-7 shrink-0 items-center justify-center">
-        <span
-          aria-hidden="true"
-          className="relative flex size-7 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground"
-        >
-          SP
-        </span>
+      <span
+        aria-hidden="true"
+        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground"
+      >
+        SP
       </span>
-      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>
-        Sparring Partner
-      </span>
+      <span className="truncate">Sparring Partner</span>
     </Link>
+  );
+}
+
+/** The rail's own header: the toggle lives here, at the top of the panel it
+ * controls, rather than out in the content header. */
+function RailHeader({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+  return (
+    <div className={cn('flex h-14 shrink-0 items-center gap-1', collapsed ? 'justify-center px-2' : 'px-3')}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+      >
+        <Menu className="size-4" aria-hidden="true" />
+      </button>
+      {!collapsed && <BrandMark />}
+    </div>
   );
 }
 
@@ -69,10 +84,13 @@ function NavLink({
       aria-current={isActive ? 'page' : undefined}
       title={collapsed ? item.label : undefined}
       onClick={onNavigate}
-      className="relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
+      className={cn(
+        'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground',
+        collapsed && 'justify-center',
+      )}
     >
       <Icon className="size-4 shrink-0" aria-hidden="true" />
-      <span className={cn('truncate transition-opacity duration-200', collapsed ? 'opacity-0' : 'opacity-100')}>{item.label}</span>
+      <span className={cn('truncate', collapsed && 'sr-only')}>{item.label}</span>
     </Link>
   );
 }
@@ -118,27 +136,12 @@ export function AppShell({ active, children }: {
           collapsed ? 'w-20' : 'w-60',
         )}
       >
-        <BrandMark collapsed={collapsed} />
-        <nav aria-label="Primary navigation" className="flex flex-1 flex-col gap-1 px-3 py-4">
+        <RailHeader collapsed={collapsed} onToggle={toggleCollapsed} />
+        <nav aria-label="Primary navigation" className={cn('flex flex-1 flex-col gap-1 py-4', collapsed ? 'px-2' : 'px-3')}>
           {navigation.map((item) => (
             <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
           ))}
         </nav>
-        <div className="border-t border-sidebar-border p-3">
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
-              collapsed && 'justify-center',
-            )}
-          >
-            {collapsed ? <PanelLeftOpen className="size-4 shrink-0" aria-hidden="true" /> : <PanelLeftClose className="size-4 shrink-0" aria-hidden="true" />}
-            <span className={cn('truncate transition-opacity duration-200', collapsed ? 'sr-only' : 'opacity-100')}>Collapse</span>
-          </button>
-        </div>
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">
@@ -159,7 +162,7 @@ export function AppShell({ active, children }: {
                 <SheetDescription className="sr-only">
                   Jump to Home, Rehearse, or Progress.
                 </SheetDescription>
-                <BrandMark collapsed={false} />
+                <BrandMark className="px-5" />
                 <nav aria-label="Primary navigation" className="flex flex-col gap-1 p-3">
                   {navigation.map((item) => (
                     <NavLink
