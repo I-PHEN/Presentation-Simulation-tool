@@ -7,8 +7,10 @@ export function leadPersona(panel: Persona[]): Persona {
   return panel[0];
 }
 
-export function buildIntroRequest(title: string, panel: Persona[]): { title: string; judges: Array<{ id: string; title: string }> } {
-  return { title, judges: panel.map((p) => ({ id: p.id, title: p.title })) };
+/** `source` lets the greeter welcome a spoken argument as one, rather than
+ * calling a deckless topic a presentation with a title. */
+export function buildIntroRequest(title: string, panel: Persona[], source: 'deck' | 'topic' = 'deck'): { title: string; source: 'deck' | 'topic'; judges: Array<{ id: string; title: string }> } {
+  return { title, source, judges: panel.map((p) => ({ id: p.id, title: p.title })) };
 }
 
 export function parseIntroResponse(data: unknown, panel: Persona[]): { text: string; voiceId: string; personaId: string } {

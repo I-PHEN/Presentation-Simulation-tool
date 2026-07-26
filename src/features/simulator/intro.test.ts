@@ -13,6 +13,11 @@ describe('intro helpers', () => {
     const req = buildIntroRequest('My Defense', panel);
     expect(req.title).toBe('My Defense');
     expect(req.judges).toEqual(panel.map((p) => ({ id: p.id, title: p.title })));
+    expect(req.source).toBe('deck'); // a deck rehearsal unless told otherwise
+  });
+
+  it('marks a topic rehearsal as deckless, so the greeter does not call it a presentation', () => {
+    expect(buildIntroRequest('Mars colonization is feasible now', panel, 'topic').source).toBe('topic');
   });
 
   it('parses a valid intro response into text + lead voice', () => {

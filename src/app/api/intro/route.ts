@@ -3,8 +3,11 @@ import { getZAI } from '@/lib/zai';
 
 export async function POST(req: Request) {
   try {
-    const { title, judges } = await req.json();
-    
+    const { title, judges, source } = await req.json();
+    // A topic rehearsal has no deck, so its "title" is the topic itself. Framing
+    // it as a titled presentation is what made the welcome read wrong.
+    const deckless = source === 'topic';
+
     const zai = await getZAI();
     const judge = judges?.[0]; // First judge introduces
 
@@ -19,7 +22,10 @@ export async function POST(req: Request) {
           messages: [
             {
               role: 'system',
-              content: `You are ${judge.title}. You are about to watch a presentation titled "${title || 'a presentation'}". Produce a short 1-sentence welcome message welcoming the speaker. End your message by telling the speaker to turn on their microphone whenever they are ready to begin.`
+              content: `You are ${judge.title}. ${deckless
+                ? `The speaker is about to argue the topic "${title || 'a topic of their choosing'}" out loud, with no slides. Do not mention slides or a presentation.`
+                : `You are about to watch a presentation titled "${title || 'a presentation'}".`
+              } Produce a short 1-sentence welcome message welcoming the speaker. End your message by telling the speaker to turn on their microphone whenever they are ready to begin.`
             }
           ],
           temperature: 0.7,
