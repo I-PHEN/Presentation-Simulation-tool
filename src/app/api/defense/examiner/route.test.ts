@@ -83,6 +83,39 @@ describe('POST /api/defense/examiner', () => {
     expect(body.event.text).toContain('Say this in plain terms');
   });
 
+  it('cites the topic, never a slide, in a deckless session', async () => {
+    // A topic session models its topic as one synthetic slide, so nothing about
+    // the request shape says "no deck" - only session.source does.
+    findFirst.mockResolvedValue({ ...session, source: 'topic', topic: 'Mars colonization is feasible now', deckContext: JSON.stringify({ sourceName: 'topic', slides: [{ index: 1, text: 'Mars colonization is feasible now', imageUrl: 'topic' }] }) });
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const readingEvidence = { slideIndex: 1, hasSpeech: true, overlap: 1, copiedPhrases: ['Mars colonization'], explanationSignals: [] };
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment, readingEvidence }) }));
+    const body = await response.json();
+
+    expect(body.event.text).not.toContain('slide');
+    expect(body.event.text).toContain('you are speaking to "Mars colonization is feasible now"');
+    expect(body.event.text).toContain(segment.text);
+    expect(body.event.evidence).toContain('Topic: Mars colonization is feasible now');
+    expect(body.event.evidence).not.toContain('Slide claim');
+    // Verbatim-reading evidence is a deck signal; it must not reach the model here.
+    const modelPrompt = create.mock.calls[0][0].messages[0].content;
+    expect(modelPrompt).toContain('Topic being argued');
+    expect(modelPrompt).not.toContain('Reading evidence');
+  });
+
+  it('keeps slide phrasing and reading evidence for a deck session', async () => {
+    findFirst.mockResolvedValue({ ...session, source: 'deck' });
+    create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });
+    getZAI.mockResolvedValue({ chat: { completions: { create } } });
+    const readingEvidence = { slideIndex: 1, hasSpeech: true, overlap: 1, copiedPhrases: ['Retention increased'], explanationSignals: [] };
+    const response = await POST(new Request('http://localhost/api/defense/examiner', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: 's1', currentSegment: segment, readingEvidence }) }));
+    const body = await response.json();
+
+    expect(body.event.text).toContain('the slide states');
+    expect(create.mock.calls[0][0].messages[0].content).toContain('Reading evidence');
+  });
+
   it('stamps the event on the session clock the client supplies, never a server wall clock', async () => {
     findFirst.mockResolvedValue(session);
     create.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({ kind: 'question' }) } }] });

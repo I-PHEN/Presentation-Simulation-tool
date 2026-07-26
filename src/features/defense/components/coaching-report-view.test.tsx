@@ -30,6 +30,15 @@ describe('CoachingReportView', () => {
     expect(html).toContain('No recording was captured for this session.');
   });
 
+  it('drops slide references from a topic report, where the deck is synthetic', () => {
+    const topic: CoachingReport = { ...report, metrics: { ...report.metrics, deckless: true } };
+    const html = renderToStaticMarkup(<CoachingReportView report={topic} audioPath={null} retryHref="/rehearse/s1" />);
+    expect(html).not.toContain('Slide 1');
+    expect(html).toContain('you responded'); // the substance survives
+    // The deck report still says it.
+    expect(renderToStaticMarkup(<CoachingReportView report={report} audioPath={null} retryHref="/rehearse/s1" />)).toContain('Slide 1');
+  });
+
   it('suppresses the timestamp on sessions recorded against the old wall clock', () => {
     // Sessions saved before examiner events moved onto the session clock hold
     // Date.now() values, which formatted as "29750305:05" and seeked nowhere.

@@ -50,6 +50,9 @@ function createServerGroundedEvent(
   slideText: string,
   speech: string,
   occurredAtMs: number,
+  /** A topic session has no deck; its topic is modelled as one synthetic slide,
+   * so the panel must cite what the speaker is arguing, never "the slide". */
+  deckless: boolean,
   persona?: { id: string; title: string },
 ) {
   const claim = excerpt(slideText);
@@ -58,11 +61,13 @@ function createServerGroundedEvent(
     ? (PERSONA_LEADS[persona.id] ?? (stance === 'rigorous' ? 'Address this precisely.' : 'Please clarify this connection.'))
     : stance === 'rigorous' ? 'Address this precisely.' : 'Please clarify this connection.';
   const action = kind === 'interrupt' ? 'Pause for a moment' : kind === 'follow_up' ? 'Follow up on this point' : 'Please explain';
+  // "speaking to" carries topics phrased as a claim and as a question alike.
+  const source = deckless ? `you are speaking to "${claim}"` : `the slide states "${claim}"`;
   return {
     kind,
-    text: `${action}: the slide states "${claim}" and you said "${spoken}". ${lead}`,
+    text: `${action}: ${source} and you said "${spoken}". ${lead}`,
     slideIndex,
-    evidence: `Slide claim: ${claim} Presenter speech: ${spoken}`,
+    evidence: `${deckless ? 'Topic' : 'Slide claim'}: ${claim} Presenter speech: ${spoken}`,
     occurredAtMs,
     ...(persona ? { persona: { id: persona.id, title: persona.title } } : {}),
   };
@@ -84,11 +89,16 @@ export async function POST(request: Request) {
     const slide = deck?.slides.find((item) => item.index === currentSegment.slideIndex);
     if (!slide) return NextResponse.json({ error: 'Current slide is unavailable' }, { status: 400 });
     const stance = session.stance === 'supportive' ? 'supportive' : 'rigorous';
-    const prompt = `You are a ${stance} thesis examiner.${persona ? ` Persona focus: ${persona.promptFragment}` : ''} Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
+    const deckless = session.source === 'topic';
+    // Verbatim-reading evidence is about reading slides aloud. A topic session has
+    // a one-line topic, so the same signal is meaningless there - and the report
+    // already drops its verbatim metrics when deckless.
+    const reading = deckless ? undefined : readingEvidence;
+    const prompt = `You are a ${stance} ${deckless ? 'examiner questioning a spoken argument' : 'thesis examiner'}.${persona ? ` Persona focus: ${persona.promptFragment}` : ''} Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
 
-Current slide claim/text: ${slide.text}
+${deckless ? 'Topic being argued' : 'Current slide claim/text'}: ${slide.text}
 Presenter's current spoken evidence: ${currentSegment.text}
-${readingEvidence ? `Reading evidence: ${JSON.stringify(readingEvidence)}` : ''}
+${reading ? `Reading evidence: ${JSON.stringify(reading)}` : ''}
 
 Only decide whether an event is warranted and its kind. Do not write a question, evidence, slide index, or factual claim. If no grounded issue exists, return NO_INTERRUPT.`;
     const zai = await getZAI();
@@ -103,7 +113,7 @@ Only decide whether an event is warranted and its kind. Do not write a question,
     // truest moment on the session clock - and it beats a server Date.now(), which
     // is a different clock entirely.
     const occurredAtMs = elapsedMs ?? currentSegment.endedAtMs;
-    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text, occurredAtMs, persona ? { id: persona.id, title: persona.title } : undefined));
+    const event = createExaminerEventSchema.safeParse(createServerGroundedEvent(decision.data.kind, stance, slide.index, slide.text, currentSegment.text, occurredAtMs, deckless, persona ? { id: persona.id, title: persona.title } : undefined));
     return NextResponse.json({ event: event.success ? event.data : null });
   } catch (error) {
     console.error('Examiner generation failed', error);

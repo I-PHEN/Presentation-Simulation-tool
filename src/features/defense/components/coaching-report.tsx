@@ -20,8 +20,8 @@ export function CoachingReportView({ report, audioPath, retryHref = '/rehearse' 
       </header>
       <SessionAudioPlayer ref={playerRef} audioPath={audioPath} />
       <MetricsStrip metrics={report.metrics} onSeek={onSeek} />
-      {report.timeline.length > 0 ? <EvidenceTimeline timeline={report.timeline} onSeek={onSeek} /> : null}
-      <PersonaVerdictCards verdicts={report.personaVerdicts} onSeek={onSeek} />
+      {report.timeline.length > 0 ? <EvidenceTimeline timeline={report.timeline} onSeek={onSeek} deckless={report.metrics.deckless} /> : null}
+      <PersonaVerdictCards verdicts={report.personaVerdicts} onSeek={onSeek} deckless={report.metrics.deckless} />
       <DrillsPanel drills={report.drills} retryHref={retryHref} />
       {report.strengths.length > 0 ? (
         <section className="rounded-xl border border-border bg-card p-6 shadow-e1">

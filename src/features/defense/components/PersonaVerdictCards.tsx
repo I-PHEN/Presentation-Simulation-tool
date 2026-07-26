@@ -1,7 +1,7 @@
 import { formatTimestamp, isSessionRelativeMs } from '@/features/defense/coaching-timeline';
 import type { PersonaVerdict } from '@/features/defense/types';
 
-export function PersonaVerdictCards({ verdicts, onSeek }: { verdicts: PersonaVerdict[]; onSeek: (ms: number) => void }) {
+export function PersonaVerdictCards({ verdicts, onSeek, deckless = false }: { verdicts: PersonaVerdict[]; onSeek: (ms: number) => void; deckless?: boolean }) {
   if (verdicts.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-e1">
@@ -28,7 +28,7 @@ export function PersonaVerdictCards({ verdicts, onSeek }: { verdicts: PersonaVer
                         {seekable && (
                           <span className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-[11px]">{formatTimestamp(challenge.atMs)}</span>
                         )}
-                        Slide {challenge.slideIndex} - {challenge.responded ? 'you responded' : 'no response captured'}
+                        {deckless ? '' : `Slide ${challenge.slideIndex} - `}{challenge.responded ? 'you responded' : 'no response captured'}
                       </span>
                       <span className="text-sm text-foreground">{challenge.text}</span>
                     </button>
