@@ -42,6 +42,18 @@ describe('AppShell', () => {
     expect(aside.indexOf('aria-label="Collapse sidebar"')).toBeLessThan(aside.indexOf('<nav'));
   });
 
+  it('makes the logo itself the toggle and shows a resize cursor as the affordance', () => {
+    const html = renderToStaticMarkup(
+      <AppShell active="home"><p>Home</p></AppShell>,
+    );
+    const asideStart = html.indexOf('<aside');
+    const aside = html.slice(asideStart, html.indexOf('</aside>', asideStart));
+
+    // The SP mark is the button, not decoration sitting next to one.
+    expect(aside).toMatch(/aria-label="Collapse sidebar"[^>]*class="[^"]*cursor-ew-resize/);
+    expect(aside).toMatch(/aria-label="Collapse sidebar"[\s\S]{0,400}>SP</);
+  });
+
   it('renders a labelled navigation landmark and marks the active destination', () => {
     const html = renderToStaticMarkup(
       <AppShell active="progress"><p>Report</p></AppShell>,

@@ -47,12 +47,16 @@ const START_REHEARSING_ACTION: StudioAction = { label: 'Start rehearsing', href:
 /**
  * The single source of routing truth for every Studio surface: every action
  * this returns resolves to an existing route (`/decks/new`, `/reports/:id`,
- * or `/practice/:id`), never an invented one.
+ * `/rehearse/:id`, or `/practice/:id?view=setup`), never an invented one.
+ *
+ * Resuming goes to `/rehearse/:id` — the fit-to-viewport simulator room. The
+ * legacy `/practice/:id?view=room` still renders the old scrolling room, so
+ * linking there is what put people back in it.
  */
 function resolveAction(session: StudioSession): StudioAction {
   if (!session.deck) return START_REHEARSING_ACTION;
   if (session.status === 'completed') return { label: 'Open review', href: `/reports/${session.id}` };
-  if (session.status === 'practicing') return { label: 'Resume rehearsal', href: `/practice/${session.id}?view=room` };
+  if (session.status === 'practicing') return { label: 'Resume rehearsal', href: `/rehearse/${session.id}` };
   return { label: 'Continue setup', href: `/practice/${session.id}?view=setup` };
 }
 

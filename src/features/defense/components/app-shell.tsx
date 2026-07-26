@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { Home, LineChart, Menu, Mic } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -30,38 +30,60 @@ const navTitles: Record<StudioNavItem, string> = {
   progress: 'Progress',
 };
 
+// The rail collapses to exactly the icon column: px-3 + a 36px cell + px-3.
+// Every row shares that geometry, so collapsing changes widths and nothing
+// else - no element ever moves sideways or re-centres mid-animation.
+const RAIL_LABEL = 'w-42';
+const NAV_LABEL = 'w-45';
+
+function SquadMark() {
+  return (
+    <span
+      aria-hidden="true"
+      className="flex size-7 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground"
+    >
+      SP
+    </span>
+  );
+}
+
 function BrandMark({ className }: { className?: string }) {
   return (
     <Link
       href="/dashboard"
       className={cn('flex h-14 min-w-0 items-center gap-2.5 text-sm font-semibold tracking-tight text-sidebar-foreground', className)}
     >
-      <span
-        aria-hidden="true"
-        className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground"
-      >
-        SP
-      </span>
+      <SquadMark />
       <span className="truncate">Sparring Partner</span>
     </Link>
   );
 }
 
-/** The rail's own header: the toggle lives here, at the top of the panel it
- * controls, rather than out in the content header. */
-function RailHeader({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+/** The logo is the toggle: one control at the top of the panel it opens and
+ * closes, carrying the resize cursor so the affordance reads before the click. */
+function RailHeader({ collapsed, animate, onToggle }: { collapsed: boolean; animate: boolean; onToggle: () => void }) {
+  const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
   return (
-    <div className={cn('flex h-14 shrink-0 items-center gap-1', collapsed ? 'justify-center px-2' : 'px-3')}>
+    <div className="flex h-14 shrink-0 items-center px-3">
       <button
         type="button"
         onClick={onToggle}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+        aria-label={label}
+        title={label}
+        className="flex size-9 shrink-0 cursor-ew-resize items-center justify-center rounded-lg transition-colors hover:bg-sidebar-accent/50"
       >
-        <Menu className="size-4" aria-hidden="true" />
+        <SquadMark />
       </button>
-      {!collapsed && <BrandMark />}
+      <span
+        aria-hidden={collapsed}
+        className={cn(
+          'ml-2.5 truncate text-sm font-semibold tracking-tight text-sidebar-foreground',
+          animate && 'transition-[width,opacity] duration-200 ease-in-out',
+          collapsed ? 'w-0 opacity-0' : `${RAIL_LABEL} opacity-100`,
+        )}
+      >
+        Sparring Partner
+      </span>
     </div>
   );
 }
@@ -70,11 +92,13 @@ function NavLink({
   item,
   isActive,
   collapsed,
+  animate = false,
   onNavigate,
 }: {
   item: (typeof navigation)[number];
   isActive: boolean;
   collapsed: boolean;
+  animate?: boolean;
   onNavigate?: () => void;
 }) {
   const Icon = navIcons[item.value];
@@ -84,13 +108,21 @@ function NavLink({
       aria-current={isActive ? 'page' : undefined}
       title={collapsed ? item.label : undefined}
       onClick={onNavigate}
-      className={cn(
-        'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground',
-        collapsed && 'justify-center',
-      )}
+      className="relative flex items-center rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
     >
-      <Icon className="size-4 shrink-0" aria-hidden="true" />
-      <span className={cn('truncate', collapsed && 'sr-only')}>{item.label}</span>
+      {/* Fixed-width cell: the icon sits on the same axis open or closed. */}
+      <span className="flex size-9 shrink-0 items-center justify-center">
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
+      <span
+        className={cn(
+          'truncate pr-3',
+          animate && 'transition-[width,opacity] duration-200 ease-in-out',
+          collapsed ? 'w-0 opacity-0' : `${NAV_LABEL} opacity-100`,
+        )}
+      >
+        {item.label}
+      </span>
     </Link>
   );
 }
@@ -125,23 +157,41 @@ export function AppShell({ active, children }: {
     });
   };
 
+  // Clicking the closed rail's empty space reopens it, but a click that landed
+  // on a destination or the toggle itself is that control's, not the rail's.
+  const expandFromRail = (event: MouseEvent<HTMLElement>) => {
+    if ((event.target as HTMLElement).closest('a,button')) return;
+    toggleCollapsed();
+  };
+
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
       <aside
         suppressHydrationWarning
         data-collapsed={collapsed}
+        // Closed, the whole rail reads as a handle: hovering anywhere on it
+        // shows the resize cursor, and a click on its empty space reopens it.
+        onClick={collapsed ? expandFromRail : undefined}
         className={cn(
           'sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex',
           animateWidth && 'transition-[width] duration-200 ease-in-out',
-          collapsed ? 'w-20' : 'w-60',
+          collapsed ? 'w-15 cursor-ew-resize' : 'w-60',
         )}
       >
-        <RailHeader collapsed={collapsed} onToggle={toggleCollapsed} />
-        <nav aria-label="Primary navigation" className={cn('flex flex-1 flex-col gap-1 py-4', collapsed ? 'px-2' : 'px-3')}>
+        <RailHeader collapsed={collapsed} animate={animateWidth} onToggle={toggleCollapsed} />
+        <nav aria-label="Primary navigation" className="flex flex-1 flex-col gap-1 px-3 py-4">
           {navigation.map((item) => (
-            <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} />
+            <NavLink key={item.value} item={item} isActive={active === item.value} collapsed={collapsed} animate={animateWidth} />
           ))}
         </nav>
+        {/* Drag-handle-style strip along the full edge of the panel. */}
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={toggleCollapsed}
+          className="absolute inset-y-0 right-0 w-2 cursor-ew-resize transition-colors hover:bg-sidebar-accent/40"
+        />
       </aside>
 
       <div className="flex min-h-dvh flex-1 flex-col">

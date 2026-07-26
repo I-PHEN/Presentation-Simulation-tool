@@ -81,10 +81,10 @@ describe('buildTodayModel', () => {
     expect(model.active).toMatchObject({ id: 'session-2', title: 'Dissertation walkthrough', status: 'upload', deck });
   });
 
-  it('routes a practicing deck session to the voice room', () => {
+  it('resumes a practicing deck session in the simulator room, not the legacy practice room', () => {
     expect(buildTodayModel([practicingDeckSession]).primaryAction).toEqual({
       label: 'Resume rehearsal',
-      href: '/practice/session-1?view=room',
+      href: '/rehearse/session-1',
     });
   });
 
@@ -148,7 +148,7 @@ describe('buildReviewRows', () => {
 
   it('routes an unfinished session to resume instead of a report that does not exist yet', () => {
     expect(buildReviewRows([practicingDeckSession])[0].action).toEqual({
-      label: 'Resume rehearsal', href: '/practice/session-1?view=room',
+      label: 'Resume rehearsal', href: '/rehearse/session-1',
     });
   });
 
