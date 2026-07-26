@@ -271,8 +271,8 @@ export default function PresentSection() {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.type = styleSheet.type;
-                link.media = styleSheet.media;
-                link.href = styleSheet.href;
+                link.media = styleSheet.media.mediaText;
+                if (styleSheet.href) link.href = styleSheet.href;
                 pip.document.head.appendChild(link);
               }
             });

@@ -7,7 +7,7 @@ describe('uploadSessionAudio', () => {
     const blob = new Blob(['x'], { type: 'audio/webm' });
     await uploadSessionAudio('sess-1', blob, fetcher as unknown as typeof fetch);
     expect(fetcher).toHaveBeenCalledOnce();
-    const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('/api/session/sess-1/audio');
     expect(init.method).toBe('POST');
     const form = init.body as FormData;

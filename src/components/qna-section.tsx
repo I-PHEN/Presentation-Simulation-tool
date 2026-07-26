@@ -76,8 +76,8 @@ export default function QNASection() {
   const isInitializingRef = useRef(false);
   const [moonshineTranscriber, setMoonshineTranscriber] = useState<any>(null);
 
-  const startRecordingRef = useRef<() => void>();
-  const stopRecordingRef = useRef<() => void>();
+  const startRecordingRef = useRef<((...args: any[]) => void) | undefined>(undefined);
+  const stopRecordingRef = useRef<((...args: any[]) => void) | undefined>(undefined);
 
   // Which judge is active
   const currentJudge = judges[currentJudgeIndex % judges.length] || judges[0] || { id: 'investor', icon: '💰', title: 'Investor', type: 'investor' };

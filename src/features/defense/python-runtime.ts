@@ -7,7 +7,7 @@ export type PythonRuntime = { command: string; baseArgs: string[] };
 
 const REQUIRED_IMPORTS = 'import pypdfium2, pdfplumber';
 
-export function candidateInterpreters(env: { PYTHON_PATH?: string }): PythonRuntime[] {
+export function candidateInterpreters(env: Record<string, string | undefined>): PythonRuntime[] {
   const list: PythonRuntime[] = [];
   if (env.PYTHON_PATH && env.PYTHON_PATH.trim()) list.push({ command: env.PYTHON_PATH.trim(), baseArgs: [] });
   list.push({ command: 'py', baseArgs: ['-3'] });

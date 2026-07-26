@@ -198,7 +198,7 @@ export default function ConfigureSection() {
         analyserRef.current.getByteFrequencyData(dataArray);
 
         // Map dataArray to 16 frequency bands
-        const bands = [];
+        const bands: number[] = [];
         const step = Math.max(1, Math.floor(bufferLength / 16));
         let sum = 0;
         for (let i = 0; i < 16; i++) {
