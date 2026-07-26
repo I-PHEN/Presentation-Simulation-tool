@@ -34,4 +34,39 @@ describe('SimulatorToolbar', () => {
     );
     expect(html).not.toContain('aria-label="Recording in progress"');
   });
+
+  it('carries slide navigation, so the stage keeps its height for the slide', () => {
+    const html = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        slideNav={{ onPrev: () => undefined, onNext: () => undefined, prevDisabled: false, nextDisabled: false }} />,
+    );
+    expect(html).toContain('aria-label="Previous slide"');
+    expect(html).toContain('aria-label="Next slide"');
+  });
+
+  it('disables each end of the deck', () => {
+    // Match `disabled=""`, the real attribute - a bare /disabled/ also hits the
+    // `disabled:opacity-50` utility class and passes no matter what is rendered.
+    const first = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        slideNav={{ onPrev: () => undefined, onNext: () => undefined, prevDisabled: true, nextDisabled: false }} />,
+    );
+    expect(first).toMatch(/aria-label="Previous slide"[^>]*disabled=""/);
+    expect(first).not.toMatch(/aria-label="Next slide"[^>]*disabled=""/);
+
+    const last = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined}
+        slideNav={{ onPrev: () => undefined, onNext: () => undefined, prevDisabled: false, nextDisabled: true }} />,
+    );
+    expect(last).toMatch(/aria-label="Next slide"[^>]*disabled=""/);
+    expect(last).not.toMatch(/aria-label="Previous slide"[^>]*disabled=""/);
+  });
+
+  it('omits slide navigation entirely in topic mode, which has one card', () => {
+    const html = renderToStaticMarkup(
+      <SimulatorToolbar micActive onToggleMic={() => undefined} onToggleParticipants={() => undefined} onToggleTranscript={() => undefined} onEnd={() => undefined} />,
+    );
+    expect(html).not.toContain('Previous slide');
+    expect(html).not.toContain('Next slide');
+  });
 });

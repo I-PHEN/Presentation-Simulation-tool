@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { DeckContext, DefenseMode, ExaminerEvent, ExaminerStance, TranscriptSegment } from '@/features/defense/types';
 import { useSimulationEngine } from './use-simulation-engine';
 import { SlideStage } from './SlideStage';
-import { TopicStage } from './TopicStage';
+import { TopicStage, TOPIC_STAGE_HINT } from './TopicStage';
 import { StageCaption } from './StageCaption';
 import { AudiencePanel } from './AudiencePanel';
 import { TranscriptPanel } from './TranscriptPanel';
@@ -45,35 +45,34 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [changeSlide, navEnabled, position, total]);
 
-  const caption = (
-    <StageCaption
-      text={engine.caption}
-      fullText={engine.captionFull}
-      speaker={engine.panel.find((persona) => persona.id === engine.captionPersonaId)?.title ?? null}
-      speaking={engine.speakingPersonaId !== null}
-    />
-  );
   const showAside = showParticipants || showTranscript;
 
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 sm:px-6">
+      <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-3 sm:px-4">
         <a href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">Exit rehearsal</a>
         <p className="min-w-0 truncate text-sm font-medium">{isTopic ? 'Topic rehearsal' : session.deck.sourceName}</p>
         <span className="shrink-0 text-sm text-muted-foreground">{isTopic ? 'Speaking to your topic' : `Slide ${position + 1} / ${total}`}</span>
       </header>
 
-      {/* One screen: the stage owns a 1fr row, the aside is capped and scrolls inside. */}
+      {/* One screen: the stage owns a 1fr row, the aside is capped and scrolls inside.
+          Every band here is kept as thin as it can be - the height it does not take
+          is height the slide gets. */}
       <main className={cn(
-        'grid min-h-0 w-full flex-1 grid-rows-1 gap-3 overflow-hidden p-3 sm:p-4 lg:mx-auto lg:max-w-[1600px] lg:gap-5 lg:p-5',
+        'grid min-h-0 w-full flex-1 grid-rows-1 gap-2 overflow-hidden p-2 lg:mx-auto lg:max-w-[1600px] lg:gap-3',
         showAside && 'max-lg:grid-rows-[minmax(0,1fr)_minmax(0,auto)] lg:grid-cols-[minmax(0,1fr)_22rem]',
       )}>
-        <div className="flex min-h-0 min-w-0 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-col gap-2">
           {isTopic
-            ? <TopicStage topic={session.deck.slides[0]?.text ?? ''} caption={caption} />
-            : <SlideStage slide={engine.slide} position={position} total={total} caption={caption}
-                onPrev={() => void changeSlide(Math.max(0, position - 1))}
-                onNext={() => void changeSlide(Math.min(total - 1, position + 1))} />}
+            ? <TopicStage topic={session.deck.slides[0]?.text ?? ''} />
+            : <SlideStage slide={engine.slide} position={position} total={total} />}
+          <StageCaption
+            text={engine.caption}
+            fullText={engine.captionFull}
+            speaker={engine.panel.find((persona) => persona.id === engine.captionPersonaId)?.title ?? null}
+            speaking={engine.speakingPersonaId !== null}
+            idleText={isTopic ? TOPIC_STAGE_HINT : engine.slide?.text}
+          />
         </div>
         {showAside && (
           <aside className="flex min-h-0 flex-col gap-3 overflow-hidden max-lg:max-h-[40dvh]">
@@ -84,8 +83,14 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         )}
       </main>
 
-      <footer className="flex shrink-0 justify-center border-t border-border bg-background px-4 py-3">
-        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={phase !== 'live'} />
+      <footer className="flex shrink-0 justify-center border-t border-border bg-background px-4 py-2">
+        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end()} endDisabled={phase !== 'live'}
+          slideNav={isTopic ? undefined : {
+            onPrev: () => void changeSlide(Math.max(0, position - 1)),
+            onNext: () => void changeSlide(Math.min(total - 1, position + 1)),
+            prevDisabled: position === 0,
+            nextDisabled: position >= total - 1,
+          }} />
       </footer>
 
       {phase === 'ready' && (

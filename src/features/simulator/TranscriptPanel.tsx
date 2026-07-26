@@ -38,6 +38,9 @@ export function TranscriptPanel({ segments, interim, metrics }: {
           </li>
         ))}
         {interim && <li className="rounded-lg px-3 py-2 text-sm italic leading-6 text-muted-foreground">{interim}</li>}
+        {segments.length === 0 && !interim && (
+          <li className="px-3 py-2 text-sm leading-6 text-muted-foreground">Your words appear here as you speak.</li>
+        )}
       </ol>
     </section>
   );
