@@ -136,6 +136,21 @@ export function playAudioData(audioResult: { audio: Blob }, onDuration?: (durati
   });
 }
 
+/**
+ * Groq refuses two kinds of clip outright, and both come back as an error we
+ * cannot turn into a transcript:
+ *  - past its upload cap  -> 413 "Request Entity Too Large"
+ *  - no audible audio     -> 400 "could not process file - is it a valid media file?"
+ *    (capture stopped before any speech, leaving container headers only)
+ * Screen the recording against both before spending a round trip to be refused,
+ * and fall back to the live Web Speech transcript instead.
+ */
+const MIN_TRANSCRIBABLE_BYTES = 2_048;
+const MAX_TRANSCRIBABLE_BYTES = 20 * 1024 * 1024;
+/** Speech-grade Opus. Whisper resamples to 16 kHz mono anyway, and the browser
+ * default is high enough that a long unbroken segment hits the cap above. */
+const SPEECH_BITS_PER_SECOND = 32_000;
+
 // STT Implementation using Web Speech API for live transcription
 // and Groq Whisper for the final high-quality transcript
 export async function createSTT(
@@ -153,7 +168,7 @@ export async function createSTT(
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     
     // 1. Setup MediaRecorder for the final Groq submission
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm', audioBitsPerSecond: SPEECH_BITS_PER_SECOND });
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) audioChunks.push(e.data);
     };
@@ -207,16 +222,32 @@ export async function createSTT(
 
           // When the recorder stops, send the audio to Groq
           mediaRecorder.onstop = async () => {
+            const releaseStream = () => { if (stream) stream.getTracks().forEach(track => track.stop()); };
+
             if (audioChunks.length === 0) {
-              if (stream) stream.getTracks().forEach(track => track.stop());
+              releaseStream();
               resolve(interimText);
               return;
             }
-            
+
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+            // Anything Groq would refuse: keep the live transcript rather than
+            // burning an upload to be told 400/413 and losing the words anyway.
+            if (audioBlob.size < MIN_TRANSCRIBABLE_BYTES || audioBlob.size > MAX_TRANSCRIBABLE_BYTES) {
+              const reason = audioBlob.size < MIN_TRANSCRIBABLE_BYTES
+                ? 'too short to contain speech'
+                : 'larger than the transcription upload cap';
+              console.warn(`Skipping transcription: recording is ${reason} (${audioBlob.size} bytes). Keeping the live transcript.`);
+              releaseStream();
+              onCommit(interimText);
+              resolve(interimText);
+              return;
+            }
+
             const formData = new FormData();
-            formData.append('file', audioBlob);
-            
+            formData.append('file', audioBlob, 'speech.webm');
+
             try {
               const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
               const data = await res.json();
@@ -237,7 +268,7 @@ export async function createSTT(
                onCommit(interimText);
                resolve(interimText);
             } finally {
-               if (stream) stream.getTracks().forEach(track => track.stop());
+               releaseStream();
             }
           };
 
