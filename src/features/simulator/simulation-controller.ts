@@ -68,6 +68,9 @@ export function createSimulationController(dependencies: SimulationControllerDep
     segments = [...segments, segment];
     notify();
     await save();
+    if (dependencies.mode === 'uninterrupted') {
+      return;
+    }
     if (dependencies.mode === 'mock' && answeringQuestion) {
       answerCommitted = true;
       notify();
@@ -98,7 +101,7 @@ export function createSimulationController(dependencies: SimulationControllerDep
     // Capture stop only awaited presenter persistence. It is safe to await
     // independently tracked examiner decisions here because capture is detached.
     await examinerWork;
-    if (dependencies.mode === 'mock' && events.length) {
+    if ((dependencies.mode === 'mock' || dependencies.mode === 'uninterrupted') && events.length) {
       answeringQuestion = true;
       answerCommitted = false;
       slideIndex = events[queueIndex].slideIndex;

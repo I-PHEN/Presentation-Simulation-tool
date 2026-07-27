@@ -37,11 +37,12 @@ describe('RehearseSetup', () => {
     expect(html).not.toContain('Topic prompt');
     expect(html).not.toContain('Coming soon');
     // Step 2 = the real conditions we support today
-    expect(html).toContain('Diagnostic practice');
+    expect(html).toContain('Uninterrupted presentation');
+    expect(html).toContain('Diagnostic sparring');
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
-    expect(html.match(/name="rehearse-mode"/g)).toHaveLength(2);
+    expect(html.match(/name="rehearse-mode"/g)).toHaveLength(3);
     expect(html.match(/name="rehearse-stance"/g)).toHaveLength(2);
     // No fabricated audience controls
     expect(html).not.toContain('Audience type');

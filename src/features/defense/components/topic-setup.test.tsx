@@ -9,11 +9,12 @@ describe('TopicSetup', () => {
     expect(html).toContain('Or type your own topic');
     expect(html).toContain('Refresh topics');
     // Same room step as the deck path.
-    expect(html).toContain('Diagnostic practice');
+    expect(html).toContain('Uninterrupted presentation');
+    expect(html).toContain('Diagnostic sparring');
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
-    expect(html.match(/name="topic-mode"/g)).toHaveLength(2);
+    expect(html.match(/name="topic-mode"/g)).toHaveLength(3);
     expect(html.match(/name="topic-stance"/g)).toHaveLength(2);
     // No deck-only chrome.
     expect(html).not.toContain('Presentation deck');

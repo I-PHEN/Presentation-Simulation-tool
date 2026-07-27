@@ -21,7 +21,8 @@ export function buildRehearseSessionPayload({ deck, title, mode, stance }: Rehea
 }
 
 const MODES: ReadonlyArray<readonly [DefenseMode, string, string]> = [
-  ['diagnostic', 'Diagnostic practice', 'Pauses on weak reasoning so you can repair it before moving on.'],
+  ['uninterrupted', 'Uninterrupted presentation', 'Present your whole deck at your own pace without mid-slide interruptions.'],
+  ['diagnostic', 'Diagnostic sparring', 'Pauses on weak reasoning so you can repair it before moving on.'],
   ['mock', 'Mock defense', 'Keeps the examination moving under realistic pressure, start to finish.'],
 ];
 

@@ -1,16 +1,16 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Users, Captions, PhoneOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Users, Captions, PhoneOff, Settings } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { ActivityBars } from './ActivityBars';
 import { SessionTimer } from './SessionTimer';
 import { cn } from '@/lib/utils';
 
-export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer, camera }: {
+export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onToggleSettings, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer, camera }: {
   recording?: boolean; micActive: boolean;
   /** The recogniser is producing words right now — i.e. you are being heard. */
   hearing?: boolean;
-  onToggleMic: () => void; onToggleParticipants: () => void; onToggleTranscript: () => void; onEnd: () => void; endDisabled?: boolean;
+  onToggleMic: () => void; onToggleParticipants: () => void; onToggleTranscript: () => void; onToggleSettings?: () => void; onEnd: () => void; endDisabled?: boolean;
   /** Omitted in topic mode, which has a single card and nothing to page through. */
   slideNav?: { onPrev: () => void; onNext: () => void; prevDisabled: boolean; nextDisabled: boolean };
   maximized?: boolean; onToggleMaximized?: () => void;
@@ -62,6 +62,11 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
       <button type="button" aria-label="Show transcript" onClick={onToggleTranscript} className={round('secondary')}>
         <Captions className="size-4" aria-hidden="true" />
       </button>
+      {onToggleSettings && (
+        <button type="button" aria-label="Rehearsal settings" title="Adjust room mode & interjections" onClick={onToggleSettings} className={round('secondary')}>
+          <Settings className="size-4" aria-hidden="true" />
+        </button>
+      )}
       {onToggleMaximized && (
         <button type="button" aria-label={maximized ? 'Exit full screen' : 'Maximize presentation'} title={maximized ? 'Exit full screen (Esc)' : 'Maximize presentation (F)'} onClick={onToggleMaximized} className={round('secondary')}>
           {maximized ? <Minimize2 className="size-4" aria-hidden="true" /> : <Maximize2 className="size-4" aria-hidden="true" />}

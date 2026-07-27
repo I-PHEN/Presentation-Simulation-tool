@@ -14,13 +14,14 @@ describe('PracticeSetup', () => {
       <PracticeSetup sessionId="session-1" deck={deck} initialMode="diagnostic" initialStance="rigorous" onReady={() => undefined} />,
     );
 
-    expect(html).toContain('Diagnostic practice');
-    expect(html).toContain('Mock defense');
+    expect(html).toContain('Uninterrupted Talk');
+    expect(html).toContain('Diagnostic Sparring');
+    expect(html).toContain('Mock Defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
     expect(html).toContain('Hostile Heckler');
-    expect(html.match(/type="radio"/g)).toHaveLength(5);
-    expect(html.match(/name="practice-mode"/g)).toHaveLength(2);
+    expect(html.match(/type="radio"/g)).toHaveLength(6);
+    expect(html.match(/name="practice-mode"/g)).toHaveLength(3);
     expect(html.match(/name="examiner-stance"/g)).toHaveLength(3);
     expect(html).toContain('checked=""');
     expect(html).not.toContain('AI Panel Members');

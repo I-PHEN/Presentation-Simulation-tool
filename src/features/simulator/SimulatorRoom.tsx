@@ -89,6 +89,8 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   const showAside = !maximized && (showParticipants || showTranscript);
   const hearing = engine.interim.trim().length > 0;
 
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <div ref={roomRef} className="relative flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       {!maximized && (
@@ -150,7 +152,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-3'
           : 'shrink-0 border-t border-border bg-background px-4 py-2',
       )}>
-        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end(delivery.getSamples())} endDisabled={phase !== 'live'}
+        <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onToggleSettings={() => setShowSettings((v) => !v)} onEnd={() => void engine.end(delivery.getSamples())} endDisabled={phase !== 'live'}
           timer={phase === 'ready' ? undefined : { startedAtMs: engine.startedAtMs, targetMs, onCycleTarget: setTargetMs }}
           camera={{ enabled: camera.enabled, onToggle: () => void camera.toggle() }}
           slideNav={isTopic ? undefined : {
@@ -160,6 +162,46 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
             nextDisabled: position >= total - 1,
           }} />
       </footer>
+
+      {/* In-Room Quick Settings Modal */}
+      {showSettings && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-md p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-e3 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h2 className="text-base font-semibold">⚙️ Rehearsal Settings</h2>
+              <button
+                type="button"
+                onClick={() => setShowSettings(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Close ✕
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Active Mode</p>
+                <p className="mt-1 font-semibold text-foreground capitalize">
+                  {session.mode === 'uninterrupted' ? '🎤 Uninterrupted Presentation' : session.mode === 'diagnostic' ? '⚡ Diagnostic Sparring' : '🏆 Mock Defense'}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {session.mode === 'uninterrupted' ? 'Zero mid-slide interruptions. All Q&A is held for the end.' : 'Interactive AI panel with real-time feedback.'}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-border">
+                <p className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Examiner Pressure</p>
+                <p className="mt-1 font-semibold text-foreground capitalize">{session.stance} Stance</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSettings(false)}
+              className={cn(buttonVariants({ size: 'sm' }), 'w-full')}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       {phase === 'ready' && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-background/80 backdrop-blur-xl">

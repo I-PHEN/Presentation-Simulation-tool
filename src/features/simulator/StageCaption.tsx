@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * The band under the slide. It carries the panel's streaming caption while
- * someone is speaking and the slide's own text line the rest of the time, so it
- * is never an empty reserved strip and never covers the slide.
- *
- * `text` is the progressively revealed prefix; `fullText` is announced once to
- * assistive tech so screen readers hear whole lines, not every partial word.
+ * The band under the slide carrying the panel's streaming caption.
+ * Fades out automatically 3 seconds after the panel finishes speaking,
+ * keeping the presentation stage clean and distraction-free.
  */
 export function StageCaption({ text, fullText, speaker, speaking, idleText, overlay = false }: {
   text: string | null;
@@ -19,30 +16,52 @@ export function StageCaption({ text, fullText, speaker, speaking, idleText, over
   /** Shown when the panel has not spoken yet: the slide text, or a topic hint. */
   idleText?: string;
   /** Maximized mode has no room below the slide, so the caption floats over its
-   * bottom edge like video subtitles — and only while someone is speaking. */
+   * bottom edge like video subtitles. */
   overlay?: boolean;
 }) {
   const bodyRef = useRef<HTMLParagraphElement>(null);
-  // A long caption outgrows two lines mid-reveal; follow the newest words
-  // rather than clipping the tail (same approach as the transcript list).
+  const [visible, setVisible] = useState(() => Boolean(text));
+
+  // Auto-disappear timer: show immediately while speaking, hide 3s after speaking ends
+  useEffect(() => {
+    if (speaking && text) {
+      setVisible(true);
+      return;
+    }
+
+    if (!speaking && text && visible) {
+      const timer = setTimeout(() => {
+        setVisible(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+    if (!text) {
+      setVisible(false);
+    }
+  }, [speaking, text, visible]);
+
   useEffect(() => {
     const body = bodyRef.current;
     if (body) body.scrollTop = body.scrollHeight;
   }, [text]);
 
-  const showCaption = Boolean(text);
+  const showCaption = Boolean(text) && visible;
+
   if (overlay && !showCaption) {
-    // Nothing to say and no space to spare: keep only the live region.
     return <span aria-live="polite" className="sr-only">{fullText ?? ''}</span>;
   }
+
   return (
     <div
       aria-label="Panel caption"
       className={cn(
-        'flex items-center gap-3 rounded-xl border border-border px-4 transition-all duration-200',
+        'flex items-center gap-3 rounded-xl border border-border px-4 transition-all duration-500 ease-out',
         overlay
           ? 'pointer-events-none absolute inset-x-4 bottom-16 z-10 mx-auto max-w-xl glass-card py-3 shadow-xl'
           : 'h-16 shrink-0 mx-auto w-full max-w-2xl glass-panel shadow-sm',
+        showCaption
+          ? 'opacity-100 translate-y-0 scale-100'
+          : 'opacity-0 translate-y-2 scale-98 pointer-events-none h-0 py-0 border-transparent overflow-hidden my-0',
       )}
     >
       <span aria-live="polite" className="sr-only">{fullText ?? ''}</span>
@@ -68,3 +87,4 @@ export function StageCaption({ text, fullText, speaker, speaking, idleText, over
     </div>
   );
 }
+

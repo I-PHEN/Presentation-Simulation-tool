@@ -128,15 +128,56 @@ export function PracticeSetup({
       <div className="divide-y divide-border">
         <fieldset className="py-6">
           <legend className="text-base font-medium">Practice mode</legend>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Diagnostic practice pauses on weak reasoning so you can repair it. Mock defense keeps the examination moving under realistic pressure.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {([
-              ['diagnostic', 'Diagnostic practice'],
-              ['mock', 'Mock defense'],
-            ] as const).map(([value, label]) => (
-              <label key={value} className={cn('cursor-pointer rounded-lg border border-border bg-surface px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-popover has-[input:focus-visible]:outline has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-primary', mode === value && 'border-primary bg-accent shadow-e1')}>
-                <input type="radio" name="practice-mode" value={value} checked={mode === value} onChange={() => setMode(value)} className="sr-only" />
-                {label}
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Choose how interactive you want the AI panel to be during your presentation.</p>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                value: 'uninterrupted',
+                title: '🎤 Uninterrupted Talk',
+                badge: 'Beginner Friendly',
+                badgeStyle: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                desc: 'Present your whole deck smoothly without mid-slide interjections. The AI panel takes notes silently and asks questions at the end.',
+              },
+              {
+                value: 'diagnostic',
+                title: '⚡ Diagnostic Sparring',
+                badge: 'Interactive Coaching',
+                badgeStyle: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                desc: 'Pauses the room on weak reasoning or slide-reading so you can practice repairing your explanation on the spot.',
+              },
+              {
+                value: 'mock',
+                title: '🏆 Mock Defense',
+                badge: 'Continuous Exam',
+                badgeStyle: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                desc: 'Realistic continuous examination. The room keeps moving under realistic pressure and compiles a full coaching report.',
+              },
+            ].map(({ value, title, badge, badgeStyle, desc }) => (
+              <label
+                key={value}
+                className={cn(
+                  'relative flex flex-col justify-between cursor-pointer rounded-xl border border-border bg-surface p-4 text-left transition-all duration-200 hover:border-primary/50 hover:bg-popover shadow-sm',
+                  mode === value && 'border-primary bg-primary/5 ring-1 ring-primary shadow-e1',
+                )}
+              >
+                <input
+                  type="radio"
+                  name="practice-mode"
+                  value={value}
+                  checked={mode === value}
+                  onChange={() => setMode(value as DefenseMode)}
+                  className="sr-only"
+                />
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-sm text-foreground">{title}</span>
+                    <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0', badgeStyle)}>
+                      {badge}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{desc}</p>
+                </div>
               </label>
             ))}
           </div>
