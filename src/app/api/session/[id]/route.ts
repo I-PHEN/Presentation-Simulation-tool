@@ -114,7 +114,7 @@ export async function PATCH(
         return NextResponse.json({ error: 'Defense rehearsal updates require a defense session' }, { status: 400 });
       }
     }
-    const { transcriptSegments, examinerEvents, deliverySamples, ...scalarUpdate } = update.data;
+    const { transcriptSegments, examinerEvents, deliverySamples, practiceSettings, ...scalarUpdate } = update.data;
     const owned = await db.session.findFirst({ where: { id, userId: identity.userId }, select: { id: true } });
     if (!owned) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     const session = await db.session.update({
@@ -124,6 +124,7 @@ export async function PATCH(
         ...(transcriptSegments ? { transcriptSegments: JSON.stringify(transcriptSegments) } : {}),
         ...(examinerEvents ? { examinerEvents: JSON.stringify(examinerEvents) } : {}),
         ...(deliverySamples ? { deliverySamples: JSON.stringify(deliverySamples) } : {}),
+        ...(practiceSettings ? { practiceSettings: JSON.stringify(practiceSettings) } : {}),
       },
     });
 

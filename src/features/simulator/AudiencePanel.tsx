@@ -15,6 +15,47 @@ export function selfStatus({ micActive, hearing }: SelfState): { label: string; 
   return hearing ? { label: 'Speaking', active: true } : { label: 'Listening for you', active: false };
 }
 
+/** Gradient palette for each persona avatar — lightweight, CSS-only. */
+const AVATAR_GRADIENTS: Record<string, string> = {
+  professor: 'from-indigo-500 to-purple-600',
+  examiner: 'from-amber-500 to-orange-600',
+  peer: 'from-emerald-500 to-teal-600',
+};
+
+/** Mood emoji that subtly indicates persona engagement — fully static, no overhead. */
+function personaMoodBadge(personaId: string, isSpeaking: boolean): string {
+  if (isSpeaking) return '💬';
+  const moods: Record<string, string> = { professor: '🎓', examiner: '🔍', peer: '👁️' };
+  return moods[personaId] ?? '👤';
+}
+
+/**
+ * Lightweight avatar — a gradient circle with initial + a small floating mood badge.
+ * Zero WebGL, zero canvas, zero images. Pure CSS.
+ */
+function PersonaAvatar({ persona, isSpeaking }: { persona: Persona; isSpeaking: boolean }) {
+  const gradient = AVATAR_GRADIENTS[persona.id] ?? 'from-slate-500 to-slate-600';
+  return (
+    <div className="relative">
+      <span
+        className={cn(
+          'flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white shadow-sm transition-shadow duration-300',
+          gradient,
+          isSpeaking && 'ring-2 ring-primary ring-offset-1 ring-offset-background shadow-lg',
+        )}
+      >
+        {persona.title.charAt(0)}
+      </span>
+      <span
+        className="absolute -bottom-0.5 -right-0.5 text-[10px] leading-none select-none"
+        aria-hidden="true"
+      >
+        {personaMoodBadge(persona.id, isSpeaking)}
+      </span>
+    </div>
+  );
+}
+
 /**
  * Roster only — what the panel is saying lives in the stage caption, so this
  * stays compact enough to share one screen with the transcript. Every row shows
@@ -29,8 +70,8 @@ export function AudiencePanel({ panel, speakingPersonaId, self }: {
       {self && you && (
         <div data-state={you.active ? 'speaking' : self.micActive ? 'listening' : 'muted'}
           className={cn(ROW, you.active && 'border-l-2 border-l-primary')}>
-          <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full',
-            self.micActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
+          <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-xs font-bold text-white shadow-sm',
+            you.active && 'ring-2 ring-primary ring-offset-1 ring-offset-background')}>
             {self.micActive ? <Mic className="size-4" aria-hidden="true" /> : <MicOff className="size-4" aria-hidden="true" />}
           </span>
           <div className="min-w-0">
@@ -50,10 +91,7 @@ export function AudiencePanel({ panel, speakingPersonaId, self }: {
         return (
           <div key={persona.id} data-state={speaking ? 'speaking' : 'listening'}
             className={cn(ROW, speaking && 'border-l-2 border-l-primary')}>
-            <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-              speaking ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
-              {persona.title.charAt(0)}
-            </span>
+            <PersonaAvatar persona={persona} isSpeaking={speaking} />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{persona.title}</p>
               <p className="truncate text-xs text-muted-foreground">{persona.focus}</p>
@@ -90,3 +128,4 @@ export function AudiencePanel({ panel, speakingPersonaId, self }: {
     </section>
   );
 }
+

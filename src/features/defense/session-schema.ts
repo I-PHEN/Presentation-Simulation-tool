@@ -54,6 +54,12 @@ export const deliverySamplesSchema = z.array(z.object({
   presence: z.number().finite().min(0).max(100),
 }).strict()).max(2_000);
 
+export const practiceSettingsSchema = z.object({
+  curveballFrequency: z.enum(['low', 'medium', 'high']),
+  showRoomMood: z.boolean(),
+  showPersonaBadges: z.boolean(),
+}).strict();
+
 export const updateDefenseSessionSchema = z.object({
   mode: z.enum(['diagnostic', 'mock']).optional(),
   stance: z.enum(['supportive', 'rigorous', 'hostile']).optional(),
@@ -61,4 +67,5 @@ export const updateDefenseSessionSchema = z.object({
   examinerEvents: examinerEventsSchema.optional(),
   deliverySamples: deliverySamplesSchema.optional(),
   status: z.enum(['upload', 'analyzed', 'practicing', 'completed']).optional(),
+  practiceSettings: practiceSettingsSchema.optional(),
 }).strict().refine((update) => Object.keys(update).length > 0, { message: 'At least one update is required' });

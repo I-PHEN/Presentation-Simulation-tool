@@ -1,6 +1,5 @@
 'use client';
 
-import { AudioVisualizer } from '@/components/audio-visualizer';
 import { cn } from '@/lib/utils';
 
 export interface SimulatorHeaderProps {
@@ -21,9 +20,6 @@ export function SimulatorHeader({
   isTopic,
   position,
   total,
-  micActive,
-  hearing,
-  speakingPersonaId,
   recording,
   exitHref = '/dashboard',
   className,
@@ -42,28 +38,9 @@ export function SimulatorHeader({
         Exit rehearsal
       </a>
 
-      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        <p className="min-w-0 truncate text-xs sm:text-sm font-medium">
-          {isTopic ? 'Topic rehearsal' : sourceName}
-        </p>
-        <div
-          data-testid="audio-status-pill"
-          className="flex items-center gap-2 rounded-full border border-border/50 bg-background/60 px-2.5 py-0.5 shrink-0"
-        >
-          <AudioVisualizer
-            type="input"
-            isActive={micActive && hearing}
-            barCount={4}
-            className="h-3.5"
-          />
-          <AudioVisualizer
-            type="output"
-            isActive={speakingPersonaId !== null}
-            barCount={4}
-            className="h-3.5"
-          />
-        </div>
-      </div>
+      <p className="min-w-0 truncate text-xs sm:text-sm font-medium">
+        {isTopic ? 'Topic rehearsal' : sourceName}
+      </p>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {recording && (
@@ -82,3 +59,4 @@ export function SimulatorHeader({
     </header>
   );
 }
+
