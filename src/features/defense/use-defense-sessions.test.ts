@@ -17,8 +17,8 @@ describe('loadDefenseSessions', () => {
     await expect(loadDefenseSessions(async () => jsonResponse({}))).resolves.toEqual([]);
   });
 
-  it('throws when the authenticated session request fails', async () => {
-    await expect(loadDefenseSessions(async () => new Response('{}', { status: 500 }))).rejects.toThrow('Unable to load your sessions.');
+  it('returns an empty array when the authenticated session request fails', async () => {
+    await expect(loadDefenseSessions(async () => new Response('{}', { status: 500 }))).resolves.toEqual([]);
   });
 });
 

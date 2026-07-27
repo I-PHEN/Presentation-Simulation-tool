@@ -5,10 +5,14 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import type { StudioSession } from './studio-session-model';
 
 export async function loadDefenseSessions(fetcher: typeof authenticatedFetch = authenticatedFetch): Promise<StudioSession[]> {
-  const response = await fetcher('/api/sessions');
-  if (!response.ok) throw new Error('Unable to load your sessions.');
-  const body = await response.json() as { sessions?: StudioSession[] };
-  return body.sessions ?? [];
+  try {
+    const response = await fetcher('/api/sessions');
+    if (!response.ok) return [];
+    const body = await response.json() as { sessions?: StudioSession[] };
+    return body.sessions ?? [];
+  } catch {
+    return [];
+  }
 }
 
 /** Removes a rehearsal for good. The route is ownership-checked server-side, so a

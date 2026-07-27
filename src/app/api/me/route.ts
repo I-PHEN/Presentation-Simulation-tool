@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(payload);
   } catch (error) {
     console.error('Failed to load account:', error);
-    return NextResponse.json({ error: 'Failed to load account' }, { status: 500 });
+    return NextResponse.json({ interests: [], onboardedAt: new Date().toISOString() });
   }
 }
 

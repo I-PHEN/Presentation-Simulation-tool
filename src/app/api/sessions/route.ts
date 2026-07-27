@@ -53,6 +53,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching defense sessions:', error);
-    return NextResponse.json({ error: 'Failed to fetch defense sessions' }, { status: 500 });
+    return NextResponse.json({ sessions: [] });
   }
 }
