@@ -32,8 +32,8 @@ export function parseDefenseSessionResponse(value: unknown): DefenseSession | nu
   const segments = transcriptSegmentsSchema.safeParse(session.transcriptSegments);
   const events = examinerEventsSchema.safeParse(session.examinerEvents);
   if (!deck.success || !segments.success || !events.success) return null;
-  if (session.mode !== 'diagnostic' && session.mode !== 'mock') return null;
-  if (session.stance !== 'rigorous' && session.stance !== 'supportive') return null;
+  if (session.mode !== 'uninterrupted' && session.mode !== 'diagnostic' && session.mode !== 'mock') return null;
+  if (session.stance !== 'rigorous' && session.stance !== 'supportive' && session.stance !== 'hostile') return null;
   if (typeof session.id !== 'string') return null;
   return {
     id: session.id,

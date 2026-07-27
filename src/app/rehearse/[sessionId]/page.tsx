@@ -18,8 +18,8 @@ function parseSession(value: unknown): SimSession | null {
   const segments = transcriptSegmentsSchema.safeParse(s.transcriptSegments);
   const events = examinerEventsSchema.safeParse(s.examinerEvents);
   if (!deck.success || !segments.success || !events.success) return null;
-  if (s.mode !== 'diagnostic' && s.mode !== 'mock') return null;
-  if (s.stance !== 'rigorous' && s.stance !== 'supportive') return null;
+  if (s.mode !== 'uninterrupted' && s.mode !== 'diagnostic' && s.mode !== 'mock') return null;
+  if (s.stance !== 'rigorous' && s.stance !== 'supportive' && s.stance !== 'hostile') return null;
   if (typeof s.id !== 'string') return null;
   return { id: s.id, deck: deck.data, mode: s.mode, stance: s.stance, transcriptSegments: segments.data, examinerEvents: events.data, status: typeof s.status === 'string' ? s.status : 'practicing', source: s.source === 'topic' ? 'topic' : 'deck' };
 }
