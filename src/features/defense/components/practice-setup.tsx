@@ -107,7 +107,7 @@ export function PracticeSetup({
         sessionId,
         mode,
         stance,
-        practiceSettings: stance === 'hostile' ? practiceSettings : undefined,
+        practiceSettings,
         onReady,
       });
     } catch (caught) {
@@ -199,6 +199,34 @@ export function PracticeSetup({
                 <input type="radio" name="examiner-stance" value={value} checked={stance === value} onChange={() => setStance(value)} className="sr-only" />
                 {label}
               </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="py-6">
+          <legend className="text-base font-medium">⏱️ Target presentation duration</legend>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Select your time limit for realistic pacing practice.</p>
+          <div className="mt-4 grid grid-cols-5 gap-2">
+            {[
+              { mins: 5, label: '5 mins' },
+              { mins: 10, label: '10 mins' },
+              { mins: 15, label: '15 mins' },
+              { mins: 20, label: '20 mins' },
+              { mins: undefined, label: 'Unlimited' },
+            ].map(({ mins, label }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => updateSetting('targetDurationMinutes', mins)}
+                className={cn(
+                  'rounded-xl border border-border px-3 py-2.5 text-center text-xs font-semibold transition-all hover:bg-popover',
+                  practiceSettings.targetDurationMinutes === mins
+                    ? 'border-primary bg-primary/10 text-primary shadow-sm ring-1 ring-primary'
+                    : 'bg-surface text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {label}
+              </button>
             ))}
           </div>
         </fieldset>

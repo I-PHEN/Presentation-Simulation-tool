@@ -58,6 +58,7 @@ export const practiceSettingsSchema = z.object({
   curveballFrequency: z.enum(['low', 'medium', 'high']),
   showRoomMood: z.boolean(),
   showPersonaBadges: z.boolean(),
+  targetDurationMinutes: z.number().int().min(1).max(180).optional(),
 }).strict();
 
 export const updateDefenseSessionSchema = z.object({

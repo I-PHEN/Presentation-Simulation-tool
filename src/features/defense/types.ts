@@ -10,6 +10,7 @@ export interface PracticeSettings {
   curveballFrequency: CurveballFrequency;
   showRoomMood: boolean;
   showPersonaBadges: boolean;
+  targetDurationMinutes?: number;
 }
 
 export interface TranscriptSegment {
