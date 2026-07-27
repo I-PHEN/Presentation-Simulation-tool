@@ -234,7 +234,7 @@ export function AppShell({ active, children }: {
           </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">{children}</div>
+          {children}
         </main>
       </div>
     </div>

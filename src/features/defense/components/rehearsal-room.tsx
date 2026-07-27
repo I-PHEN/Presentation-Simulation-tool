@@ -60,7 +60,7 @@ export function RehearsalRoom({ session, onComplete }: { session: RehearsalSessi
     if (state.started && !state.ended) await startCapture({ slideIndex: state.slideIndex, startedAtMs: Math.max(0, Date.now() - startedAtRef.current) });
   }, [startCapture]);
   const voice = useExaminerVoice({
-    pauseCapture, resumeCapture, generateSpeech: generateTTS, playSpeech: (audio: any) => playAudioData(audio),
+    pauseCapture, resumeCapture, generateSpeech: generateTTS, playSpeech: (audio: unknown) => playAudioData(audio as { audio: Blob }),
     appendSegment: async (segment) => { await controllerRef.current?.appendExaminerSegment(segment); },
     now: () => Math.max(0, Date.now() - startedAtRef.current),
   });

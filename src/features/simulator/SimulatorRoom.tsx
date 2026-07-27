@@ -16,6 +16,10 @@ import { nextSlideForKey } from './slide-keys';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import { SimulatorHeader } from './SimulatorHeader';
+import { SlideAmbientLighting } from './SlideAmbientLighting';
+import { derivePresenterState } from './slide-palette';
+
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic' };
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -88,11 +92,16 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   return (
     <div ref={roomRef} className="relative flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       {!maximized && (
-        <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-3 sm:px-4">
-          <a href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">Exit rehearsal</a>
-          <p className="min-w-0 truncate text-sm font-medium">{isTopic ? 'Topic rehearsal' : session.deck.sourceName}</p>
-          <span className="shrink-0 text-sm text-muted-foreground">{isTopic ? 'Speaking to your topic' : `Slide ${position + 1} / ${total}`}</span>
-        </header>
+        <SimulatorHeader
+          sourceName={session.deck.sourceName}
+          isTopic={isTopic}
+          position={position}
+          total={total}
+          micActive={engine.micActive}
+          hearing={hearing}
+          speakingPersonaId={engine.speakingPersonaId}
+          recording={engine.recording}
+        />
       )}
 
       {/* One screen: the stage owns a 1fr row, the aside is capped and scrolls inside.
@@ -105,12 +114,13 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
       )}>
         <div className={cn('relative flex min-h-0 min-w-0 flex-col', !maximized && 'gap-2')}>
           {/* Dynamic Ambient Backlight Glow */}
-          <div
-            className={cn(
-              'ambient-glow transition-all duration-700',
-              engine.speakingPersonaId ? 'opacity-30 scale-105' : engine.micActive ? 'opacity-20' : 'opacity-10',
-            )}
-            aria-hidden="true"
+          <SlideAmbientLighting
+            slideIndex={position}
+            state={derivePresenterState({
+              micActive: engine.micActive,
+              hearing,
+              speakingPersonaId: engine.speakingPersonaId,
+            })}
           />
           {isTopic
             ? <TopicStage topic={session.deck.slides[0]?.text ?? ''} />

@@ -25,26 +25,42 @@ export type UseDefenseSessionsResult = {
   retry: () => void;
 };
 
+let cachedSessions: StudioSession[] | null = null;
+
 export function useDefenseSessions(): UseDefenseSessionsResult {
-  const [sessions, setSessions] = useState<StudioSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState<StudioSession[]>(cachedSessions ?? []);
+  const [loading, setLoading] = useState(cachedSessions === null);
   const [error, setError] = useState<string>();
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    if (cachedSessions === null) {
+      setLoading(true);
+    }
     setError(undefined);
     loadDefenseSessions()
-      .then((loaded) => { if (active) setSessions(loaded); })
-      .catch((caught: unknown) => {
-        if (active) setError(caught instanceof Error ? caught.message : 'Unable to load your sessions.');
+      .then((loaded) => {
+        cachedSessions = loaded;
+        if (active) {
+          setSessions(loaded);
+        }
       })
-      .finally(() => { if (active) setLoading(false); });
+      .catch((caught: unknown) => {
+        if (active && cachedSessions === null) {
+          setError(caught instanceof Error ? caught.message : 'Unable to load your sessions.');
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => { active = false; };
   }, [attempt]);
 
-  const retry = useCallback(() => setAttempt((value) => value + 1), []);
+  const retry = useCallback(() => {
+    cachedSessions = null;
+    setAttempt((value) => value + 1);
+  }, []);
 
   return { sessions, loading, error, retry };
 }

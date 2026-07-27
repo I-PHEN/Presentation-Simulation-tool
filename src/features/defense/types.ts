@@ -2,7 +2,15 @@ import { z } from 'zod';
 
 export type DefenseMode = 'diagnostic' | 'mock';
 export type ExaminerStance = 'supportive' | 'rigorous' | 'hostile';
+export type CurveballFrequency = 'low' | 'medium' | 'high';
 export type TranscriptRole = 'presenter' | 'examiner';
+
+/** Per-session practice settings controlling hostile mode features. */
+export interface PracticeSettings {
+  curveballFrequency: CurveballFrequency;
+  showRoomMood: boolean;
+  showPersonaBadges: boolean;
+}
 
 export interface TranscriptSegment {
   role: TranscriptRole;

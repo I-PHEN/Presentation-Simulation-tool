@@ -16,7 +16,7 @@ export function SlideStage({ slide, position, total }: {
   return (
     <section aria-label="Active presentation slide" className="flex min-h-0 min-w-0 flex-1 items-center justify-center">
       {/* flex centring keeps the pre-load status text in the middle of the frame */}
-      <div className="relative flex h-full w-fit min-w-0 max-w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-card">
+      <div className="relative flex h-full w-fit min-w-0 max-w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-card shadow-e2">
         <AuthenticatedSlideImage source={slide.imageUrl} alt={`Slide ${position + 1}: ${slide.text}`} className="h-full w-auto max-w-full object-contain" />
         <span className="absolute right-3 top-3 rounded-md bg-background/80 px-1.5 py-0.5 font-mono text-[11px] backdrop-blur">
           {String(position + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}

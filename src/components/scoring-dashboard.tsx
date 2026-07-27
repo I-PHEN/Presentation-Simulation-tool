@@ -289,7 +289,7 @@ export default function ScoringDashboard({ sessionData }: DashboardProps = {}) {
                   <PolarGrid stroke="var(--color-border)" />
                   <PolarAngleAxis dataKey="dimension" tick={{ fill: 'var(--color-muted-foreground)', fontSize: hasCameraData ? 8 : 9 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: 'var(--color-muted-foreground)', fontSize: 8 }} />
-                  <Radar name="Score" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.12} strokeWidth={1.5} />
+                  <Radar name="Score" dataKey="score" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.12} strokeWidth={1.5} />
                 </RadarChart>
               </ResponsiveContainer>
             </CardContent>

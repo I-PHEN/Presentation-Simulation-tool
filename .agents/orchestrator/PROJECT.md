@@ -10,9 +10,9 @@
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
 | 1 | Exploration & Analysis | Codebase investigation, AudioContext, CSS variables, build/test scripts | None | DONE |
-| 2 | Studio Glassmorphism Tokens & CSS | `globals.css`, Tailwind config, backdrop-blur tokens, subtle border reflections | M1 | IN_PROGRESS |
-| 3 | Glowing Multi-Band Audio Visualizer | Equalizer/waveform component for audio input & Cartesia TTS output | M1 | PLANNED |
-| 4 | Dynamic Slide Palette Ambient Lighting | Ambient backlight effect reflecting slide color/presenter state | M1 | PLANNED |
+| 2 | Studio Glassmorphism Tokens & CSS | `globals.css`, Tailwind config, backdrop-blur tokens, subtle border reflections | M1 | DONE |
+| 3 | Glowing Multi-Band Audio Visualizer | Equalizer/waveform component for audio input & Cartesia TTS output | M1 | DONE |
+| 4 | Dynamic Slide Palette Ambient Lighting | Ambient backlight effect reflecting slide color/presenter state | M1 | IN_PROGRESS |
 | 5 | SimulatorRoom Integration & Verification | Integrate components, full verification (build, test, dark/light mode, audit) | M2, M3, M4 | PLANNED |
 
 ## Interface Contracts

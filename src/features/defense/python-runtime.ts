@@ -36,6 +36,6 @@ async function realProbe(rt: PythonRuntime): Promise<boolean> {
 
 let cached: Promise<PythonRuntime> | null = null;
 export function resolvePythonInterpreter(): Promise<PythonRuntime> {
-  if (!cached) cached = pickInterpreter(candidateInterpreters(process.env), realProbe);
+  if (!cached) cached = pickInterpreter(candidateInterpreters(process.env as Record<string, string | undefined>), realProbe);
   return cached;
 }

@@ -1,35 +1,79 @@
 'use client';
 
 import { useState } from 'react';
-import type { DeckContext, DefenseMode, ExaminerStance } from '@/features/defense/types';
+import type { DeckContext, DefenseMode, ExaminerStance, CurveballFrequency, PracticeSettings } from '@/features/defense/types';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type Fetcher = typeof fetch;
 
+const DEFAULT_PRACTICE_SETTINGS: PracticeSettings = {
+  curveballFrequency: 'medium',
+  showRoomMood: true,
+  showPersonaBadges: true,
+};
+
 export async function savePracticeSetup({
   sessionId,
   mode,
   stance,
+  practiceSettings,
   fetcher = fetch,
   onReady,
 }: {
   sessionId: string;
   mode: DefenseMode;
   stance: ExaminerStance;
+  practiceSettings?: PracticeSettings;
   fetcher?: Fetcher;
   onReady: () => void;
 }) {
   const response = await fetcher(`/api/session/${sessionId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode, stance }),
+    body: JSON.stringify({ mode, stance, ...(practiceSettings ? { practiceSettings } : {}) }),
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new Error(typeof body.error === 'string' ? body.error : 'Unable to save your practice setup.');
   }
   onReady();
+}
+
+function ToggleSwitch({ id, checked, onChange, label, description }: {
+  id: string;
+  checked: boolean;
+  onChange: (val: boolean) => void;
+  label: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <button
+        id={id}
+        role="switch"
+        type="button"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={cn(
+          'relative mt-0.5 inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          checked ? 'bg-primary' : 'bg-muted',
+        )}
+      >
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none inline-block h-4 w-4 rounded-full bg-background shadow ring-0 transition-transform',
+            checked ? 'translate-x-4' : 'translate-x-0',
+          )}
+        />
+      </button>
+      <div className="min-w-0">
+        <label htmlFor={id} className="cursor-pointer text-sm font-medium">{label}</label>
+        <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
 }
 
 export function PracticeSetup({
@@ -49,12 +93,23 @@ export function PracticeSetup({
   const [stance, setStance] = useState<ExaminerStance>(initialStance);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const [practiceSettings, setPracticeSettings] = useState<PracticeSettings>(DEFAULT_PRACTICE_SETTINGS);
+
+  const updateSetting = <K extends keyof PracticeSettings>(key: K, value: PracticeSettings[K]) => {
+    setPracticeSettings((prev) => ({ ...prev, [key]: value }));
+  };
 
   const continueToRoom = async () => {
     setSaving(true);
     setError(undefined);
     try {
-      await savePracticeSetup({ sessionId, mode, stance, onReady });
+      await savePracticeSetup({
+        sessionId,
+        mode,
+        stance,
+        practiceSettings: stance === 'hostile' ? practiceSettings : undefined,
+        onReady,
+      });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to save your practice setup.');
     } finally {
@@ -106,6 +161,61 @@ export function PracticeSetup({
             ))}
           </div>
         </fieldset>
+
+        {/* Advanced settings — only shown for hostile stance */}
+        {stance === 'hostile' && (
+          <fieldset className="py-6" data-testid="hostile-settings">
+            <legend className="text-base font-medium">🎛️ Hostile mode settings</legend>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">Fine-tune the intensity of your hostile rehearsal experience.</p>
+
+            <div className="mt-5 space-y-5">
+              {/* Curveball frequency */}
+              <div>
+                <label htmlFor="curveball-frequency" className="block text-sm font-medium">Curveball frequency</label>
+                <p className="mt-0.5 text-xs text-muted-foreground">How often the examiner throws surprise interjections and curveball questions.</p>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {([
+                    ['low', 'Low'],
+                    ['medium', 'Medium'],
+                    ['high', 'High'],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateSetting('curveballFrequency', value)}
+                      className={cn(
+                        'rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-popover',
+                        practiceSettings.curveballFrequency === value
+                          ? 'border-destructive bg-destructive/10 text-destructive'
+                          : 'bg-surface',
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Room mood meter toggle */}
+              <ToggleSwitch
+                id="toggle-room-mood"
+                checked={practiceSettings.showRoomMood}
+                onChange={(val) => updateSetting('showRoomMood', val)}
+                label="Room mood meters"
+                description="Show real-time Skepticism and Hostility gauges during rehearsal."
+              />
+
+              {/* Persona badges toggle */}
+              <ToggleSwitch
+                id="toggle-persona-badges"
+                checked={practiceSettings.showPersonaBadges}
+                onChange={(val) => updateSetting('showPersonaBadges', val)}
+                label="Persona status badges"
+                description="Show lightweight persona indicators for each panelist in the audience."
+              />
+            </div>
+          </fieldset>
+        )}
       </div>
 
       {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
