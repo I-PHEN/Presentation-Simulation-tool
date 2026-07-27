@@ -16,6 +16,8 @@ import { useSpeakerProfile } from '@/hooks/use-speaker-profile';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useOnboardingGuard } from '@/features/onboarding/use-onboarding';
+import { Calendar, Clock, ExternalLink, Sparkles, X } from 'lucide-react';
+import { ScheduleModal, ScheduledPracticeItem } from '@/features/scheduling/schedule-modal';
 
 /**
  * useDefenseSessions fetches on mount, which can race ahead of Firebase
@@ -38,6 +40,22 @@ export default function DashboardPage() {
   const [todaysTopic, setTodaysTopic] = useState<string>();
   const [hasInterests, setHasInterests] = useState(false);
   const [removeError, setRemoveError] = useState<string>();
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [upcomingItem, setUpcomingItem] = useState<ScheduledPracticeItem | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('upcoming_rehearsal');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && new Date(parsed.targetDate) > new Date()) {
+            setUpcomingItem(parsed);
+          }
+        } catch { /* ignore */ }
+      }
+    }
+  }, []);
 
   // Refetch rather than filter locally, so Home never disagrees with the server.
   const removeSession = async (id: string) => {
@@ -115,7 +133,61 @@ export default function DashboardPage() {
           const displayName = user.displayName && user.displayName !== 'Guest User' ? user.displayName.split(' ')[0] : undefined;
           return (
             <div className="flex flex-col gap-8">
-              <Greeting name={displayName} hasActive={Boolean(model.active)} />
+              {/* Top Header Row with Greeting & Schedule Button */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
+                <Greeting name={displayName} hasActive={Boolean(model.active)} />
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-all shrink-0 shadow-sm"
+                >
+                  <Calendar className="size-4" /> Schedule Practice Block
+                </button>
+              </div>
+
+              {/* Upcoming Scheduled Practice Banner */}
+              {upcomingItem && (
+                <div className="rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-background to-background p-5 shadow-e2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider">
+                      <Clock className="size-3.5" /> Upcoming Scheduled Practice
+                    </div>
+                    <h3 className="font-semibold text-base text-foreground">{upcomingItem.title}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Target: {new Date(upcomingItem.targetDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} • Material: {upcomingItem.sourceName}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                    <a
+                      href={upcomingItem.googleCalendarUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground hover:bg-popover transition-colors"
+                    >
+                      <Calendar className="size-3.5 text-blue-500" /> Google Cal <ExternalLink className="size-3 opacity-60" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => router.push(upcomingItem.roomUrl)}
+                      className={cn(buttonVariants({ size: 'sm' }), 'text-xs font-semibold')}
+                    >
+                      Enter Room Now
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.removeItem('upcoming_rehearsal');
+                        setUpcomingItem(null);
+                      }}
+                      className="text-muted-foreground hover:text-foreground p-1"
+                      title="Dismiss reminder"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <StudioDesk model={model} focus={profile.nextFocus} onRemove={(id) => void removeSession(id)} />
               {removeError && <p role="alert" className="text-sm text-destructive">{removeError}</p>}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -123,6 +195,12 @@ export default function DashboardPage() {
                 <RecentSessionsCard recent={model.recent} onRemove={(id) => void removeSession(id)} />
                 <StatsSnapshot profile={profile} />
               </div>
+
+              <ScheduleModal
+                isOpen={isScheduleOpen}
+                onClose={() => setIsScheduleOpen(false)}
+                onScheduled={(item) => setUpcomingItem(item)}
+              />
             </div>
           );
         })()

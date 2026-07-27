@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { SimulatorHeader } from './SimulatorHeader';
 import { SlideAmbientLighting } from './SlideAmbientLighting';
 import { derivePresenterState } from './slide-palette';
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic' };
 
@@ -68,16 +69,23 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const typing = isTypingTarget(event.target);
-      const modified = event.metaKey || event.ctrlKey || event.altKey || event.shiftKey;
+      const modified = event.metaKey || event.ctrlKey || event.altKey;
+      if (!typing && !modified && event.key === '?') {
+        event.preventDefault();
+        setShowShortcuts((prev) => !prev);
+        return;
+      }
       if (!typing && !modified && (event.key === 'f' || event.key === 'F')) {
         event.preventDefault();
         toggleMaximized();
         return;
       }
-      const target = nextSlideForKey(event.key, { position, total, enabled: navEnabled, typing, modified });
+      const target = nextSlideForKey(event.key, { position, total, enabled: navEnabled, typing, modified: modified || event.shiftKey });
       if (target === null) return;
       event.preventDefault();
       void changeSlide(target);
@@ -216,6 +224,8 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           <button type="button" disabled={!engine.canFinish} onClick={engine.finish} className={cn(buttonVariants({ size: 'lg' }))}>See your report</button>
         </div>
       )}
+
+      <KeyboardShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 }
