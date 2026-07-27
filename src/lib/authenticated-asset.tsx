@@ -6,6 +6,9 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 export type AuthenticatedAssetRequest = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 export async function loadAuthenticatedAsset(source: string, request: AuthenticatedAssetRequest = authenticatedFetch): Promise<string> {
+  if (source.startsWith('data:') || source.startsWith('blob:')) {
+    return source;
+  }
   const response = await request(source);
   if (!response.ok) throw new Error('Unable to load slide preview');
   return URL.createObjectURL(await response.blob());

@@ -142,24 +142,14 @@ export async function POST(req: NextRequest) {
       slideTexts = jsDeck.slideTexts;
     }
 
-    // Slide assets are private to the authenticated uploader.
-    const slideId = randomUUID();
-    const slideDir = path.join(process.cwd(), 'slides', slideId);
-    await fs.promises.mkdir(slideDir, { recursive: true });
-    await fs.promises.writeFile(path.join(slideDir, '.owner.json'), JSON.stringify({ ownerId: identity.userId }));
-
     const slideUrls: string[] = [];
     for (let i = 0; i < slideImages.length; i++) {
       if (slideImages[i].startsWith('data:image/')) {
         slideUrls.push(slideImages[i]);
       } else {
         const isJpeg = slideImages[i].startsWith('/9j/');
-        const imgName = isJpeg ? `slide-${i + 1}.jpg` : `slide-${i + 1}.png`;
-        await fs.promises.writeFile(
-          path.join(slideDir, imgName),
-          Buffer.from(slideImages[i], 'base64')
-        );
-        slideUrls.push(`/api/slides/${slideId}/${imgName}`);
+        const mime = isJpeg ? 'image/jpeg' : 'image/png';
+        slideUrls.push(`data:${mime};base64,${slideImages[i]}`);
       }
     }
 
