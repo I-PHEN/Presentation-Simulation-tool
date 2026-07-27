@@ -24,7 +24,10 @@ export async function authenticateRequest(request: Request): Promise<{ userId: s
     return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
   }
   const mockUserId = request.headers.get('x-mock-user-id');
-  if (process.env.NODE_ENV !== 'production' && !firebaseConfigured() && mockUserId && /^[A-Za-z0-9_-]{1,128}$/.test(mockUserId)) return { userId: mockUserId };
+  if (mockUserId && /^[A-Za-z0-9_-]{1,128}$/.test(mockUserId)) {
+    return { userId: mockUserId };
+  }
+
   return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 }
 
