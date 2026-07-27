@@ -89,10 +89,12 @@ export function createSimulationController(dependencies: SimulationControllerDep
     notify();
   };
   const changeSlide = async (nextSlideIndex: number) => {
-    if (started && !ended) await dependencies.stopCapture();
     slideIndex = nextSlideIndex;
     notify();
-    if (started && !ended) await captureStart();
+    if (started && !ended) {
+      await dependencies.stopCapture();
+      await captureStart();
+    }
   };
   const end = async () => {
     if (ended) return;
