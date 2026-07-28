@@ -138,6 +138,11 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
     }
   }
 
+  // Define safe content bounds inside the SVG frame (below top header line, above source footer)
+  const contentTop = 60;
+  const contentBottom = canvasH - 45;
+  const contentHeight = contentBottom - contentTop;
+
   const parsedSlides: ParsedSlide[] = [];
 
   for (let i = 0; i < orderedSlideFiles.length; i++) {
@@ -194,7 +199,8 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
     const shapes: ShapeElement[] = [];
     const paragraphsList: string[] = [];
 
-    const emuScale = canvasW / 9144000;
+    const emuScaleX = canvasW / 9144000;
+    const emuScaleY = contentHeight / 5143500; // Map slide vertical height strictly into contentHeight
 
     // Parse all shape elements (shapes, grouped shapes, pictures, tables)
     // 1. Shapes (<p:sp>)
@@ -207,14 +213,15 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       const extMatch = spXml.match(/<a:ext\b[^>]*cx="(\d+)"[^>]*cy="(\d+)"/);
 
       const xEmu = offMatch ? parseInt(offMatch[1], 10) : (isTitle ? 685800 : 914400);
-      const yEmu = offMatch ? parseInt(offMatch[2], 10) : (isTitle ? 457200 : 1828800);
+      const yEmu = offMatch ? parseInt(offMatch[2], 10) : (isTitle ? 200000 : 1200000);
       const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7772400;
       const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1371600;
 
-      const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
-      const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
-      const width = Math.max(50, Math.min(canvasW - 20, Math.round(cxEmu * emuScale)));
-      const height = Math.max(20, Math.min(canvasH - 20, Math.round(cyEmu * emuScale)));
+      const x = Math.max(35, Math.min(canvasW - 40, Math.round(xEmu * emuScaleX)));
+      const rawY = Math.round(yEmu * emuScaleY);
+      const y = Math.max(contentTop + 5, Math.min(contentBottom - 25, contentTop + rawY));
+      const width = Math.max(60, Math.min(canvasW - x - 20, Math.round(cxEmu * emuScaleX)));
+      const height = Math.max(25, Math.min(contentBottom - y, Math.round(cyEmu * emuScaleY)));
 
       const pMatches = spXml.matchAll(/<a:p\b[^>]*>(.*?)<\/a:p>/gs);
       const shapeParas: ParagraphInfo[] = [];
@@ -246,7 +253,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
         const szMatch = pXml.match(/<a:rPr\b[^>]*sz="(\d+)"/);
         if (szMatch) {
           const szPt = parseInt(szMatch[1], 10) / 100;
-          fontSizePx = Math.round(szPt * 1.25);
+          fontSizePx = Math.round(szPt * 1.1);
         }
 
         let colorHex: string | undefined;
@@ -292,10 +299,11 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
         const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 5486400;
         const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 3657600;
 
-        const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
-        const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
-        const width = Math.max(50, Math.min(canvasW, Math.round(cxEmu * emuScale)));
-        const height = Math.max(50, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+        const x = Math.max(35, Math.min(canvasW - 40, Math.round(xEmu * emuScaleX)));
+        const rawY = Math.round(yEmu * emuScaleY);
+        const y = Math.max(contentTop + 5, Math.min(contentBottom - 25, contentTop + rawY));
+        const width = Math.max(40, Math.min(canvasW - x - 20, Math.round(cxEmu * emuScaleX)));
+        const height = Math.max(40, Math.min(contentBottom - y, Math.round(cyEmu * emuScaleY)));
 
         shapes.push({
           type: 'image',
@@ -340,10 +348,11 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
           const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7315200;
           const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1828800;
 
-          const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
-          const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
-          const width = Math.max(100, Math.min(canvasW, Math.round(cxEmu * emuScale)));
-          const height = Math.max(50, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+          const x = Math.max(35, Math.min(canvasW - 40, Math.round(xEmu * emuScaleX)));
+          const rawY = Math.round(yEmu * emuScaleY);
+          const y = Math.max(contentTop + 5, Math.min(contentBottom - 25, contentTop + rawY));
+          const width = Math.max(80, Math.min(canvasW - x - 20, Math.round(cxEmu * emuScaleX)));
+          const height = Math.max(40, Math.min(contentBottom - y, Math.round(cyEmu * emuScaleY)));
 
           shapes.push({
             type: 'table',
@@ -433,7 +442,7 @@ function renderHighFidelitySlideSvg(opts: {
     });
   } else if (embeddedImage) {
     shapesContent += `
-      <image href="${embeddedImage}" x="${canvasW - 380}" y="140" width="320" height="300" preserveAspectRatio="xMidYMid meet"/>
+      <image href="${embeddedImage}" x="${canvasW - 360}" y="100" width="300" height="280" preserveAspectRatio="xMidYMid meet"/>
     `;
   }
 
@@ -445,7 +454,7 @@ function renderHighFidelitySlideSvg(opts: {
     tShape.tableRows.forEach((row) => {
       tableHtml += `<tr>`;
       row.forEach((cellText) => {
-        tableHtml += `<td style="border:1px solid #475569; padding:6px; background:#334155;">${escapeXml(truncateText(cellText, 30))}</td>`;
+        tableHtml += `<td style="border:1px solid #475569; padding:5px; background:#334155; word-break:break-word;">${escapeXml(truncateText(cellText, 30))}</td>`;
       });
       tableHtml += `</tr>`;
     });
@@ -453,7 +462,7 @@ function renderHighFidelitySlideSvg(opts: {
 
     shapesContent += `
       <foreignObject x="${tShape.x}" y="${tShape.y}" width="${tShape.width}" height="${tShape.height}">
-        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden;">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; box-sizing:border-box;">
           ${tableHtml}
         </div>
       </foreignObject>
@@ -470,21 +479,23 @@ function renderHighFidelitySlideSvg(opts: {
       let htmlParas = '';
       tShape.paragraphs.forEach((p) => {
         const alignCss = p.align ? `text-align:${p.align};` : '';
-        const colorCss = p.colorHex ? `color:${p.colorHex};` : 'color:#cbd5e1;';
-        const fontSizeCss = p.fontSizePx ? `font-size:${p.fontSizePx}px;` : (tShape.type === 'title' ? 'font-size:26px;' : 'font-size:18px;');
+        const colorCss = p.colorHex ? `color:${p.colorHex};` : (tShape.type === 'title' ? 'color:#f8fafc;' : 'color:#cbd5e1;');
+        const fontSizeCss = p.fontSizePx
+          ? `font-size:${Math.min(32, Math.max(12, p.fontSizePx))}px;`
+          : (tShape.type === 'title' ? 'font-size:24px;' : 'font-size:16px;');
         const weightCss = (p.isBold || tShape.type === 'title') ? 'font-weight:700;' : 'font-weight:400;';
 
         if (tShape.type === 'title') {
-          htmlParas += `<h2 style="margin:0 0 8px 0; color:#f8fafc; ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.2;">${escapeXml(p.text)}</h2>`;
+          htmlParas += `<h2 style="margin:0 0 6px 0; ${colorCss} ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.2; word-break:break-word;">${escapeXml(p.text)}</h2>`;
         } else {
           const prefix = p.isBullet ? '• ' : '';
-          htmlParas += `<p style="margin:0 0 6px 0; ${colorCss} ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.35; word-wrap:break-word;">${prefix}${escapeXml(p.text)}</p>`;
+          htmlParas += `<p style="margin:0 0 4px 0; ${colorCss} ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.3; word-break:break-word;">${prefix}${escapeXml(p.text)}</p>`;
         }
       });
 
       shapesContent += `
         <foreignObject x="${tShape.x}" y="${tShape.y}" width="${tShape.width}" height="${tShape.height}">
-          <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif;">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif; box-sizing:border-box; padding:2px;">
             ${htmlParas}
           </div>
         </foreignObject>
@@ -495,14 +506,14 @@ function renderHighFidelitySlideSvg(opts: {
     const displayTitle = escapeXml(truncateText(title, 60));
     const displayBullets = bullets.slice(0, 5).map(b => escapeXml(truncateText(b, 85)));
 
-    let bulletsHtml = `<h2 style="margin:0 0 16px 0; color:#f8fafc; font-size:28px; font-weight:700; line-height:1.2;">${displayTitle}</h2>`;
+    let bulletsHtml = `<h2 style="margin:0 0 12px 0; color:#f8fafc; font-size:24px; font-weight:700; line-height:1.2;">${displayTitle}</h2>`;
     displayBullets.forEach((b) => {
-      bulletsHtml += `<p style="margin:0 0 8px 0; color:#cbd5e1; font-size:18px; line-height:1.35;">• ${b}</p>`;
+      bulletsHtml += `<p style="margin:0 0 6px 0; color:#cbd5e1; font-size:16px; line-height:1.3;">• ${b}</p>`;
     });
 
     shapesContent += `
-      <foreignObject x="70" y="120" width="${canvasW - 460}" height="${canvasH - 180}">
-        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif;">
+      <foreignObject x="40" y="65" width="${canvasW - 420}" height="${canvasH - 110}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif; box-sizing:border-box;">
           ${bulletsHtml}
         </div>
       </foreignObject>
@@ -519,11 +530,11 @@ function renderHighFidelitySlideSvg(opts: {
       </linearGradient>
     </defs>
     <rect width="${canvasW}" height="${canvasH}" fill="url(#bgGrad)"/>
-    <rect x="25" y="25" width="${canvasW - 50}" height="${canvasH - 50}" rx="16" fill="${bgColor}" stroke="#334155" stroke-width="2"/>
-    <text x="65" y="70" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700">SLIDE ${slideIndex} OF ${totalSlides}</text>
-    <line x1="65" y1="85" x2="${canvasW - 65}" y2="85" stroke="#334155" stroke-width="2"/>
+    <rect x="15" y="15" width="${canvasW - 30}" height="${canvasH - 30}" rx="14" fill="${bgColor}" stroke="#334155" stroke-width="1.5"/>
+    <text x="35" y="42" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700">SLIDE ${slideIndex} OF ${totalSlides}</text>
+    <line x1="35" y1="50" x2="${canvasW - 35}" y2="50" stroke="#334155" stroke-width="1.5"/>
     ${shapesContent}
-    <text x="65" y="${canvasH - 38}" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="13">Source: ${escapeXml(truncateText(sourceName, 40))}</text>
+    <text x="35" y="${canvasH - 22}" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11">Source: ${escapeXml(truncateText(sourceName, 35))}</text>
   </svg>`;
 
   const base64Svg = Buffer.from(svg).toString('base64');

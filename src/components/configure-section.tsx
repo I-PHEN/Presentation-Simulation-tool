@@ -149,18 +149,26 @@ export default function ConfigureSection() {
   const [customPrompt, setCustomPrompt] = useState<string>('');
 
   useEffect(() => {
-    if (isInterview) {
+    if (practiceMode === 'guided' || selectedTemplateId === 'master_guider') {
+      const templ = TEMPLATE_PRESETS.find(t => t.id === 'master_guider');
+      if (templ && selectedTemplateId !== 'master_guider') {
+        setSelectedTemplateId(templ.id);
+        setLocalJudges(templ.judges);
+        setFocusAreas(templ.focusAreas);
+        setCustomPrompt(templ.customPrompt);
+      }
+    } else if (isInterview) {
       const templ = TEMPLATE_PRESETS.find(t => t.id === 'tech_interview');
-      if (templ) {
+      if (templ && selectedTemplateId !== templ.id) {
         setSelectedTemplateId(templ.id);
         setLocalJudges(templ.judges);
         setFocusAreas(templ.focusAreas);
         setCustomPrompt(templ.customPrompt);
         setPracticeMode(templ.practiceMode as any);
       }
-    } else {
+    } else if (!selectedTemplateId || selectedTemplateId === 'vc_pitch') {
       const templ = TEMPLATE_PRESETS.find(t => t.id === 'vc_pitch');
-      if (templ) {
+      if (templ && selectedTemplateId !== templ.id) {
         setSelectedTemplateId(templ.id);
         setLocalJudges(templ.judges);
         setFocusAreas(templ.focusAreas);
@@ -168,7 +176,7 @@ export default function ConfigureSection() {
         setPracticeMode(templ.practiceMode as any);
       }
     }
-  }, [isInterview, setPracticeMode]);
+  }, [isInterview, practiceMode, selectedTemplateId, setPracticeMode]);
 
   const getIconForType = (type: string) => {
     switch (type) {
@@ -492,6 +500,109 @@ export default function ConfigureSection() {
             </div>
           </div>
 
+          {/* Mode Banner: Master Guider Rehearsal vs Adversarial Sparring */}
+          <div className="p-4 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400">
+                <Sparkles className="size-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Practice Mode Selection</h3>
+                <p className="text-xs text-muted-foreground">
+                  {practiceMode === 'guided'
+                    ? 'Master Guider (Rehearsal Coach) — Slide-by-slide voice & telemetry coaching'
+                    : 'Adversarial Sparring (Test Mode) — Panel grilling under pressure'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-background/80 p-1 rounded-xl border border-border shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const templ = TEMPLATE_PRESETS.find(t => t.id === 'master_guider');
+                  if (templ) {
+                    setSelectedTemplateId(templ.id);
+                    setLocalJudges(templ.judges);
+                    setFocusAreas(templ.focusAreas);
+                    setCustomPrompt(templ.customPrompt);
+                    setPracticeMode('guided');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  practiceMode === 'guided'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Sparkles className="size-3.5" />
+                Master Guider
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const templ = TEMPLATE_PRESETS.find(t => t.id === 'vc_pitch');
+                  if (templ) {
+                    setSelectedTemplateId(templ.id);
+                    setLocalJudges(templ.judges);
+                    setFocusAreas(templ.focusAreas);
+                    setCustomPrompt(templ.customPrompt);
+                    setPracticeMode('pitch');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  practiceMode !== 'guided'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users className="size-3.5" />
+                Adversarial Sparring
+              </button>
+            </div>
+          </div>
+
+          {/* Coach Persona Selector (when in Guided mode) */}
+          {practiceMode === 'guided' && (
+            <div className="space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <GraduationCap className="size-4 text-amber-400" /> Choose Master Communication Coach
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground">Select your personal AI delivery coach</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCoachPersona('marcus')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    coachPersona === 'marcus'
+                      ? 'bg-amber-500/20 border-amber-500 ring-1 ring-amber-500 text-amber-200'
+                      : 'bg-card border-border hover:bg-muted/50 text-muted-foreground'
+                  }`}
+                >
+                  <div className="font-bold text-xs text-foreground mb-0.5">Coach Marcus (Male)</div>
+                  <div className="text-[9px] text-muted-foreground">Executive Delivery Specialist — Warm, authoritative male coach voice</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCoachPersona('sarah')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    coachPersona === 'sarah'
+                      ? 'bg-amber-500/20 border-amber-500 ring-1 ring-amber-500 text-amber-200'
+                      : 'bg-card border-border hover:bg-muted/50 text-muted-foreground'
+                  }`}
+                >
+                  <div className="font-bold text-xs text-foreground mb-0.5">Coach Sarah (Female)</div>
+                  <div className="text-[9px] text-muted-foreground">Presentation Strategist — Encouraging, polished female coach voice</div>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Preset templates selector */}
           <div>
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3 block">
@@ -673,19 +784,36 @@ export default function ConfigureSection() {
           </div>
 
           {/* Custom Prompt Instructions */}
-          <div className="space-y-2 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-sm">
             <div>
-              <h3 className="text-xs font-bold text-foreground">Custom AI Behavior & Instructions</h3>
-              <p className="text-[10px] text-muted-foreground">Specify custom prompts to define the audience's attitude, focus, or questioning style</p>
+              <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="size-3.5 text-amber-400" /> Presenter Focus & Custom Directives (Prompt)
+              </h3>
+              <p className="text-[10px] text-muted-foreground">Specify custom directives or click a prompt template to focus your coach/judges</p>
             </div>
+
+            {/* Prompt Chips */}
+            <div className="flex flex-wrap gap-1.5 pb-1">
+              {PROMPT_TEMPLATE_CHIPS.map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCustomPrompt(chip.text)}
+                  className="px-2.5 py-1 rounded-lg border border-border/60 bg-muted/30 text-[10px] font-medium text-foreground hover:bg-primary/10 hover:border-primary/50 transition-colors"
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
             <textarea
               value={customPrompt}
               onChange={(e) => {
                 setSelectedTemplateId('custom');
                 setCustomPrompt(e.target.value);
               }}
-              className="w-full min-h-[90px] text-xs p-2.5 rounded-lg border border-border bg-background text-foreground focus:border-primary outline-none resize-none leading-relaxed placeholder:text-muted-foreground"
-              placeholder="e.g., Act as seed investors. Be skeptical, challenge my marketing plan, and interrupt with cost questions..."
+              className="w-full min-h-[95px] text-xs p-2.5 rounded-lg border border-border bg-background text-foreground focus:border-primary outline-none resize-none leading-relaxed placeholder:text-muted-foreground"
+              placeholder="e.g., Help me sound calm and authoritative. Make sure I emphasize our $2M seed budget on Slide 3 and explain the ROI clearly without rushing..."
             />
           </div>
 
