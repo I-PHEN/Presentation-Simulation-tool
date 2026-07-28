@@ -41,16 +41,19 @@ function truncateText(text: string, maxLength: number): string {
   return text.substring(0, maxLength - 3) + '...';
 }
 
+interface ParagraphInfo {
+  text: string;
+  isBullet: boolean;
+  fontSizePx?: number;
+  colorHex?: string;
+  align?: 'left' | 'center' | 'right';
+  isBold?: boolean;
+}
+
 interface ShapeElement {
   type: 'title' | 'text' | 'image' | 'table';
   text?: string;
-  paragraphs?: Array<{
-    text: string;
-    isBullet: boolean;
-    fontSizePx?: number;
-    colorHex?: string;
-    align?: 'left' | 'center' | 'right';
-  }>;
+  paragraphs?: ParagraphInfo[];
   tableRows?: string[][];
   imageDataUrl?: string;
   x: number; // in px
@@ -150,12 +153,18 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
     const imageMap = new Map<string, string>();
 
     if (relsXmlStr) {
-      const relMatches = relsXmlStr.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]+)"/g);
+      const relMatches = relsXmlStr.matchAll(/<Relationship\b[^>]*>/g);
       for (const m of relMatches) {
-        const [, rId, target] = m;
-        if (target.includes('media/')) {
-          const mediaName = target.replace(/^.*[/\\]media[/\\]/, 'ppt/media/');
-          imageMap.set(rId, mediaName);
+        const tag = m[0];
+        const rIdMatch = tag.match(/Id="(rId\d+)"/);
+        const targetMatch = tag.match(/Target="([^"]+)"/);
+        if (rIdMatch && targetMatch) {
+          const rId = rIdMatch[1];
+          const target = targetMatch[1];
+          if (target.includes('media/')) {
+            const mediaName = target.replace(/^.*[/\\]media[/\\]/, 'ppt/media/');
+            imageMap.set(rId, mediaName);
+          }
         }
       }
     }
@@ -197,36 +206,28 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       const offMatch = spXml.match(/<a:off\b[^>]*x="(\d+)"[^>]*y="(\d+)"/);
       const extMatch = spXml.match(/<a:ext\b[^>]*cx="(\d+)"[^>]*cy="(\d+)"/);
 
-      const xEmu = offMatch ? parseInt(offMatch[1], 10) : 914400;
-      const yEmu = offMatch ? parseInt(offMatch[2], 10) : 914400;
-      const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7315200;
-      const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1828800;
+      const xEmu = offMatch ? parseInt(offMatch[1], 10) : (isTitle ? 685800 : 914400);
+      const yEmu = offMatch ? parseInt(offMatch[2], 10) : (isTitle ? 457200 : 1828800);
+      const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7772400;
+      const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1371600;
 
       const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
       const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
-      const width = Math.max(50, Math.min(canvasW, Math.round(cxEmu * emuScale)));
-      const height = Math.max(20, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+      const width = Math.max(50, Math.min(canvasW - 20, Math.round(cxEmu * emuScale)));
+      const height = Math.max(20, Math.min(canvasH - 20, Math.round(cyEmu * emuScale)));
 
       const pMatches = spXml.matchAll(/<a:p\b[^>]*>(.*?)<\/a:p>/gs);
-      const shapeParas: Array<{
-        text: string;
-        isBullet: boolean;
-        fontSizePx?: number;
-        colorHex?: string;
-        align?: 'left' | 'center' | 'right';
-      }> = [];
+      const shapeParas: ParagraphInfo[] = [];
 
       for (const pMatch of pMatches) {
         const pXml = pMatch[1];
         const isBullet = pXml.includes('<a:buChar') || pXml.includes('<a:buAutoNum');
 
-        // Alignment
         let align: 'left' | 'center' | 'right' | undefined;
         if (pXml.includes('algn="ctr"')) align = 'center';
         else if (pXml.includes('algn="r"')) align = 'right';
         else if (pXml.includes('algn="l"')) align = 'left';
 
-        // Extract text runs
         const tMatches = pXml.matchAll(/<a:t\b[^>]*>(.*?)<\/a:t>/gs);
         const textPieces: string[] = [];
         for (const tMatch of tMatches) {
@@ -241,23 +242,23 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
         }
         const paraText = textPieces.join(' ').trim();
 
-        // Font size
         let fontSizePx: number | undefined;
         const szMatch = pXml.match(/<a:rPr\b[^>]*sz="(\d+)"/);
         if (szMatch) {
           const szPt = parseInt(szMatch[1], 10) / 100;
-          fontSizePx = Math.round(szPt * 1.33);
+          fontSizePx = Math.round(szPt * 1.25);
         }
 
-        // Color
         let colorHex: string | undefined;
         const clrMatch = pXml.match(/<a:srgbClr\b[^>]*val="([A-Fa-f0-9]{6})"/);
         if (clrMatch) {
           colorHex = `#${clrMatch[1]}`;
         }
 
+        const isBold = pXml.includes('b="1"');
+
         if (paraText) {
-          shapeParas.push({ text: paraText, isBullet, fontSizePx, colorHex, align });
+          shapeParas.push({ text: paraText, isBullet, fontSizePx, colorHex, align, isBold });
           paragraphsList.push(paraText);
         }
       }
@@ -361,7 +362,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
     const bullets = paragraphsList.filter(p => p !== title);
     const fullText = `Slide ${i + 1}: ${title}\n` + bullets.map(b => `- ${b}`).join('\n');
 
-    // Render SVG slide card with background color and shape placement
+    // Render SVG slide card using foreignObject HTML layout
     const svgImageUrl = renderHighFidelitySlideSvg({
       slideIndex: i + 1,
       totalSlides: orderedSlideFiles.length,
@@ -404,7 +405,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
 }
 
 /**
- * Renders a high-fidelity SVG representation of the slide layout, shapes, and tables.
+ * Renders a high-fidelity SVG representation of the slide layout, shapes, and tables using foreignObject HTML layout.
  */
 function renderHighFidelitySlideSvg(opts: {
   slideIndex: number;
@@ -420,23 +421,19 @@ function renderHighFidelitySlideSvg(opts: {
 }): string {
   const { slideIndex, totalSlides, title, bullets, shapes, bgColor, canvasW, canvasH, sourceName, embeddedImage } = opts;
 
-  const displayTitle = escapeXml(truncateText(title, 60));
-  const maxBullets = 5;
-  const displayBullets = bullets.slice(0, maxBullets).map(b => escapeXml(truncateText(b, 85)));
-
-  let shapesSvg = '';
+  let shapesContent = '';
 
   // Render pictures
   const imageShapes = shapes.filter(s => s.type === 'image' && s.imageDataUrl);
   if (imageShapes.length > 0) {
     imageShapes.forEach((imgShape) => {
-      shapesSvg += `
+      shapesContent += `
         <image href="${imgShape.imageDataUrl}" x="${imgShape.x}" y="${imgShape.y}" width="${imgShape.width}" height="${imgShape.height}" preserveAspectRatio="xMidYMid meet"/>
       `;
     });
   } else if (embeddedImage) {
-    shapesSvg += `
-      <image href="${embeddedImage}" x="560" y="150" width="340" height="300" preserveAspectRatio="xMidYMid meet"/>
+    shapesContent += `
+      <image href="${embeddedImage}" x="${canvasW - 380}" y="140" width="320" height="300" preserveAspectRatio="xMidYMid meet"/>
     `;
   }
 
@@ -444,34 +441,73 @@ function renderHighFidelitySlideSvg(opts: {
   const tableShapes = shapes.filter(s => s.type === 'table' && s.tableRows);
   tableShapes.forEach((tShape) => {
     if (!tShape.tableRows) return;
-    const rowCount = tShape.tableRows.length;
-    const colCount = Math.max(...tShape.tableRows.map(r => r.length));
-    const cellW = Math.round(tShape.width / Math.max(1, colCount));
-    const cellH = Math.round(tShape.height / Math.max(1, rowCount));
-
-    tShape.tableRows.forEach((row, rIdx) => {
-      row.forEach((cellText, cIdx) => {
-        const cx = tShape.x + (cIdx * cellW);
-        const cy = tShape.y + (rIdx * cellH);
-        shapesSvg += `
-          <rect x="${cx}" y="${cy}" width="${cellW}" height="${cellH}" fill="#334155" stroke="#475569" stroke-width="1"/>
-          <text x="${cx + 8}" y="${cy + Math.round(cellH / 2) + 4}" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="12">${escapeXml(truncateText(cellText, 25))}</text>
-        `;
+    let tableHtml = `<table style="width:100%; border-collapse:collapse; color:#f8fafc; font-family:system-ui, -apple-system, sans-serif; font-size:12px;">`;
+    tShape.tableRows.forEach((row) => {
+      tableHtml += `<tr>`;
+      row.forEach((cellText) => {
+        tableHtml += `<td style="border:1px solid #475569; padding:6px; background:#334155;">${escapeXml(truncateText(cellText, 30))}</td>`;
       });
+      tableHtml += `</tr>`;
     });
-  });
+    tableHtml += `</table>`;
 
-  let bulletsSvg = '';
-  const startY = 220;
-  const lineGap = 50;
-
-  displayBullets.forEach((bullet, idx) => {
-    const yPos = startY + (idx * lineGap);
-    bulletsSvg += `
-      <circle cx="95" cy="${yPos}" r="5" fill="#38bdf8"/>
-      <text x="115" y="${yPos + 6}" fill="#cbd5e1" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="400">${bullet}</text>
+    shapesContent += `
+      <foreignObject x="${tShape.x}" y="${tShape.y}" width="${tShape.width}" height="${tShape.height}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden;">
+          ${tableHtml}
+        </div>
+      </foreignObject>
     `;
   });
+
+  // Render text shapes (titles and text boxes) using foreignObject HTML layout for word-wrapping and column layout
+  const textShapes = shapes.filter(s => (s.type === 'title' || s.type === 'text') && s.paragraphs && s.paragraphs.length > 0);
+
+  if (textShapes.length > 0) {
+    textShapes.forEach((tShape) => {
+      if (!tShape.paragraphs) return;
+
+      let htmlParas = '';
+      tShape.paragraphs.forEach((p) => {
+        const alignCss = p.align ? `text-align:${p.align};` : '';
+        const colorCss = p.colorHex ? `color:${p.colorHex};` : 'color:#cbd5e1;';
+        const fontSizeCss = p.fontSizePx ? `font-size:${p.fontSizePx}px;` : (tShape.type === 'title' ? 'font-size:26px;' : 'font-size:18px;');
+        const weightCss = (p.isBold || tShape.type === 'title') ? 'font-weight:700;' : 'font-weight:400;';
+
+        if (tShape.type === 'title') {
+          htmlParas += `<h2 style="margin:0 0 8px 0; color:#f8fafc; ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.2;">${escapeXml(p.text)}</h2>`;
+        } else {
+          const prefix = p.isBullet ? '• ' : '';
+          htmlParas += `<p style="margin:0 0 6px 0; ${colorCss} ${fontSizeCss} ${weightCss} ${alignCss} line-height:1.35; word-wrap:break-word;">${prefix}${escapeXml(p.text)}</p>`;
+        }
+      });
+
+      shapesContent += `
+        <foreignObject x="${tShape.x}" y="${tShape.y}" width="${tShape.width}" height="${tShape.height}">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif;">
+            ${htmlParas}
+          </div>
+        </foreignObject>
+      `;
+    });
+  } else {
+    // Fallback text formatting if no shapes matched
+    const displayTitle = escapeXml(truncateText(title, 60));
+    const displayBullets = bullets.slice(0, 5).map(b => escapeXml(truncateText(b, 85)));
+
+    let bulletsHtml = `<h2 style="margin:0 0 16px 0; color:#f8fafc; font-size:28px; font-weight:700; line-height:1.2;">${displayTitle}</h2>`;
+    displayBullets.forEach((b) => {
+      bulletsHtml += `<p style="margin:0 0 8px 0; color:#cbd5e1; font-size:18px; line-height:1.35;">• ${b}</p>`;
+    });
+
+    shapesContent += `
+      <foreignObject x="70" y="120" width="${canvasW - 460}" height="${canvasH - 180}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; overflow:hidden; font-family:system-ui, -apple-system, sans-serif;">
+          ${bulletsHtml}
+        </div>
+      </foreignObject>
+    `;
+  }
 
   const viewBox = `0 0 ${canvasW} ${canvasH}`;
 
@@ -483,13 +519,11 @@ function renderHighFidelitySlideSvg(opts: {
       </linearGradient>
     </defs>
     <rect width="${canvasW}" height="${canvasH}" fill="url(#bgGrad)"/>
-    <rect x="30" y="30" width="${canvasW - 60}" height="${canvasH - 60}" rx="16" fill="${bgColor}" stroke="#334155" stroke-width="2"/>
-    <text x="70" y="90" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">SLIDE ${slideIndex} OF ${totalSlides}</text>
-    <text x="70" y="150" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700">${displayTitle}</text>
-    <line x1="70" y1="180" x2="${canvasW - 70}" y2="180" stroke="#334155" stroke-width="2"/>
-    ${bulletsSvg}
-    ${shapesSvg}
-    <text x="70" y="${canvasH - 45}" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="14">Source: ${escapeXml(truncateText(sourceName, 40))}</text>
+    <rect x="25" y="25" width="${canvasW - 50}" height="${canvasH - 50}" rx="16" fill="${bgColor}" stroke="#334155" stroke-width="2"/>
+    <text x="65" y="70" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700">SLIDE ${slideIndex} OF ${totalSlides}</text>
+    <line x1="65" y1="85" x2="${canvasW - 65}" y2="85" stroke="#334155" stroke-width="2"/>
+    ${shapesContent}
+    <text x="65" y="${canvasH - 38}" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="13">Source: ${escapeXml(truncateText(sourceName, 40))}</text>
   </svg>`;
 
   const base64Svg = Buffer.from(svg).toString('base64');
