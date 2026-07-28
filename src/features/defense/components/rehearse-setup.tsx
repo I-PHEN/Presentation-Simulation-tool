@@ -21,6 +21,7 @@ export function buildRehearseSessionPayload({ deck, title, mode, stance }: Rehea
 }
 
 const MODES: ReadonlyArray<readonly [DefenseMode, string, string]> = [
+  ['guided', 'Master Guider (Rehearsal Coach)', 'Slide-by-slide voice & telemetry coaching with Coach Marcus/Sarah before live sparring.'],
   ['uninterrupted', 'Uninterrupted presentation', 'Present your whole deck at your own pace without mid-slide interruptions.'],
   ['diagnostic', 'Diagnostic sparring', 'Pauses on weak reasoning so you can repair it before moving on.'],
   ['mock', 'Mock defense', 'Keeps the examination moving under realistic pressure, start to finish.'],

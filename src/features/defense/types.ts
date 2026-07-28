@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type DefenseMode = 'uninterrupted' | 'diagnostic' | 'mock';
+export type DefenseMode = 'uninterrupted' | 'diagnostic' | 'mock' | 'guided';
 export type ExaminerStance = 'supportive' | 'rigorous' | 'hostile';
 export type CurveballFrequency = 'low' | 'medium' | 'high';
 export type TranscriptRole = 'presenter' | 'examiner';
