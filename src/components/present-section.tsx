@@ -1302,20 +1302,22 @@ export default function PresentSection() {
               </div>
             </motion.div>
           )}
-        {/* ─── Floating Master Guider Telemetry HUD ─── */}
-        {practiceMode === 'guided' && (
-          <div className="absolute top-4 right-4 z-40 hidden md:block">
-            <MasterGuiderHud
-              currentSlide={currentSlide}
-              totalSlides={totalSlides}
-              wpm={wordsPerMinute}
-              transcript={presentationTranscript}
-              onCoachRescue={handleCoachRescue}
-              isRescueLoading={isRescueLoading}
-            />
-          </div>
-        )}
+        {/* ─── Floating Master Guider Telemetry HUD (for standard non-guided stages) ─── */}
       </div>
+
+      {/* Dedicated Masterclass Coach Sidebar for Guided Mode */}
+      {practiceMode === 'guided' && (
+        <div className="w-full md:w-[380px] lg:w-[440px] border-l border-amber-500/20 bg-[#0c0c0e]/95 backdrop-blur-xl p-4 overflow-y-auto flex flex-col justify-start z-30 shrink-0">
+          <MasterGuiderHud
+            currentSlide={currentSlide}
+            totalSlides={totalSlides}
+            wpm={wordsPerMinute}
+            transcript={presentationTranscript}
+            onCoachRescue={handleCoachRescue}
+            isRescueLoading={isRescueLoading}
+          />
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════ */}
       {/* BOTTOM CONTROL BAR                          */}
