@@ -131,17 +131,10 @@ export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
 }) {
-  // Read the persisted rail state synchronously so client-side navigation
-  // renders the correct width on the first paint - no expand-then-collapse
-  // flash when moving between pages. (SSR has no localStorage, so the server
-  // renders expanded and the client reconciles; suppressHydrationWarning keeps
-  // that first-load correction quiet.)
   const [collapsed, setCollapsed] = useState(() =>
     typeof window !== 'undefined' ? readShellCollapsed(window.localStorage) : false,
   );
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Only animate the rail width for real user toggles, never for the initial
-  // mount/reconcile - that is what turned navigation into a visible shrink.
   const [animateWidth, setAnimateWidth] = useState(false);
 
   useEffect(() => {

@@ -7,12 +7,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
-  const { setTheme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const { setTheme, resolvedTheme, theme } = useTheme();
+  const currentTheme = resolvedTheme || theme || "dark";
+  const isDark = currentTheme === "dark";
 
   return (
     <button
       type="button"
+      suppressHydrationWarning
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
