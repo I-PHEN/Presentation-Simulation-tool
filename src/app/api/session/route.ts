@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, ensureDbInitialized } from '@/lib/db';
 import { createDefenseSessionSchema, createTopicSessionSchema, syntheticTopicDeck } from '@/features/defense/session-schema';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDbInitialized();
     const identity = await authenticateRequest(req);
     if (isAuthenticationFailure(identity)) return identity;
     // Session.userId is a foreign key to User; ensure the owner row exists before

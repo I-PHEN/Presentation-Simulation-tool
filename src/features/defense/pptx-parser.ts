@@ -42,9 +42,16 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 interface ShapeElement {
-  type: 'title' | 'text' | 'image';
+  type: 'title' | 'text' | 'image' | 'table';
   text?: string;
-  paragraphs?: Array<{ text: string; isBullet: boolean; fontSize?: number; color?: string; align?: string }>;
+  paragraphs?: Array<{
+    text: string;
+    isBullet: boolean;
+    fontSizePx?: number;
+    colorHex?: string;
+    align?: 'left' | 'center' | 'right';
+  }>;
+  tableRows?: string[][];
   imageDataUrl?: string;
   x: number; // in px
   y: number; // in px
@@ -54,8 +61,8 @@ interface ShapeElement {
 
 /**
  * Parses a PPTX buffer in pure JavaScript/Node.js, extracting all slides in exact
- * presentation order, preserving shape positions, titles, bullet lists, colors,
- * embedded media images, and generating high-fidelity slide SVG cards.
+ * presentation order, preserving shape positions, titles, bullet lists, tables,
+ * font sizes, colors, embedded media images, and generating high-fidelity slide SVG cards.
  */
 export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Promise<ParsedDeck> {
   const zip = await JSZip.loadAsync(buffer);
@@ -67,7 +74,6 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
   const orderedSlideFiles: string[] = [];
 
   if (presentationXml && presentationRelsXml) {
-    // Extract rId mapping: rId -> slide path
     const rIdToSlide = new Map<string, string>();
     const relMatches = presentationRelsXml.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]+)"/g);
     for (const m of relMatches) {
@@ -78,18 +84,17 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       }
     }
 
-    // Extract slide order from <p:sldIdLst>
     const sldIdMatches = presentationXml.matchAll(/<p:sldId\b[^>]*r:id="(rId\d+)"/g);
     for (const m of sldIdMatches) {
       const rId = m[1];
       const slideName = rIdToSlide.get(rId);
-      if (slideName) {
+      if (slideName && !orderedSlideFiles.includes(slideName)) {
         orderedSlideFiles.push(slideName);
       }
     }
   }
 
-  // Fallback: If presentation.xml parsing found no slides, find all slide*.xml files in zip
+  // Fallback: If presentation.xml didn't list files, discover all slide*.xml in zip
   if (orderedSlideFiles.length === 0) {
     const foundFiles: Array<{ filename: string; num: number }> = [];
     zip.folder('ppt/slides')?.forEach((relativePath, file) => {
@@ -136,7 +141,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
     // Parse slide relationships for media images
     const relsPath = `ppt/slides/_rels/${slideFilename}.rels`;
     const relsXmlStr = await zip.file(relsPath)?.async('text');
-    const imageMap = new Map<string, string>(); // rId -> media path in zip
+    const imageMap = new Map<string, string>();
 
     if (relsXmlStr) {
       const relMatches = relsXmlStr.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]+)"/g);
@@ -149,7 +154,6 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       }
     }
 
-    // Cache image base64 data URLs
     const rIdToDataUrl = new Map<string, string>();
     const embeddedImages: string[] = [];
 
@@ -165,17 +169,25 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       }
     }
 
-    // Extract shapes (text boxes, pictures)
+    // Extract slide background color if present
+    let bgColor = '#1e293b';
+    const bgClrMatch = slideXmlStr.match(/<p:bg\b[^>]*>.*?<a:srgbClr\b[^>]*val="([A-Fa-f0-9]{6})"/s);
+    if (bgClrMatch) {
+      bgColor = `#${bgClrMatch[1]}`;
+    }
+
     const shapes: ShapeElement[] = [];
     const paragraphsList: string[] = [];
 
-    // Parse shapes <p:sp>
+    const emuScale = canvasW / 9144000;
+
+    // Parse all shape elements (shapes, grouped shapes, pictures, tables)
+    // 1. Shapes (<p:sp>)
     const spMatches = slideXmlStr.matchAll(/<p:sp\b[^>]*>(.*?)<\/p:sp>/gs);
     for (const spMatch of spMatches) {
       const spXml = spMatch[1];
       const isTitle = spXml.includes('type="title"') || spXml.includes('type="ctrTitle"');
 
-      // Coordinates
       const offMatch = spXml.match(/<a:off\b[^>]*x="(\d+)"[^>]*y="(\d+)"/);
       const extMatch = spXml.match(/<a:ext\b[^>]*cx="(\d+)"[^>]*cy="(\d+)"/);
 
@@ -184,21 +196,31 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7315200;
       const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1828800;
 
-      // Scale 9144000 EMUs -> canvasW (960)
-      const emuScale = canvasW / 9144000;
-      const x = Math.max(20, Math.min(canvasW - 40, Math.round(xEmu * emuScale)));
-      const y = Math.max(20, Math.min(canvasH - 40, Math.round(yEmu * emuScale)));
-      const width = Math.max(100, Math.min(canvasW, Math.round(cxEmu * emuScale)));
-      const height = Math.max(30, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+      const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
+      const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
+      const width = Math.max(50, Math.min(canvasW, Math.round(cxEmu * emuScale)));
+      const height = Math.max(20, Math.min(canvasH, Math.round(cyEmu * emuScale)));
 
-      // Paragraphs inside shape
       const pMatches = spXml.matchAll(/<a:p\b[^>]*>(.*?)<\/a:p>/gs);
-      const shapeParas: Array<{ text: string; isBullet: boolean }> = [];
+      const shapeParas: Array<{
+        text: string;
+        isBullet: boolean;
+        fontSizePx?: number;
+        colorHex?: string;
+        align?: 'left' | 'center' | 'right';
+      }> = [];
 
       for (const pMatch of pMatches) {
         const pXml = pMatch[1];
         const isBullet = pXml.includes('<a:buChar') || pXml.includes('<a:buAutoNum');
 
+        // Alignment
+        let align: 'left' | 'center' | 'right' | undefined;
+        if (pXml.includes('algn="ctr"')) align = 'center';
+        else if (pXml.includes('algn="r"')) align = 'right';
+        else if (pXml.includes('algn="l"')) align = 'left';
+
+        // Extract text runs
         const tMatches = pXml.matchAll(/<a:t\b[^>]*>(.*?)<\/a:t>/gs);
         const textPieces: string[] = [];
         for (const tMatch of tMatches) {
@@ -212,8 +234,24 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
           if (raw) textPieces.push(raw);
         }
         const paraText = textPieces.join(' ').trim();
+
+        // Font size
+        let fontSizePx: number | undefined;
+        const szMatch = pXml.match(/<a:rPr\b[^>]*sz="(\d+)"/);
+        if (szMatch) {
+          const szPt = parseInt(szMatch[1], 10) / 100;
+          fontSizePx = Math.round(szPt * 1.33);
+        }
+
+        // Color
+        let colorHex: string | undefined;
+        const clrMatch = pXml.match(/<a:srgbClr\b[^>]*val="([A-Fa-f0-9]{6})"/);
+        if (clrMatch) {
+          colorHex = `#${clrMatch[1]}`;
+        }
+
         if (paraText) {
-          shapeParas.push({ text: paraText, isBullet });
+          shapeParas.push({ text: paraText, isBullet, fontSizePx, colorHex, align });
           paragraphsList.push(paraText);
         }
       }
@@ -230,7 +268,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       }
     }
 
-    // Parse pictures <p:pic>
+    // 2. Pictures (<p:pic>)
     const picMatches = slideXmlStr.matchAll(/<p:pic\b[^>]*>(.*?)<\/p:pic>/gs);
     for (const picMatch of picMatches) {
       const picXml = picMatch[1];
@@ -247,11 +285,10 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
         const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 5486400;
         const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 3657600;
 
-        const emuScale = canvasW / 9144000;
-        const x = Math.max(20, Math.min(canvasW - 40, Math.round(xEmu * emuScale)));
-        const y = Math.max(20, Math.min(canvasH - 40, Math.round(yEmu * emuScale)));
-        const width = Math.max(100, Math.min(canvasW, Math.round(cxEmu * emuScale)));
-        const height = Math.max(100, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+        const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
+        const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
+        const width = Math.max(50, Math.min(canvasW, Math.round(cxEmu * emuScale)));
+        const height = Math.max(50, Math.min(canvasH, Math.round(cyEmu * emuScale)));
 
         shapes.push({
           type: 'image',
@@ -264,18 +301,68 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
       }
     }
 
+    // 3. Tables (<a:tbl> inside <p:graphicFrame>)
+    const graphicMatches = slideXmlStr.matchAll(/<p:graphicFrame\b[^>]*>(.*?)<\/p:graphicFrame>/gs);
+    for (const gfMatch of graphicMatches) {
+      const gfXml = gfMatch[1];
+      if (gfXml.includes('<a:tbl')) {
+        const trMatches = gfXml.matchAll(/<a:tr\b[^>]*>(.*?)<\/a:tr>/gs);
+        const tableRows: string[][] = [];
+
+        for (const trMatch of trMatches) {
+          const trXml = trMatch[1];
+          const tcMatches = trXml.matchAll(/<a:tc\b[^>]*>(.*?)<\/a:tc>/gs);
+          const rowCells: string[] = [];
+
+          for (const tcMatch of tcMatches) {
+            const tcXml = tcMatch[1];
+            const tMatches = tcXml.matchAll(/<a:t\b[^>]*>(.*?)<\/a:t>/gs);
+            const cellText = Array.from(tMatches).map(t => t[1]).join(' ').trim();
+            rowCells.push(cellText);
+            if (cellText) paragraphsList.push(cellText);
+          }
+          if (rowCells.some(Boolean)) tableRows.push(rowCells);
+        }
+
+        if (tableRows.length > 0) {
+          const offMatch = gfXml.match(/<a:off\b[^>]*x="(\d+)"[^>]*y="(\d+)"/);
+          const extMatch = gfXml.match(/<a:ext\b[^>]*cx="(\d+)"[^>]*cy="(\d+)"/);
+
+          const xEmu = offMatch ? parseInt(offMatch[1], 10) : 914400;
+          const yEmu = offMatch ? parseInt(offMatch[2], 10) : 2743200;
+          const cxEmu = extMatch ? parseInt(extMatch[1], 10) : 7315200;
+          const cyEmu = extMatch ? parseInt(extMatch[2], 10) : 1828800;
+
+          const x = Math.max(10, Math.min(canvasW - 20, Math.round(xEmu * emuScale)));
+          const y = Math.max(10, Math.min(canvasH - 20, Math.round(yEmu * emuScale)));
+          const width = Math.max(100, Math.min(canvasW, Math.round(cxEmu * emuScale)));
+          const height = Math.max(50, Math.min(canvasH, Math.round(cyEmu * emuScale)));
+
+          shapes.push({
+            type: 'table',
+            tableRows,
+            x,
+            y,
+            width,
+            height,
+          });
+        }
+      }
+    }
+
     const titleShape = shapes.find(s => s.type === 'title') || shapes.find(s => s.type === 'text');
     const title = titleShape?.paragraphs?.[0]?.text || paragraphsList[0] || `Slide ${i + 1}`;
     const bullets = paragraphsList.filter(p => p !== title);
     const fullText = `Slide ${i + 1}: ${title}\n` + bullets.map(b => `- ${b}`).join('\n');
 
-    // Render SVG slide card
+    // Render SVG slide card with background color and shape placement
     const svgImageUrl = renderHighFidelitySlideSvg({
       slideIndex: i + 1,
       totalSlides: orderedSlideFiles.length,
       title,
       bullets,
       shapes,
+      bgColor,
       canvasW,
       canvasH,
       sourceName,
@@ -311,7 +398,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
 }
 
 /**
- * Renders a high-fidelity SVG representation of the slide layout and content.
+ * Renders a high-fidelity SVG representation of the slide layout, shapes, and tables.
  */
 function renderHighFidelitySlideSvg(opts: {
   slideIndex: number;
@@ -319,12 +406,13 @@ function renderHighFidelitySlideSvg(opts: {
   title: string;
   bullets: string[];
   shapes: ShapeElement[];
+  bgColor: string;
   canvasW: number;
   canvasH: number;
   sourceName: string;
   embeddedImage: string | null;
 }): string {
-  const { slideIndex, totalSlides, title, bullets, shapes, canvasW, canvasH, sourceName, embeddedImage } = opts;
+  const { slideIndex, totalSlides, title, bullets, shapes, bgColor, canvasW, canvasH, sourceName, embeddedImage } = opts;
 
   const displayTitle = escapeXml(truncateText(title, 60));
   const maxBullets = 5;
@@ -332,7 +420,7 @@ function renderHighFidelitySlideSvg(opts: {
 
   let shapesSvg = '';
 
-  // Render non-title text shapes and images
+  // Render pictures
   const imageShapes = shapes.filter(s => s.type === 'image' && s.imageDataUrl);
   if (imageShapes.length > 0) {
     imageShapes.forEach((imgShape) => {
@@ -345,6 +433,27 @@ function renderHighFidelitySlideSvg(opts: {
       <image href="${embeddedImage}" x="560" y="150" width="340" height="300" preserveAspectRatio="xMidYMid meet"/>
     `;
   }
+
+  // Render tables
+  const tableShapes = shapes.filter(s => s.type === 'table' && s.tableRows);
+  tableShapes.forEach((tShape) => {
+    if (!tShape.tableRows) return;
+    const rowCount = tShape.tableRows.length;
+    const colCount = Math.max(...tShape.tableRows.map(r => r.length));
+    const cellW = Math.round(tShape.width / Math.max(1, colCount));
+    const cellH = Math.round(tShape.height / Math.max(1, rowCount));
+
+    tShape.tableRows.forEach((row, rIdx) => {
+      row.forEach((cellText, cIdx) => {
+        const cx = tShape.x + (cIdx * cellW);
+        const cy = tShape.y + (rIdx * cellH);
+        shapesSvg += `
+          <rect x="${cx}" y="${cy}" width="${cellW}" height="${cellH}" fill="#334155" stroke="#475569" stroke-width="1"/>
+          <text x="${cx + 8}" y="${cy + Math.round(cellH / 2) + 4}" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="12">${escapeXml(truncateText(cellText, 25))}</text>
+        `;
+      });
+    });
+  });
 
   let bulletsSvg = '';
   const startY = 220;
@@ -362,13 +471,13 @@ function renderHighFidelitySlideSvg(opts: {
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasW}" height="${canvasH}" viewBox="${viewBox}">
     <defs>
-      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#0f172a"/>
-        <stop offset="100%" stop-color="#1e293b"/>
+        <stop offset="100%" stop-color="${bgColor === '#1e293b' ? '#1e293b' : bgColor}"/>
       </linearGradient>
     </defs>
-    <rect width="${canvasW}" height="${canvasH}" fill="url(#bg)"/>
-    <rect x="30" y="30" width="${canvasW - 60}" height="${canvasH - 60}" rx="16" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+    <rect width="${canvasW}" height="${canvasH}" fill="url(#bgGrad)"/>
+    <rect x="30" y="30" width="${canvasW - 60}" height="${canvasH - 60}" rx="16" fill="${bgColor}" stroke="#334155" stroke-width="2"/>
     <text x="70" y="90" fill="#38bdf8" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">SLIDE ${slideIndex} OF ${totalSlides}</text>
     <text x="70" y="150" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700">${displayTitle}</text>
     <line x1="70" y1="180" x2="${canvasW - 70}" y2="180" stroke="#334155" stroke-width="2"/>
