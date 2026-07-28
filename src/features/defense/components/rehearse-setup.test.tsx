@@ -42,7 +42,7 @@ describe('RehearseSetup', () => {
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
-    expect(html.match(/name="rehearse-mode"/g)).toHaveLength(3);
+    expect(html.match(/name="rehearse-mode"/g)).toHaveLength(4);
     expect(html.match(/name="rehearse-stance"/g)).toHaveLength(2);
     // No fabricated audience controls
     expect(html).not.toContain('Audience type');

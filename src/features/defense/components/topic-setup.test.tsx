@@ -14,7 +14,7 @@ describe('TopicSetup', () => {
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
-    expect(html.match(/name="topic-mode"/g)).toHaveLength(3);
+    expect(html.match(/name="topic-mode"/g)).toHaveLength(4);
     expect(html.match(/name="topic-stance"/g)).toHaveLength(2);
     // No deck-only chrome.
     expect(html).not.toContain('Presentation deck');
