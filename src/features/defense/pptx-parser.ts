@@ -74,6 +74,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
   const orderedSlideFiles: string[] = [];
 
   if (presentationXml && presentationRelsXml) {
+    const rIdToSlide = new Map<string, string>();
     const relTagMatches = presentationRelsXml.matchAll(/<Relationship\b[^>]*>/g);
     for (const m of relTagMatches) {
       const tag = m[0];
