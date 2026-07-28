@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { upsert, create } = vi.hoisted(() => ({ upsert: vi.fn(), create: vi.fn() }));
-vi.mock('@/lib/db', () => ({ db: { user: { upsert }, session: { create } } }));
+vi.mock('@/lib/db', () => ({
+  db: { user: { upsert }, session: { create } },
+  ensureDbInitialized: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock('@/lib/server-auth', () => ({
   authenticateRequest: vi.fn().mockResolvedValue({ userId: 'user-1' }),
   isAuthenticationFailure: () => false,
