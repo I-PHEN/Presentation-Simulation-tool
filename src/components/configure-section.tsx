@@ -35,6 +35,17 @@ const FOCUS_AREA_OPTIONS = [
 
 const TEMPLATE_PRESETS = [
   {
+    id: 'master_guider',
+    label: 'Master Guider Rehearsal',
+    desc: 'Slide-by-slide executive coaching on tone, explanation depth, and pacing.',
+    practiceMode: 'guided',
+    judges: [
+      { id: '1', title: 'Coach Marcus', type: 'executive', voice: 'executive', desc: 'Executive Communication & Delivery Coach' }
+    ],
+    focusAreas: ['clarity', 'confidence', 'storytelling', 'conciseness'],
+    customPrompt: 'Act as Coach Marcus, a warm, highly encouraging executive communication coach. Guide the presenter slide-by-slide with constructive feedback on vocal weight, pacing, and tone.'
+  },
+  {
     id: 'vc_pitch',
     label: 'Startup Pitch Deck',
     desc: 'Pitching to seed/venture capital investors.',
@@ -95,7 +106,15 @@ const TEMPLATE_PRESETS = [
   },
 ];
 
+const PROMPT_TEMPLATE_CHIPS = [
+  { label: '💼 Investor ROI Focus', text: 'Emphasize market opportunity, revenue projections, and unit economics on core slides. Keep tone confident and direct.' },
+  { label: '🎓 Academic Defense Focus', text: 'Ensure methodology, baseline comparisons, and assumptions are explained with academic rigor without rushing.' },
+  { label: '🤝 STAR Behavioral Screen', text: 'Structure key slide stories using Situation, Task, Action, and Result format with clear personal ownership.' },
+  { label: '👔 Executive Summary Focus', text: 'Focus on high-level takeaways, keep explanations balanced and concise, and avoid unnecessary technical jargon.' }
+];
+
 const modeOptions: { mode: PracticeMode; label: string; desc: string; icon: typeof Users }[] = [
+  { mode: 'guided', label: 'Master Guider (Rehearsal)', desc: 'Pre-practice voice & telemetry coaching', icon: GraduationCap },
   { mode: 'full', label: 'Full Presentation', desc: 'No time limit', icon: Users },
   { mode: 'pitch', label: '3-Min Pitch', desc: 'Elevator pitch', icon: Zap },
   { mode: 'impromptu', label: 'Impromptu', desc: 'Random topic, 2 min', icon: Mic },
@@ -114,6 +133,10 @@ export default function ConfigureSection() {
     setCustomConfig,
     recordSession,
     setRecordSession,
+    coachPersona,
+    setCoachPersona,
+    presenterDirectives,
+    setPresenterDirectives,
   } = useAppStore();
 
   const isLecture = practiceMode === 'lecture';

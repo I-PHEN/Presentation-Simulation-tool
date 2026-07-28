@@ -29,10 +29,11 @@ export interface Scores {
   overall: number;
 }
 
-export type PracticeMode = 'full' | 'pitch' | 'impromptu' | 'lecture' | 'interview';
+export type PracticeMode = 'full' | 'pitch' | 'impromptu' | 'lecture' | 'interview' | 'guided';
 
 export const practiceModeConfig: Record<PracticeMode, { label: string; desc: string; timeLimit: number | null; needsSlides: boolean }> = {
   full: { label: 'Full Presentation', desc: 'No time limit', timeLimit: null, needsSlides: false },
+  guided: { label: 'Master Guider (Rehearsal Coach)', desc: 'Slide-by-slide voice & telemetry coaching before live sparring', timeLimit: null, needsSlides: true },
   pitch: { label: '3-Minute Pitch', desc: 'Elevator pitch', timeLimit: 180, needsSlides: false },
   impromptu: { label: 'Impromptu', desc: 'Random topic, 2 min', timeLimit: 120, needsSlides: false },
   lecture: { label: 'Lecture Mode', desc: 'Teach a class', timeLimit: null, needsSlides: false },
@@ -198,6 +199,17 @@ interface AppState {
 
   recordSession: boolean;
   setRecordSession: (v: boolean) => void;
+
+  // Master Guider state
+  coachPersona: 'marcus' | 'sarah';
+  setCoachPersona: (persona: 'marcus' | 'sarah') => void;
+  presenterDirectives: string;
+  setPresenterDirectives: (directives: string) => void;
+  explanationDepth: 'surface' | 'balanced' | 'deep';
+  setExplanationDepth: (depth: 'surface' | 'balanced' | 'deep') => void;
+  customDirectivesChecklist: Array<{ id: string; label: string; completed: boolean }>;
+  setCustomDirectivesChecklist: (list: Array<{ id: string; label: string; completed: boolean }>) => void;
+  toggleDirectiveCompleted: (id: string) => void;
 }
 
 const initialState = {
@@ -239,6 +251,11 @@ const initialState = {
   isAnalyzing: false,
   isScoring: false,
   recordSession: true,
+
+  coachPersona: 'marcus' as 'marcus' | 'sarah',
+  presenterDirectives: '',
+  explanationDepth: 'balanced' as 'surface' | 'balanced' | 'deep',
+  customDirectivesChecklist: [] as Array<{ id: string; label: string; completed: boolean }>,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -317,6 +334,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setCustomConfig: (config) => set({ customConfig: config }),
   setRecordSession: (v) => set({ recordSession: v }),
+
+  setCoachPersona: (persona) => set({ coachPersona: persona }),
+  setPresenterDirectives: (directives) => set({ presenterDirectives: directives }),
+  setExplanationDepth: (depth) => set({ explanationDepth: depth }),
+  setCustomDirectivesChecklist: (list) => set({ customDirectivesChecklist: list }),
+  toggleDirectiveCompleted: (id) =>
+    set((state) => ({
+      customDirectivesChecklist: state.customDirectivesChecklist.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      ),
+    })),
 
   reset: () => set({ ...initialState, customConfig: null }),
 }));

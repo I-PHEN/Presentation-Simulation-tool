@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useAppStore, practiceModeConfig, getVoiceForJudge, type InputMode } from '@/lib/store';
 import { initVoiceEngine, generateTTS, playAudioData, createSTT, stopAudioPlayback, isEngineLoaded, unlockAudio, isAudioUnlocked } from '@/lib/voice-engine';
 import { toast } from 'sonner';
+import MasterGuiderHud from '@/components/master-guider-hud';
 
 // ─── Filler word detection ───
 const FILLER_WORDS = [
@@ -82,6 +83,8 @@ export default function PresentSection() {
     cameraMetrics, updateCameraFrame, screenContext, setScreenContext,
     inputMode, setStep, isScoring, audienceCount,
     activeHandRaised, setActiveHandRaised, judgeReactions, setJudgeReaction,
+    coachPersona, presenterDirectives, explanationDepth, setExplanationDepth,
+    customDirectivesChecklist, setCustomDirectivesChecklist,
   } = useAppStore();
   // ─── Recording state ───
   const [isRecording, setIsRecording] = useState(false);
@@ -89,13 +92,56 @@ export default function PresentSection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
+  const [isRescueLoading, setIsRescueLoading] = useState(false);
   const [lastInterruptTime, setLastInterruptTime] = useState(0);
   const [interruptQuestion, setInterruptQuestion] = useState<string | null>(null);
   const [interruptJudge, setInterruptJudge] = useState<{ id: string; icon: string; title: string; type: string } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [slideAspect, setSlideAspect] = useState<number | null>(null);
   const [timeUp, setTimeUp] = useState(false);
-  const previousSlideRef = useRef<number | null>(null);
+  const previousSlideRef.current = currentSlide;
+
+  // Initialize custom directives checklist from presenterDirectives prompt
+  useEffect(() => {
+    if (presenterDirectives && customDirectivesChecklist.length === 0) {
+      const parts = presenterDirectives
+        .split(/[.,;\n]+/)
+        .map(p => p.trim())
+        .filter(p => p.length > 5)
+        .slice(0, 4);
+      if (parts.length > 0) {
+        setCustomDirectivesChecklist(
+          parts.map((p, idx) => ({ id: `dir-${idx}`, label: p, completed: false }))
+        );
+      }
+    }
+  }, [presenterDirectives, customDirectivesChecklist.length, setCustomDirectivesChecklist]);
+
+  // Coach Rescue Handler
+  const handleCoachRescue = useCallback(async () => {
+    setIsRescueLoading(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Generate a concise 15-second executive model pitch script for Slide ${currentSlide + 1} of presentation '${title}'. Focus on: ${presenterDirectives || 'clear delivery, ROI, and core takeaway'}.`,
+          sessionId,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const rescueText = data.text || data.response || "Here is how to pitch this slide: Lead with your core result, keep your pace steady, and state your primary takeaway clearly.";
+        toast.success("Coach Rescue Script Ready!");
+        const voiceId = coachPersona === 'sarah' ? 'a7a59115-2425-4192-844c-1e98ec7d6877' : '533b2990-5b82-45a4-b9f2-367776972ca6';
+        playTTS(rescueText, voiceId);
+      }
+    } catch {
+      toast.error("Failed to generate coach rescue script");
+    } finally {
+      setIsRescueLoading(false);
+    }
+  }, [currentSlide, title, presenterDirectives, sessionId, coachPersona, playTTS]);
 
   useEffect(() => {
     if (isRecording && previousSlideRef.current !== null && previousSlideRef.current !== currentSlide) {
@@ -1256,7 +1302,19 @@ export default function PresentSection() {
               </div>
             </motion.div>
           )}
-        </div>
+        {/* ─── Floating Master Guider Telemetry HUD ─── */}
+        {practiceMode === 'guided' && (
+          <div className="absolute top-4 right-4 z-40 hidden md:block">
+            <MasterGuiderHud
+              currentSlide={currentSlide}
+              totalSlides={totalSlides}
+              wpm={wordsPerMinute}
+              transcript={presentationTranscript}
+              onCoachRescue={handleCoachRescue}
+              isRescueLoading={isRescueLoading}
+            />
+          </div>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════ */}
