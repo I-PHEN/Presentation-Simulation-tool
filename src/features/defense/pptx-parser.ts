@@ -84,7 +84,7 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
         const rId = rIdMatch[1];
         const target = targetMatch[1];
         if (target.includes('slide')) {
-          const slideName = target.replace(/^.*[/\\]slides[/\\]/, '');
+          const slideName = target.split(/[/\\]/).pop() || target;
           rIdToSlide.set(rId, slideName);
         }
       }
