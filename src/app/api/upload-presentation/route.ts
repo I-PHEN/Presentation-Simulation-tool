@@ -13,10 +13,13 @@ import {
 } from '@/features/defense/deck-conversion';
 import { authenticateRequest, isAuthenticationFailure } from '@/lib/server-auth';
 import { resolvePythonInterpreter, type PythonRuntime } from '@/features/defense/python-runtime';
+import { parsePptxInPureJs } from '@/features/defense/pptx-parser';
 
 const execFileAsync = promisify(execFile);
 
-const POWERPOINT_PATH = 'C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE';
+const POWERPOINT_PATH = process.platform === 'win32'
+  ? path.join('C:', 'Program Files', 'Microsoft Office', 'root', 'Office16', 'POWERPNT.EXE')
+  : '';
 
 async function commandPath(command: string): Promise<string | null> {
   const lookup = process.platform === 'win32' ? 'where.exe' : 'which';
@@ -98,39 +101,50 @@ export async function POST(req: NextRequest) {
       python = null;
     }
 
-    if (!python) {
-      // Pure JS Fallback when Python is unavailable (e.g. Vercel serverless)
-      const jsDeck = generatePureJsSlideDeck(file, buffer);
-      text = jsDeck.text;
-      slideImages = jsDeck.images;
-      slideTexts = jsDeck.slideTexts;
-    } else if (fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
-      try {
-        const pdfPath = await convertPowerPoint(uploadPath, tmpDir);
-        if (!pdfPath) {
+    if (fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
+      let parsedWithNative = false;
+      if (python) {
+        try {
+          const pdfPath = await convertPowerPoint(uploadPath, tmpDir);
+          if (pdfPath) {
+            const result = await processPDF(pdfPath, tmpDir, python);
+            text = result.text;
+            slideImages = result.images;
+            slideTexts = result.slideTexts;
+            renderDiagnostic = result.diagnostic;
+            parsedWithNative = true;
+          }
+        } catch {
+          parsedWithNative = false;
+        }
+      }
+      if (!parsedWithNative) {
+        try {
+          const parsed = await parsePptxInPureJs(buffer, file.name);
+          text = parsed.text;
+          slideImages = parsed.slides;
+          slideTexts = parsed.deck.slides.map((s) => s.text);
+        } catch (e) {
+          console.error('Pure JS PPTX parsing error:', e);
           const jsDeck = generatePureJsSlideDeck(file, buffer);
           text = jsDeck.text;
           slideImages = jsDeck.images;
           slideTexts = jsDeck.slideTexts;
-        } else {
-          const result = await processPDF(pdfPath, tmpDir, python);
-          text = result.text;
-          slideImages = result.images;
-          slideTexts = result.slideTexts;
-          renderDiagnostic = result.diagnostic;
         }
-      } catch {
+      }
+    } else if (fileName.endsWith('.pdf')) {
+      if (python) {
+        const result = await processPDF(uploadPath, tmpDir, python);
+        text = result.text;
+        slideImages = result.images;
+        slideTexts = result.slideTexts;
+        renderDiagnostic = result.diagnostic;
+      } else {
         const jsDeck = generatePureJsSlideDeck(file, buffer);
         text = jsDeck.text;
         slideImages = jsDeck.images;
         slideTexts = jsDeck.slideTexts;
       }
-    } else if (fileName.endsWith('.pdf')) {
-      const result = await processPDF(uploadPath, tmpDir, python);
-      text = result.text;
-      slideImages = result.images;
-      slideTexts = result.slideTexts;
-      renderDiagnostic = result.diagnostic;
     } else {
       return NextResponse.json({ error: 'Unsupported file type', retryable: false }, { status: 400 });
     }

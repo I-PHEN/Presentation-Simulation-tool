@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppStore, type InputMode } from '@/lib/store';
 import { toast } from 'sonner';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 export default function UploadSection() {
   const {
@@ -52,7 +53,7 @@ export default function UploadSection() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/upload-presentation', { method: 'POST', body: formData });
+      const res = await authenticatedFetch('/api/upload-presentation', { method: 'POST', body: formData });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Upload failed');

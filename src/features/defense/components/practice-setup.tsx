@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { DeckContext, DefenseMode, ExaminerStance, CurveballFrequency, PracticeSettings } from '@/features/defense/types';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 type Fetcher = typeof fetch;
 
@@ -18,7 +19,7 @@ export async function savePracticeSetup({
   mode,
   stance,
   practiceSettings,
-  fetcher = fetch,
+  fetcher = authenticatedFetch,
   onReady,
 }: {
   sessionId: string;

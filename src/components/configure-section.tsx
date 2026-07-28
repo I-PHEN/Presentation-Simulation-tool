@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useAppStore, type Judge, practiceModeConfig, type PracticeMode, getVoiceForJudge } from '@/lib/store';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const VOICE_OPTIONS = [
   { id: 'investor', name: 'Tyler (Confident Venture Pitch)', type: 'investor' },
@@ -293,7 +294,7 @@ export default function ConfigureSection() {
       const customConfigStr = JSON.stringify(configObj);
       setCustomConfig(customConfigStr);
 
-      const res = await fetch('/api/session', {
+      const res = await authenticatedFetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -306,6 +307,9 @@ export default function ConfigureSection() {
         }),
       });
       const data = await res.json();
+      if (!res.ok || !data.sessionId) {
+        throw new Error(data.error || 'Failed to set up session');
+      }
       setSessionId(data.sessionId);
       
       // Start global audio session recording (if enabled)

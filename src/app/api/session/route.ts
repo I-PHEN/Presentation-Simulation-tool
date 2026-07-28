@@ -117,8 +117,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating session:', error);
+    const detail = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to create session' },
+      { error: `Failed to create session: ${detail}` },
       { status: 500 }
     );
   }

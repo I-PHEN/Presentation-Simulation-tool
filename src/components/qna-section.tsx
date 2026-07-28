@@ -12,6 +12,7 @@ import { useAppStore, getVoiceForJudge, type Judge } from '@/lib/store';
 import { initVoiceEngine, generateTTS, playAudioData, stopAudioPlayback, createSTT, isEngineLoaded, unlockAudio } from '@/lib/voice-engine';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const getEmojiForType = (type: string) => {
   switch (type) {
@@ -211,7 +212,7 @@ export default function QNASection() {
     if (!ttsEnabled) return;
     ttsPendingCountRef.current++;
     try {
-      const res = await fetch('/api/tts', {
+      const res = await authenticatedFetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voiceId })
@@ -318,7 +319,7 @@ export default function QNASection() {
     abortControllerRef.current = controller;
 
     try {
-      const res = await fetch('/api/multi-chat/stream', {
+      const res = await authenticatedFetch('/api/multi-chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, message: text.trim(), judgeType, judgeTitle }),
@@ -352,7 +353,7 @@ export default function QNASection() {
 
       const startQA = async () => {
         try {
-          const res = await fetch('/api/multi-chat/stream', {
+          const res = await authenticatedFetch('/api/multi-chat/stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -423,7 +424,7 @@ export default function QNASection() {
       const base64 = canvas.toDataURL('image/jpeg', 0.7);
 
       try {
-        const res = await fetch('/api/analyze-frame', {
+        const res = await authenticatedFetch('/api/analyze-frame', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64 }),
@@ -513,7 +514,7 @@ export default function QNASection() {
     }
 
     try {
-      const res = await fetch('/api/score', {
+      const res = await authenticatedFetch('/api/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -531,7 +532,7 @@ export default function QNASection() {
         try {
           const formData = new FormData();
           formData.append('audio', audioBlob, 'recording.webm');
-          await fetch(`/api/session/${sessionId}/audio`, {
+          await authenticatedFetch(`/api/session/${sessionId}/audio`, {
             method: 'POST',
             body: formData,
           });
