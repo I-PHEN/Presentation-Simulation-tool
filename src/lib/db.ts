@@ -56,6 +56,9 @@ export async function ensureDbInitialized(targetDb: PrismaClient = db): Promise<
   if (dbInitPromise) return dbInitPromise;
 
   dbInitPromise = (async () => {
+    if (!targetDb || typeof targetDb.$executeRawUnsafe !== 'function') {
+      return;
+    }
     try {
       await targetDb.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "User" (

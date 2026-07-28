@@ -74,13 +74,18 @@ export async function parsePptxInPureJs(buffer: Buffer, sourceName: string): Pro
   const orderedSlideFiles: string[] = [];
 
   if (presentationXml && presentationRelsXml) {
-    const rIdToSlide = new Map<string, string>();
-    const relMatches = presentationRelsXml.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]+)"/g);
-    for (const m of relMatches) {
-      const [, rId, target] = m;
-      if (target.includes('slides/slide')) {
-        const slideName = target.replace(/^.*[/\\]slides[/\\]/, '');
-        rIdToSlide.set(rId, slideName);
+    const relTagMatches = presentationRelsXml.matchAll(/<Relationship\b[^>]*>/g);
+    for (const m of relTagMatches) {
+      const tag = m[0];
+      const rIdMatch = tag.match(/Id="(rId\d+)"/);
+      const targetMatch = tag.match(/Target="([^"]+)"/);
+      if (rIdMatch && targetMatch) {
+        const rId = rIdMatch[1];
+        const target = targetMatch[1];
+        if (target.includes('slide')) {
+          const slideName = target.replace(/^.*[/\\]slides[/\\]/, '');
+          rIdToSlide.set(rId, slideName);
+        }
       }
     }
 
