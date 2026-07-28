@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
   const { setTheme, resolvedTheme, theme } = useTheme();
-  const currentTheme = resolvedTheme || theme || "dark";
+  const currentTheme = resolvedTheme || theme || "light";
   const isDark = currentTheme === "dark";
 
   return (
