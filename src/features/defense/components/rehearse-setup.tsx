@@ -102,7 +102,14 @@ export function RehearseSetup({
     setUploadError(null);
     setProcessing(true);
     try {
-      const parsed = await parseUploadedDeck(selected, authenticatedFetch);
+      const formData = new FormData();
+      formData.append('file', selected);
+      const res = await authenticatedFetch('/api/upload-presentation', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed. Please try again.');
+
+      const parsed = parseUploadedDeck(data);
+      if (!parsed) throw new Error('Invalid presentation response from server.');
       setDeck(parsed);
       setTitle(parsed.sourceName);
     } catch (err) {
