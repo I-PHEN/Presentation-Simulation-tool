@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
@@ -56,56 +56,73 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     loadSession();
   }, [sessionId]);
 
-  const rawDeck = session?.deck || session?.deckContext ? (typeof session?.deckContext === 'string' ? JSON.parse(session.deckContext) : session.deckContext) : null;
-  const slides = rawDeck?.slides || session?.slides || (session?.topic ? [{ index: 1, text: session.topic, imageUrl: 'topic' }] : []);
-  const totalSlides = slides.length || 1;
-  const currentSlideObj = slides[currentSlide];
-
-  const fetchScriptForSlide = async (slideIndex: number) => {
-    if (scriptsMap[slideIndex]) return scriptsMap[slideIndex];
-    setIsLoadingScript(true);
-    try {
-      const res = await authenticatedFetch('/api/coaching/script', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slideText: slides[slideIndex]?.text || session?.topic || `Slide ${slideIndex + 1}`,
-          slideIndex,
-          presenterDirectives,
-          coachPersona,
-          explanationDepth,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const scriptData: SlideScriptData = {
-          openingHook: data.openingHook,
-          talkingPoints: data.talkingPoints,
-          rescueScript: data.rescueScript,
-        };
-        setScriptsMap((prev) => ({ ...prev, [slideIndex]: scriptData }));
-        return scriptData;
+  const rawDeck = useMemo(() => {
+    if (!session) return null;
+    if (session.deck) return session.deck;
+    if (session.deckContext) {
+      try {
+        return typeof session.deckContext === 'string' ? JSON.parse(session.deckContext) : session.deckContext;
+      } catch {
+        return null;
       }
-    } catch (err) {
-      console.error('Failed to fetch slide script:', err);
-    } finally {
-      setIsLoadingScript(false);
     }
-    return undefined;
-  };
+    return null;
+  }, [session]);
+
+  const slides = useMemo(() => {
+    return rawDeck?.slides || session?.slides || (session?.topic ? [{ index: 1, text: session.topic, imageUrl: 'topic' }] : []);
+  }, [rawDeck, session?.slides, session?.topic]);
+
+  const totalSlides = slides.length || 1;
+  const slideText = slides[currentSlide]?.text || session?.topic || `Slide ${currentSlide + 1}`;
+  const scriptAlreadyLoaded = Boolean(scriptsMap[currentSlide]);
 
   useEffect(() => {
     if (!slides.length) return;
-    if (scriptsMap[currentSlide]) return;
-    void fetchScriptForSlide(currentSlide);
-  }, [currentSlide, slides.length, currentSlideObj, presenterDirectives, coachPersona, explanationDepth, scriptsMap]);
+    if (scriptAlreadyLoaded) return;
+
+    let isSubscribed = true;
+    setIsLoadingScript(true);
+
+    async function fetchScript() {
+      try {
+        const res = await authenticatedFetch('/api/coaching/script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slideText,
+            slideIndex: currentSlide,
+            presenterDirectives,
+            coachPersona,
+            explanationDepth,
+          }),
+        });
+
+        if (res.ok && isSubscribed) {
+          const data = await res.json();
+          const scriptData: SlideScriptData = {
+            openingHook: data.openingHook,
+            talkingPoints: data.talkingPoints,
+            rescueScript: data.rescueScript,
+          };
+          setScriptsMap((prev) => ({ ...prev, [currentSlide]: scriptData }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch slide script:', err);
+      } finally {
+        if (isSubscribed) setIsLoadingScript(false);
+      }
+    }
+
+    void fetchScript();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [currentSlide, slides.length, slideText, coachPersona, explanationDepth, presenterDirectives, scriptAlreadyLoaded]);
 
   const handlePlayDemo = async () => {
-    let activeScript = scriptsMap[currentSlide];
-    if (!activeScript) {
-      activeScript = await fetchScriptForSlide(currentSlide);
-    }
+    const activeScript = scriptsMap[currentSlide];
     if (!activeScript) {
       toast.error('Script unavailable for voiceover demo');
       return;
@@ -126,13 +143,8 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     }
   };
 
-  const handleOpenCoachRescue = async () => {
+  const handleOpenCoachRescue = () => {
     setRescueModalOpen(true);
-    if (!scriptsMap[currentSlide]) {
-      setIsRescueLoading(true);
-      await fetchScriptForSlide(currentSlide);
-      setIsRescueLoading(false);
-    }
   };
 
   const handlePlayRescueAudio = async () => {
