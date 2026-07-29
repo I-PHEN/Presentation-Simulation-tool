@@ -9,7 +9,7 @@ import type { DeckContext, DefenseMode, ExaminerStance } from '@/features/defens
 import { parseUploadedDeck } from './deck-intake';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { AuthenticatedSlideImage } from '@/lib/authenticated-asset';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export interface RehearseConfig {
