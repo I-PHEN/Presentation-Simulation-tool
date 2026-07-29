@@ -183,7 +183,7 @@ export function RehearseSetup({
                       Click to upload or drag & drop your presentation
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Supports PowerPoint (.pptx, .ppt) and PDF documents
+                      Presentation deck (PPTX, PPT, or PDF)
                     </p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
@@ -417,11 +417,11 @@ export function RehearseSetup({
       >
         {creating ? (
           <>
-            <Loader2 className="size-4 animate-spin" /> Launching Rehearsal Session...
+            <Loader2 className="size-4 animate-spin" /> Starting rehearsal...
           </>
         ) : (
           <>
-            <Play className="size-4 fill-current" /> Start Rehearsal <ArrowRight className="size-4 ml-1" />
+            <Play className="size-4 fill-current" /> Start rehearsal
           </>
         )}
       </Button>
