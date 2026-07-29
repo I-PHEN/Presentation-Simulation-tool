@@ -134,19 +134,13 @@ export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return getMemoryCollapsed();
-    }
-    return false;
-  });
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [animateWidth, setAnimateWidth] = useState(false);
 
   useEffect(() => {
-    const stored = readShellCollapsed(window.localStorage);
-    setCollapsed(stored);
-    const timer = setTimeout(() => setAnimateWidth(true), 50);
+    setCollapsed(readShellCollapsed(window.localStorage));
+    const timer = setTimeout(() => setAnimateWidth(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
