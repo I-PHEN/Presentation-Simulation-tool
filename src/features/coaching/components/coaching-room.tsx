@@ -11,6 +11,7 @@ import { CoachingHeader } from './coaching-header';
 import { CoachingSlideViewer } from './coaching-slide-viewer';
 import { CoachingTeleprompter } from './coaching-teleprompter';
 import { CoachingControls } from './coaching-controls';
+import { CoachRescueModal } from './coach-rescue-modal';
 import MasterGuiderHud from './master-guider-hud';
 import type { SlideScriptData } from '../types';
 
@@ -28,7 +29,12 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
   const [transcript, setTranscript] = useState('');
   const [isLoadingScript, setIsLoadingScript] = useState(false);
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
+
+  // Rescue Modal State
+  const [rescueModalOpen, setRescueModalOpen] = useState(false);
+  const [isPlayingRescueAudio, setIsPlayingRescueAudio] = useState(false);
   const [isRescueLoading, setIsRescueLoading] = useState(false);
+
   const [scriptsMap, setScriptsMap] = useState<Record<number, SlideScriptData>>({});
 
   useEffect(() => {
@@ -41,7 +47,8 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
         const res = await authenticatedFetch(`/api/session/${sessionId}`);
         if (!res.ok) throw new Error('Session not found');
         const data = await res.json();
-        setSession(data.session || data);
+        const active = data.defense || data.session || data;
+        setSession(active);
       } catch (err) {
         toast.error('Failed to load session');
       }
@@ -49,53 +56,60 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     loadSession();
   }, [sessionId]);
 
-  const slides = session?.deck?.slides || session?.slides || [];
+  const rawDeck = session?.deck || session?.deckContext ? (typeof session?.deckContext === 'string' ? JSON.parse(session.deckContext) : session.deckContext) : null;
+  const slides = rawDeck?.slides || session?.slides || (session?.topic ? [{ index: 1, text: session.topic, imageUrl: 'topic' }] : []);
   const totalSlides = slides.length || 1;
   const currentSlideObj = slides[currentSlide];
+
+  const fetchScriptForSlide = async (slideIndex: number) => {
+    if (scriptsMap[slideIndex]) return scriptsMap[slideIndex];
+    setIsLoadingScript(true);
+    try {
+      const res = await authenticatedFetch('/api/coaching/script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slideText: slides[slideIndex]?.text || session?.topic || `Slide ${slideIndex + 1}`,
+          slideIndex,
+          presenterDirectives,
+          coachPersona,
+          explanationDepth,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const scriptData: SlideScriptData = {
+          openingHook: data.openingHook,
+          talkingPoints: data.talkingPoints,
+          rescueScript: data.rescueScript,
+        };
+        setScriptsMap((prev) => ({ ...prev, [slideIndex]: scriptData }));
+        return scriptData;
+      }
+    } catch (err) {
+      console.error('Failed to fetch slide script:', err);
+    } finally {
+      setIsLoadingScript(false);
+    }
+    return undefined;
+  };
 
   useEffect(() => {
     if (!slides.length) return;
     if (scriptsMap[currentSlide]) return;
-
-    async function fetchScript() {
-      setIsLoadingScript(true);
-      try {
-        const res = await authenticatedFetch('/api/coaching/script', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            slideText: currentSlideObj?.text || `Slide ${currentSlide + 1}`,
-            slideIndex: currentSlide,
-            presenterDirectives,
-            coachPersona,
-            explanationDepth,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setScriptsMap(prev => ({
-            ...prev,
-            [currentSlide]: {
-              openingHook: data.openingHook,
-              talkingPoints: data.talkingPoints,
-              rescueScript: data.rescueScript,
-            },
-          }));
-        }
-      } catch (err) {
-        console.error('Failed to fetch slide script:', err);
-      } finally {
-        setIsLoadingScript(false);
-      }
-    }
-
-    fetchScript();
+    void fetchScriptForSlide(currentSlide);
   }, [currentSlide, slides.length, currentSlideObj, presenterDirectives, coachPersona, explanationDepth, scriptsMap]);
 
   const handlePlayDemo = async () => {
-    const activeScript = scriptsMap[currentSlide];
-    if (!activeScript) return;
+    let activeScript = scriptsMap[currentSlide];
+    if (!activeScript) {
+      activeScript = await fetchScriptForSlide(currentSlide);
+    }
+    if (!activeScript) {
+      toast.error('Script unavailable for voiceover demo');
+      return;
+    }
 
     setIsPlayingDemo(true);
     try {
@@ -112,11 +126,20 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     }
   };
 
-  const handleCoachRescue = async () => {
+  const handleOpenCoachRescue = async () => {
+    setRescueModalOpen(true);
+    if (!scriptsMap[currentSlide]) {
+      setIsRescueLoading(true);
+      await fetchScriptForSlide(currentSlide);
+      setIsRescueLoading(false);
+    }
+  };
+
+  const handlePlayRescueAudio = async () => {
     const activeScript = scriptsMap[currentSlide];
     if (!activeScript) return;
 
-    setIsRescueLoading(true);
+    setIsPlayingRescueAudio(true);
     try {
       const voiceId = coachPersona === 'sarah'
         ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
@@ -127,7 +150,7 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     } catch {
       toast.error('Rescue audio unavailable');
     } finally {
-      setIsRescueLoading(false);
+      setIsPlayingRescueAudio(false);
     }
   };
 
@@ -136,15 +159,16 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
       {/* Left Column: Slide & Script Stage */}
       <div className="flex-1 flex flex-col justify-between overflow-hidden relative border-r border-border">
         <CoachingHeader
-          title={session?.title}
+          title={session?.title || session?.topic}
           onBack={() => router.push('/dashboard')}
         />
 
         <CoachingSlideViewer
           slides={slides}
           currentSlide={currentSlide}
-          onPrevious={() => setCurrentSlide(c => Math.max(0, c - 1))}
-          onNext={() => setCurrentSlide(c => Math.min(totalSlides - 1, c + 1))}
+          onPrevious={() => setCurrentSlide((c) => Math.max(0, c - 1))}
+          onNext={() => setCurrentSlide((c) => Math.min(totalSlides - 1, c + 1))}
+          topicTitle={session?.topic || session?.title}
         />
 
         <CoachingTeleprompter
@@ -169,10 +193,20 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
           totalSlides={totalSlides}
           wpm={wpm}
           transcript={transcript}
-          onCoachRescue={handleCoachRescue}
+          onCoachRescue={handleOpenCoachRescue}
           isRescueLoading={isRescueLoading}
         />
       </div>
+
+      {/* Coach Rescue Modal */}
+      <CoachRescueModal
+        open={rescueModalOpen}
+        onOpenChange={setRescueModalOpen}
+        script={scriptsMap[currentSlide]}
+        coachPersona={coachPersona}
+        onPlayAudio={handlePlayRescueAudio}
+        isPlayingAudio={isPlayingRescueAudio}
+      />
     </div>
   );
 }
