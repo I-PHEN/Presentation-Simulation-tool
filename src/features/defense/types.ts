@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export type DefenseMode = 'uninterrupted' | 'diagnostic' | 'mock' | 'guided';
-export type ExaminerStance = 'supportive' | 'rigorous' | 'hostile';
+export type ExaminerStance = 'supportive' | 'rigorous' | 'hostile' | 'custom';
 export type CurveballFrequency = 'low' | 'medium' | 'high';
 export type TranscriptRole = 'presenter' | 'examiner';
 

@@ -90,11 +90,21 @@ export async function POST(request: Request) {
     if (!slide) return NextResponse.json({ error: 'Current slide is unavailable' }, { status: 400 });
     const stance = session.stance === 'supportive' ? 'supportive' : 'rigorous';
     const deckless = session.source === 'topic';
+    let customInstruction: string | undefined;
+    if (session.customConfig) {
+      try {
+        const parsedConfig = JSON.parse(session.customConfig);
+        if (parsedConfig && typeof parsedConfig.customInstruction === 'string') {
+          customInstruction = parsedConfig.customInstruction;
+        }
+      } catch {}
+    }
     // Verbatim-reading evidence is about reading slides aloud. A topic session has
     // a one-line topic, so the same signal is meaningless there - and the report
     // already drops its verbatim metrics when deckless.
     const reading = deckless ? undefined : readingEvidence;
-    const prompt = `You are a ${stance} ${deckless ? 'examiner questioning a spoken argument' : 'thesis examiner'}.${persona ? ` Persona focus: ${persona.promptFragment}` : ''} Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
+    const customPromptPart = customInstruction ? ` Custom examiner instructions: ${customInstruction}.` : '';
+    const prompt = `You are a ${stance} ${deckless ? 'examiner questioning a spoken argument' : 'thesis examiner'}.${persona ? ` Persona focus: ${persona.promptFragment}` : ''}${customPromptPart} Return ONLY either NO_INTERRUPT or a JSON object matching exactly this schema: {"kind":"interrupt"|"question"|"follow_up"}.
 
 ${deckless ? 'Topic being argued' : 'Current slide claim/text'}: ${slide.text}
 Presenter's current spoken evidence: ${currentSegment.text}

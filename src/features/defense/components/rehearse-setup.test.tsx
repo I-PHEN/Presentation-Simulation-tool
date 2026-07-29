@@ -42,8 +42,9 @@ describe('RehearseSetup', () => {
     expect(html).toContain('Mock defense');
     expect(html).toContain('Rigorous');
     expect(html).toContain('Supportive');
+    expect(html).toContain('Custom Persona');
     expect(html.match(/name="rehearse-mode"/g)).toHaveLength(3);
-    expect(html.match(/name="rehearse-stance"/g)).toHaveLength(2);
+    expect(html.match(/name="rehearse-stance"/g)).toHaveLength(3);
     // No fabricated audience controls
     expect(html).not.toContain('Audience type');
     expect(html).not.toContain('AI Panel');

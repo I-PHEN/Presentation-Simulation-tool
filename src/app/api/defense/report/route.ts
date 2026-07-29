@@ -72,13 +72,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ report });
     }
 
-    const prompt = deckless
+    let customInstruction: string | undefined;
+    if (session.customConfig) {
+      try {
+        const parsedConfig = JSON.parse(session.customConfig);
+        if (parsedConfig && typeof parsedConfig.customInstruction === 'string') {
+          customInstruction = parsedConfig.customInstruction;
+        }
+      } catch {}
+    }
+
+    const basePrompt = deckless
       ? buildTopicEvaluationPrompt({
           topic: session.topic ?? deck.slides[0]?.text ?? '',
           transcript: transcriptSegments.filter((segment) => segment.role === 'presenter').map((segment) => segment.text).join('\n'),
           examinerEvents,
         })
       : buildDefenseEvaluationPrompt({ title: session.title, mode: session.mode === 'mock' ? 'mock' : 'diagnostic', deckText: deck.slides.map((slide) => `Slide ${slide.index}: ${slide.text}`).join('\n'), transcript: transcriptSegments.filter((segment) => segment.role === 'presenter').map((segment) => `Slide ${segment.slideIndex}: ${segment.text}`).join('\n'), readingEvidence, examinerEvents });
+
+    const prompt = customInstruction
+      ? `${basePrompt}\n\nSPECIALIZED EVALUATION INSTRUCTIONS:\nEvaluate the presenter specifically against this custom role/prompt: "${customInstruction}"`
+      : basePrompt;
 
     const zai = await getZAI();
     const completion = await zai.chat.completions.create({ messages: [{ role: 'system', content: prompt }], thinking: { type: 'disabled' } });

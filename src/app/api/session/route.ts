@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
       }
 
       const deck = syntheticTopicDeck(topicSession.data.topic);
+      const customConfig = topicSession.data.customInstruction
+        ? JSON.stringify({ customInstruction: topicSession.data.customInstruction })
+        : null;
       const session = await db.session.create({
         data: {
           title: deck.sourceName,
@@ -33,6 +36,7 @@ export async function POST(req: NextRequest) {
           topic: topicSession.data.topic,
           mode: topicSession.data.mode,
           stance: topicSession.data.stance,
+          customConfig,
           content: topicSession.data.topic,
           deckContext: JSON.stringify(deck),
           transcriptSegments: '[]',
@@ -53,6 +57,9 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const customConfig = defense.data.customInstruction
+        ? JSON.stringify({ customInstruction: defense.data.customInstruction })
+        : null;
       const session = await db.session.create({
         data: {
           title: defense.data.title,
@@ -62,6 +69,7 @@ export async function POST(req: NextRequest) {
           source: 'deck',
           mode: defense.data.mode,
           stance: defense.data.stance,
+          customConfig,
           content: defense.data.deck.slides.map((slide) => slide.text).join('\n\n'),
           deckContext: JSON.stringify(defense.data.deck),
           transcriptSegments: '[]',

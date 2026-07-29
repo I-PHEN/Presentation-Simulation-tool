@@ -23,15 +23,17 @@ export const transcriptSegmentsSchema = z.array(transcriptSegmentSchema).max(10_
 export const createDefenseSessionSchema = z.object({
   title: z.string().trim().min(1).max(180),
   mode: z.enum(['uninterrupted', 'diagnostic', 'mock']),
-  stance: z.enum(['supportive', 'rigorous', 'hostile']),
+  stance: z.enum(['supportive', 'rigorous', 'hostile', 'custom']),
+  customInstruction: z.string().trim().max(2_000).optional(),
   userId: z.string().nullable().optional(),
   deck: defenseDeckSchema,
 });
 
 export const createTopicSessionSchema = z.object({
-  topic: z.string().trim().min(1).max(300),
+  topic: z.string().trim().min(1).max(3_000),
   mode: z.enum(['uninterrupted', 'diagnostic', 'mock']),
-  stance: z.enum(['supportive', 'rigorous', 'hostile']),
+  stance: z.enum(['supportive', 'rigorous', 'hostile', 'custom']),
+  customInstruction: z.string().trim().max(2_000).optional(),
 });
 
 /**
