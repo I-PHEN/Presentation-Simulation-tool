@@ -7,7 +7,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { readShellCollapsed, writeShellCollapsed } from '../shell-preference';
+import { getMemoryCollapsed, readShellCollapsed, writeShellCollapsed } from '../shell-preference';
 import { AccountMenu } from './account-menu';
 
 export type StudioNavItem = 'home' | 'coaching' | 'rehearse' | 'progress';
@@ -134,13 +134,20 @@ export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return getMemoryCollapsed();
+    }
+    return false;
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [animateWidth, setAnimateWidth] = useState(false);
 
   useEffect(() => {
-    setCollapsed(readShellCollapsed(window.localStorage));
-    setAnimateWidth(true);
+    const stored = readShellCollapsed(window.localStorage);
+    setCollapsed(stored);
+    const timer = setTimeout(() => setAnimateWidth(true), 50);
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleCollapsed = () => {
@@ -154,7 +161,8 @@ export function AppShell({ active, children }: {
   // Clicking the closed rail's empty space reopens it, but a click that landed
   // on a destination or the toggle itself is that control's, not the rail's.
   const expandFromRail = (event: MouseEvent<HTMLElement>) => {
-    if ((event.target as HTMLElement).closest('a,button')) return;
+    const target = event.target as Element | null;
+    if (target?.closest('a, button, [role="button"]')) return;
     toggleCollapsed();
   };
 
