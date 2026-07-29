@@ -7,8 +7,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
+  const [mounted, setMounted] = React.useState(false);
   const { setTheme, resolvedTheme, theme } = useTheme();
-  const currentTheme = resolvedTheme || theme || "light";
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? (resolvedTheme || theme || "light") : "light";
   const isDark = currentTheme === "dark";
 
   return (
@@ -22,7 +28,11 @@ export function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
         collapsed && "w-9 px-0 justify-center",
       )}
     >
-      {isDark ? <Moon className="size-3.5 shrink-0" aria-hidden="true" /> : <Sun className="size-3.5 shrink-0" aria-hidden="true" />}
+      {isDark ? (
+        <Moon className="size-3.5 shrink-0" aria-hidden="true" />
+      ) : (
+        <Sun className="size-3.5 shrink-0" aria-hidden="true" />
+      )}
       <span className={collapsed ? "sr-only" : undefined}>{isDark ? "Dark" : "Light"}</span>
     </button>
   );
