@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
-import { Home, LineChart, Menu, Mic } from 'lucide-react';
+import { GraduationCap, Home, LineChart, Menu, Mic } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { buttonVariants } from '@/components/ui/button';
@@ -10,22 +10,25 @@ import { cn } from '@/lib/utils';
 import { readShellCollapsed, writeShellCollapsed } from '../shell-preference';
 import { AccountMenu } from './account-menu';
 
-export type StudioNavItem = 'home' | 'rehearse' | 'progress';
+export type StudioNavItem = 'home' | 'coaching' | 'rehearse' | 'progress';
 
 const navigation = [
   { href: '/dashboard', label: 'Home', value: 'home' },
+  { href: '/coaching/new', label: 'Coach', value: 'coaching' },
   { href: '/decks/new', label: 'Rehearse', value: 'rehearse' },
   { href: '/review', label: 'Progress', value: 'progress' },
 ] as const;
 
 const navIcons: Record<StudioNavItem, typeof Home> = {
   home: Home,
+  coaching: GraduationCap,
   rehearse: Mic,
   progress: LineChart,
 };
 
 const navTitles: Record<StudioNavItem, string> = {
   home: 'Home',
+  coaching: 'Masterclass Coach',
   rehearse: 'Rehearse',
   progress: 'Progress',
 };
