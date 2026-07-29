@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
       }
 
       const deck = syntheticTopicDeck(topicSession.data.topic);
-      const customConfig = topicSession.data.customInstruction
-        ? JSON.stringify({ customInstruction: topicSession.data.customInstruction })
-        : null;
+      const customConfig = body.customConfig && typeof body.customConfig === 'object'
+        ? JSON.stringify(body.customConfig)
+        : topicSession.data.customInstruction
+          ? JSON.stringify({ customInstruction: topicSession.data.customInstruction })
+          : null;
       const session = await db.session.create({
         data: {
           title: deck.sourceName,
@@ -57,9 +59,11 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const customConfig = defense.data.customInstruction
-        ? JSON.stringify({ customInstruction: defense.data.customInstruction })
-        : null;
+      const customConfig = body.customConfig && typeof body.customConfig === 'object'
+        ? JSON.stringify(body.customConfig)
+        : defense.data.customInstruction
+          ? JSON.stringify({ customInstruction: defense.data.customInstruction })
+          : null;
       const session = await db.session.create({
         data: {
           title: defense.data.title,
