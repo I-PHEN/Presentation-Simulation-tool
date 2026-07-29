@@ -56,6 +56,13 @@ export function getVoiceForJudge(judgeType: string): string {
   return JUDGE_VOICE_MAP[judgeType] || 'd46abd1d-2d02-43e8-819f-51fb652c1c61'; // Grant - neutral American English fallback
 }
 
+export const PROMPT_TEMPLATE_CHIPS = [
+  { label: '💼 Investor ROI Focus', text: 'Act as a VC partner. Help me explain our $2M seed budget, focus on ROI on Slide 3, and keep tone calm and confident.' },
+  { label: '🎓 Academic Defense Focus', text: 'Focus on methodology rigour. Make sure I explain our data benchmarks clearly and address potential model limitations.' },
+  { label: '🤝 STAR Behavioral Screen', text: 'Structure responses in STAR format (Situation, Task, Action, Result). Highlight leadership and conflict resolution.' },
+  { label: '👔 Executive Summary Focus', text: 'Keep explanations high-level and concise. Avoid technical jargon and highlight business impact upfront.' },
+];
+
 export type InputMode = 'upload' | 'screen';
 
 // Step mapping:

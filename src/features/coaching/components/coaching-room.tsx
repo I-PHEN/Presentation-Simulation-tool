@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
-import { playTTS } from '@/lib/voice-engine';
+import { generateTTS, playAudioData } from '@/lib/voice-engine';
 import { toast } from 'sonner';
 import MasterGuiderHud from '@/components/master-guider-hud';
 
@@ -113,7 +113,8 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
       const voiceId = coachPersona === 'sarah'
         ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
         : '533b2990-5b82-45a4-b9f2-367776972ca6';
-      await playTTS(demoText, voiceId);
+      const audioResult = await generateTTS(demoText, voiceId);
+      await playAudioData(audioResult);
     } catch {
       toast.error('Voiceover demo unavailable');
     } finally {
@@ -131,7 +132,8 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
       const voiceId = coachPersona === 'sarah'
         ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
         : '533b2990-5b82-45a4-b9f2-367776972ca6';
-      await playTTS(activeScript.rescueScript, voiceId);
+      const audioResult = await generateTTS(activeScript.rescueScript, voiceId);
+      await playAudioData(audioResult);
       toast.success('Coach rescue script spoken aloud');
     } catch {
       toast.error('Rescue audio unavailable');
