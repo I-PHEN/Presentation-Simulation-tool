@@ -1,19 +1,19 @@
 # Product Requirements Document (PRD)
 
-## Project Name: Sparring Partner
+## Project Name: SharkPit
 **Executive Presentation Defense & Masterclass AI Delivery Studio**
 
 ---
 
 ## 1. Executive Summary & Vision
 
-**Sparring Partner** is an AI-powered, voice-first application designed to help presenters practice, refine, and master high-stakes presentation delivery. 
+**SharkPit** is an AI-powered, voice-first application designed to help presenters practice, refine, and master high-stakes presentation delivery. 
 
 Presenters face two fundamental challenges:
 1. **Unpolished Spoken Delivery**: Struggling with speech pacing, tone emphasis, and talking point flow on specific slides without real-time telemetry.
 2. **Q&A Anxiety & Reasoning Breaches**: Falling apart under high-pressure, adversarial questioning from investors, board members, or academic examiners.
 
-Sparring Partner solves both problems through a **Dual-Engine Architecture**:
+SharkPit solves both problems through a **Dual-Engine Architecture**:
 - **Masterclass Delivery Studio (`/coaching`)**: A 1-on-1 coaching environment where an AI speechwriter auto-generates talking point scripts, provides voiceover demonstrations via TTS, and tracks real-time WPM pacing and explanation depth.
 - **Adversarial Panel Sparring (`/rehearse`)**: A realistic Q&A defense simulator where AI examiner personas (Investor, Executive, Professor, Hackathon Judge, Recruiter) challenge assumptions mid-slide.
 

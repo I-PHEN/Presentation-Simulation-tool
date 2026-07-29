@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎙️ Sparring Partner
+# 🦈 SharkPit
 ### Executive Presentation Defense & Masterclass AI Delivery Studio
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -17,9 +17,9 @@
 
 ---
 
-## 🎯 What is Sparring Partner?
+## 🎯 What is SharkPit?
 
-**Sparring Partner** is an immersive, voice-first AI presentation coaching application. Whether you are a startup founder preparing for a VC seed pitch, a researcher defending a doctoral thesis, or an executive delivering a quarterly update, Sparring Partner gives you a 1-on-1 AI environment to refine your speech before stepping into the room.
+**SharkPit** is an immersive, voice-first AI presentation coaching application. Whether you are a startup founder preparing for a VC seed pitch, a researcher defending a doctoral thesis, or an executive delivering a quarterly update, SharkPit gives you a 1-on-1 AI environment to refine your speech before stepping into the room.
 
 ---
 

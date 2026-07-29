@@ -57,7 +57,7 @@ function BrandMark({ className }: { className?: string }) {
       className={cn('flex h-14 min-w-0 items-center gap-2.5 text-sm font-semibold tracking-tight text-sidebar-foreground', className)}
     >
       <SquadMark />
-      <span className="truncate">Sparring Partner</span>
+      <span className="truncate">SharkPit</span>
     </Link>
   );
 }
@@ -85,7 +85,7 @@ function RailHeader({ collapsed, animate, onToggle }: { collapsed: boolean; anim
           collapsed ? 'w-0 opacity-0' : `${RAIL_LABEL} opacity-100`,
         )}
       >
-        Sparring Partner
+        SharkPit
       </span>
     </div>
   );
