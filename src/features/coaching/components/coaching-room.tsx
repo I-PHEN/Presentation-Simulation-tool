@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  GraduationCap, Sparkles, Volume2, Mic, MicOff, ChevronLeft, ChevronRight,
-  ArrowRight, RefreshCw, FileText, CheckCircle2, AlertTriangle, Layers, Play
+  GraduationCap, Volume2, Mic, MicOff, ChevronLeft, ChevronRight,
+  ArrowRight, RefreshCw, FileText, Play
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
@@ -37,12 +36,10 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
   const [isRescueLoading, setIsRescueLoading] = useState(false);
   const [scriptsMap, setScriptsMap] = useState<Record<number, SlideScriptData>>({});
 
-  // Ensure practiceMode is guided
   useEffect(() => {
     setPracticeMode('guided');
   }, [setPracticeMode]);
 
-  // Load Session Data
   useEffect(() => {
     async function loadSession() {
       try {
@@ -51,7 +48,7 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
         const data = await res.json();
         setSession(data.session || data);
       } catch (err) {
-        toast.error('Failed to load rehearsal session');
+        toast.error('Failed to load session');
       }
     }
     loadSession();
@@ -61,7 +58,6 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
   const totalSlides = slides.length || 1;
   const currentSlideObj = slides[currentSlide];
 
-  // Fetch AI Teleprompter Script for current slide if not cached
   useEffect(() => {
     if (!slides.length) return;
     if (scriptsMap[currentSlide]) return;
@@ -102,7 +98,6 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     fetchScript();
   }, [currentSlide, slides.length, currentSlideObj, presenterDirectives, coachPersona, explanationDepth, scriptsMap]);
 
-  // Play Coach Demo Audio
   const handlePlayDemo = async () => {
     const activeScript = scriptsMap[currentSlide];
     if (!activeScript) return;
@@ -122,7 +117,6 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     }
   };
 
-  // Coach Rescue Handler
   const handleCoachRescue = async () => {
     const activeScript = scriptsMap[currentSlide];
     if (!activeScript) return;
@@ -145,78 +139,74 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
   const currentScript = scriptsMap[currentSlide];
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
-      {/* ════════════════════════════════════════════════ */}
-      {/* LEFT COLUMN: Presentation & AI Teleprompter     */}
-      {/* ════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col justify-between overflow-hidden relative border-r border-slate-800">
-        {/* Top Header Bar */}
-        <div className="h-14 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between shrink-0">
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
+      {/* Left Column: Presentation & Teleprompter */}
+      <div className="flex-1 flex flex-col justify-between overflow-hidden relative border-r border-border">
+        {/* Header */}
+        <div className="h-14 border-b border-border bg-card px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="text-xs text-slate-400 hover:text-white">
+            <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="text-xs text-muted-foreground hover:text-foreground">
               <ChevronLeft className="size-4 mr-1" /> Dashboard
             </Button>
-            <span className="h-4 w-px bg-slate-800" />
-            <h1 className="text-sm font-bold text-white truncate max-w-sm">
-              {session?.title || 'Masterclass Rehearsal'}
+            <span className="h-4 w-px bg-border" />
+            <h1 className="text-sm font-medium text-foreground truncate max-w-sm">
+              {session?.title || 'Coaching Session'}
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-              <Sparkles className="size-3.5" /> Executive Studio Mode
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <GraduationCap className="size-4 text-primary" /> Delivery Coaching
             </span>
           </div>
         </div>
 
         {/* Center: Slide Display */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center relative bg-slate-950">
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center relative bg-muted/20">
           {slides.length > 0 ? (
             <div className="w-full max-w-3xl flex flex-col items-center">
               <img
                 key={currentSlide}
                 src={slides[currentSlide]?.imageUrl}
                 alt={`Slide ${currentSlide + 1}`}
-                className="w-full h-auto max-h-[50vh] object-contain rounded-2xl border border-slate-800 shadow-2xl bg-slate-900"
+                className="w-full h-auto max-h-[52vh] object-contain rounded-xl border border-border shadow-md bg-card"
               />
-              <div className="mt-3 flex items-center gap-4">
+              <div className="mt-4 flex items-center gap-4">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={currentSlide === 0}
                   onClick={() => setCurrentSlide(c => Math.max(0, c - 1))}
-                  className="border-slate-800 bg-slate-900 text-slate-300 hover:text-white"
                 >
                   <ChevronLeft className="size-4 mr-1" /> Previous
                 </Button>
-                <span className="text-xs font-mono text-slate-400">
-                  Slide <strong className="text-amber-400">{currentSlide + 1}</strong> of {totalSlides}
+                <span className="text-xs font-mono text-muted-foreground">
+                  Slide <strong className="text-foreground">{currentSlide + 1}</strong> of {totalSlides}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={currentSlide >= totalSlides - 1}
                   onClick={() => setCurrentSlide(c => Math.min(totalSlides - 1, c + 1))}
-                  className="border-slate-800 bg-slate-900 text-slate-300 hover:text-white"
                 >
                   Next <ChevronRight className="size-4 ml-1" />
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="text-center text-slate-400 text-sm italic">
-              Loading slide deck presentation...
+            <div className="text-center text-muted-foreground text-sm italic">
+              Loading slides...
             </div>
           )}
         </div>
 
-        {/* Bottom Section: AI Teleprompter & Script Guide */}
-        <div className="h-52 border-t border-slate-800 bg-slate-900/80 p-4 overflow-y-auto shrink-0 space-y-2">
+        {/* Teleprompter Panel */}
+        <div className="h-48 border-t border-border bg-card p-4 overflow-y-auto shrink-0 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-amber-400" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">
-                AI Teleprompter & Talking Points (Slide {currentSlide + 1})
+              <FileText className="size-4 text-primary" />
+              <span className="text-xs font-semibold text-foreground">
+                Slide {currentSlide + 1} Talking Points & Script
               </span>
             </div>
 
@@ -225,61 +215,60 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
               variant="outline"
               disabled={isPlayingDemo || !currentScript}
               onClick={handlePlayDemo}
-              className="h-7 border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-semibold"
+              className="h-7 text-xs"
             >
               <Volume2 className="size-3.5 mr-1" /> {isPlayingDemo ? 'Speaking...' : 'Demonstrate Delivery'}
             </Button>
           </div>
 
           {isLoadingScript ? (
-            <div className="p-4 text-center text-xs text-amber-300 italic flex items-center justify-center gap-2">
-              <RefreshCw className="size-4 animate-spin text-amber-400" /> Generating high-impact talking points for Slide {currentSlide + 1}...
+            <div className="p-4 text-center text-xs text-muted-foreground italic flex items-center justify-center gap-2">
+              <RefreshCw className="size-4 animate-spin text-primary" /> Generating talking points for Slide {currentSlide + 1}...
             </div>
           ) : currentScript ? (
             <div className="space-y-2 text-xs">
-              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 font-semibold flex items-center gap-2">
-                <Play className="size-3 text-amber-400 shrink-0" />
-                <span>Opening Hook: &ldquo;{currentScript.openingHook}&rdquo;</span>
+              <div className="p-2 rounded-md bg-muted/60 border border-border text-foreground font-medium flex items-center gap-2">
+                <Play className="size-3 text-primary shrink-0" />
+                <span>Hook: &ldquo;{currentScript.openingHook}&rdquo;</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 {currentScript.talkingPoints.map((point, idx) => (
-                  <div key={idx} className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 leading-relaxed">
-                    <span className="font-bold text-amber-400 mr-1">{idx + 1}.</span> {point}
+                  <div key={idx} className="p-2.5 rounded-md border border-border bg-surface text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground mr-1">{idx + 1}.</span> {point}
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="text-xs text-slate-500 italic">No script generated for this slide.</div>
+            <div className="text-xs text-muted-foreground italic">No script generated for this slide.</div>
           )}
         </div>
 
-        {/* Bottom Control Bar */}
-        <div className="h-16 border-t border-slate-800 bg-slate-950 px-6 flex items-center justify-between shrink-0">
+        {/* Controls Bar */}
+        <div className="h-14 border-t border-border bg-card px-6 flex items-center justify-between shrink-0">
           <Button
             onClick={() => setIsRecording(!isRecording)}
-            className={cn(
-              'rounded-xl px-5 font-bold text-xs flex items-center gap-2 transition-all',
-              isRecording ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950'
-            )}
+            variant={isRecording ? "destructive" : "default"}
+            size="sm"
+            className="font-medium text-xs flex items-center gap-2"
           >
             {isRecording ? <><MicOff className="size-4" /> Pause Recording</> : <><Mic className="size-4" /> Start Rehearsal</>}
           </Button>
 
           <Button
             onClick={() => router.push(`/reports/${sessionId}`)}
-            className="rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold text-xs flex items-center gap-2"
+            variant="secondary"
+            size="sm"
+            className="font-medium text-xs flex items-center gap-2"
           >
             Finish Rehearsal <ArrowRight className="size-4" />
           </Button>
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════ */}
-      {/* RIGHT COLUMN: Masterclass Telemetry Console    */}
-      {/* ════════════════════════════════════════════════ */}
-      <div className="w-full md:w-[380px] lg:w-[440px] border-l border-amber-500/20 bg-[#0c0c0e]/95 backdrop-blur-xl p-4 overflow-y-auto flex flex-col justify-start z-30 shrink-0">
+      {/* Right Column: Telemetry Console */}
+      <div className="w-full md:w-[360px] lg:w-[400px] border-l border-border bg-card p-4 overflow-y-auto flex flex-col justify-start z-30 shrink-0">
         <MasterGuiderHud
           currentSlide={currentSlide}
           totalSlides={totalSlides}

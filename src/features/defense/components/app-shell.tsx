@@ -134,9 +134,7 @@ export function AppShell({ active, children }: {
   active: StudioNavItem;
   children: ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(() =>
-    typeof window !== 'undefined' ? readShellCollapsed(window.localStorage) : false,
-  );
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [animateWidth, setAnimateWidth] = useState(false);
 

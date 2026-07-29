@@ -3,8 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  GraduationCap, Sparkles, Upload, Loader2, Check, ArrowRight,
-  Zap, FileText, Layers, ShieldCheck, Volume2
+  GraduationCap, Upload, Loader2, ChevronRight, FileText, Layers, Check
 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -47,7 +46,7 @@ export function CoachingSetup() {
       if (parsed) {
         setDeck(parsed);
         if (!title) setTitle(parsed.sourceName.replace(/\.[^/.]+$/, ''));
-        toast.success(`Deck uploaded successfully (${parsed.slides.length} slides)`);
+        toast.success(`Deck loaded (${parsed.slides.length} slides)`);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to upload deck');
@@ -62,7 +61,7 @@ export function CoachingSetup() {
       setPracticeMode('guided');
 
       const payload = {
-        title: title || (sourceType === 'deck' ? deck?.sourceName || 'Masterclass Rehearsal' : topic || 'Executive Pitch'),
+        title: title || (sourceType === 'deck' ? deck?.sourceName || 'Presentation Coaching' : topic || 'Topic Coaching'),
         mode: 'guided',
         stance: 'supportive',
         deck: sourceType === 'deck' ? deck : undefined,
@@ -83,7 +82,6 @@ export function CoachingSetup() {
       const data = await res.json();
       if (!res.ok || !data.sessionId) throw new Error(data.error || 'Failed to create session');
 
-      toast.success('Entering Masterclass Executive Studio');
       router.push(`/coaching/${data.sessionId}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Unable to launch coaching session');
@@ -92,256 +90,222 @@ export function CoachingSetup() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-4">
-      {/* Hero Header */}
-      <div className="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-indigo-950/40 to-slate-950 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold">
-            <Sparkles className="size-3.5" /> MASTERCLASS COACHING STUDIO
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-            Executive Delivery & Telemetry Studio
-          </h1>
-          <p className="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
-            Rehearse slide-by-slide with your personal AI Communication Coach. Get real-time vocal weight feedback, pace telemetry, live teleprompter scripts, and Coach Rescue voiceovers.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-800 shrink-0">
-          <div className="size-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <GraduationCap className="size-5" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white">1-on-1 Mentorship</div>
-            <div className="text-[10px] text-slate-400">No panel interruptions</div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">01. Setup</p>
+        <h1 className="font-display text-2xl font-medium tracking-tight sm:text-3xl text-foreground mt-1">
+          Delivery & Voice Coaching
+        </h1>
+        <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">
+          Practice slide-by-slide with a personal AI presentation coach. Get real-time pacing telemetry, vocal weight guidance, and live talking point teleprompters.
+        </p>
       </div>
 
-      {/* Grid: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Material Intake */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Source Selector: Deck vs Topic */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                <FileText className="size-4 text-amber-400" /> 1. Select Presentation Material
-              </label>
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setSourceType('deck')}
-                  className={cn(
-                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
-                    sourceType === 'deck' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
-                  )}
-                >
-                  Slide Deck (.pptx)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSourceType('topic')}
-                  className={cn(
-                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
-                    sourceType === 'topic' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
-                  )}
-                >
-                  Topic Prompt
-                </button>
-              </div>
+      {/* Main Form Cards */}
+      <div className="space-y-6">
+        {/* Card 1: Material Intake */}
+        <section aria-labelledby="coaching-step-material" className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-3">
+              <span className="font-mono text-xs text-muted-foreground">01</span>
+              <h2 id="coaching-step-material" className="text-base font-medium text-foreground">Select presentation material</h2>
             </div>
 
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+              <button
+                type="button"
+                onClick={() => setSourceType('deck')}
+                className={cn(
+                  'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                  sourceType === 'deck' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Slide Deck
+              </button>
+              <button
+                type="button"
+                onClick={() => setSourceType('topic')}
+                className={cn(
+                  'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                  sourceType === 'topic' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Topic Prompt
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4">
             {sourceType === 'deck' ? (
               <div>
                 {!deck ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-8 text-center bg-slate-950/40 hover:bg-slate-900/60 transition-all cursor-pointer space-y-3"
+                    className="border border-dashed border-border hover:border-primary/50 rounded-xl p-6 text-center bg-surface hover:bg-muted/30 transition-colors cursor-pointer space-y-2"
                   >
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept={ACCEPT}
-                      className="hidden"
+                      className="sr-only"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleFileUpload(file);
                       }}
                     />
                     {isProcessing ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="size-8 animate-spin text-amber-400" />
-                        <p className="text-xs font-semibold text-amber-300">Extracting slide layouts & typography...</p>
+                      <div className="flex items-center justify-center gap-2 py-2">
+                        <Loader2 className="size-5 animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Parsing slides...</span>
                       </div>
                     ) : (
                       <>
-                        <div className="size-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-                          <Upload className="size-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white">Click to upload your PowerPoint (.pptx / .pdf)</p>
-                          <p className="text-xs text-slate-400 mt-1">High-fidelity layout extraction & AI teleprompter generation</p>
-                        </div>
+                        <Upload className="size-6 text-muted-foreground mx-auto" />
+                        <p className="text-sm font-medium text-foreground">Upload presentation deck (.pptx, .pdf)</p>
+                        <p className="text-xs text-muted-foreground">Extracts slide visuals and structure automatically</p>
                       </>
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
-                        PPTX
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">{deck.sourceName}</div>
-                        <div className="text-[10px] text-amber-300">{deck.slides.length} slides parsed</div>
-                      </div>
+                  <div className="p-4 rounded-xl border border-border bg-surface flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{deck.sourceName}</p>
+                      <p className="text-xs text-muted-foreground">{deck.slides.length} slides ready</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setDeck(null)} className="text-xs text-slate-400 hover:text-white">
-                      Replace
+                    <Button variant="outline" size="sm" onClick={() => setDeck(null)}>
+                      Replace deck
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. Q3 Investor Update, Academic Defense of LLM Quantization, Startup Seed Pitch..."
-                  className="w-full text-xs p-3 rounded-xl border border-slate-800 bg-slate-950 text-white focus:border-amber-500 outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g. Q3 Executive Update, Thesis Defense, Product Pitch..."
+                className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+              />
             )}
           </div>
+        </section>
 
-          {/* Presenter Directives & Prompt Chips */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <Sparkles className="size-4 text-amber-400" /> 2. Presenter Directives (Prompt Instructions)
-            </label>
-            <p className="text-xs text-slate-400">Click a template or type your specific goals for Coach Marcus/Sarah</p>
-
-            <div className="flex flex-wrap gap-2">
-              {PROMPT_TEMPLATE_CHIPS.map((chip, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setPresenterDirectives(chip.text)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-xs font-medium text-slate-300 hover:border-amber-500/50 hover:text-amber-300 transition-all"
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              value={presenterDirectives}
-              onChange={(e) => setPresenterDirectives(e.target.value)}
-              className="w-full min-h-[90px] text-xs p-3 rounded-xl border border-slate-800 bg-slate-950 text-white focus:border-amber-500 outline-none resize-none leading-relaxed"
-              placeholder="e.g., Help me sound calm and authoritative. Make sure I emphasize our $2M seed budget on Slide 3 and explain the ROI clearly without rushing..."
-            />
+        {/* Card 2: Coach Selection */}
+        <section aria-labelledby="coaching-step-coach" className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-xs text-muted-foreground">02</span>
+            <h2 id="coaching-step-coach" className="text-base font-medium text-foreground">Select presentation coach</h2>
           </div>
-        </div>
 
-        {/* Right Column: Coach Persona & Telemetry Settings */}
-        <div className="lg:col-span-5 space-y-6 flex flex-col justify-between">
-          {/* Coach Persona Selector */}
-          <div className="space-y-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 shadow-sm">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <GraduationCap className="size-4 text-amber-400" /> 3. Select AI Communication Coach
-            </label>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setCoachPersona('marcus')}
+              className={cn(
+                'rounded-lg border border-border bg-surface p-4 text-left transition-colors hover:bg-muted/40',
+                coachPersona === 'marcus' && 'border-primary bg-accent ring-1 ring-primary'
+              )}
+            >
+              <p className="text-sm font-medium text-foreground">Coach Marcus (Male)</p>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                Executive Delivery Specialist — Polished, authoritative executive coach voice.
+              </p>
+            </button>
 
-            <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={() => setCoachPersona('sarah')}
+              className={cn(
+                'rounded-lg border border-border bg-surface p-4 text-left transition-colors hover:bg-muted/40',
+                coachPersona === 'sarah' && 'border-primary bg-accent ring-1 ring-primary'
+              )}
+            >
+              <p className="text-sm font-medium text-foreground">Coach Sarah (Female)</p>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                Presentation Strategist — Warm, encouraging master communication strategist.
+              </p>
+            </button>
+          </div>
+        </section>
+
+        {/* Card 3: Presenter Focus Directives */}
+        <section aria-labelledby="coaching-step-focus" className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8 space-y-4">
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-xs text-muted-foreground">03</span>
+            <h2 id="coaching-step-focus" className="text-base font-medium text-foreground">Presenter focus & custom prompt</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">Specify custom goals or pick a quick template chip to focus your coach.</p>
+
+          <div className="flex flex-wrap gap-2">
+            {PROMPT_TEMPLATE_CHIPS.map((chip, idx) => (
               <button
+                key={idx}
                 type="button"
-                onClick={() => setCoachPersona('marcus')}
+                onClick={() => setPresenterDirectives(chip.text)}
+                className="px-3 py-1 rounded-md border border-border bg-surface text-xs text-foreground hover:bg-muted transition-colors"
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={presenterDirectives}
+            onChange={(e) => setPresenterDirectives(e.target.value)}
+            className="w-full min-h-[85px] rounded-lg border border-border bg-surface p-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary leading-relaxed placeholder:text-muted-foreground"
+            placeholder="e.g., Help me sound calm and authoritative. Emphasize key data metrics clearly without rushing..."
+          />
+        </section>
+
+        {/* Card 4: Explanation Depth Focus */}
+        <section aria-labelledby="coaching-step-depth" className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-xs text-muted-foreground">04</span>
+            <h2 id="coaching-step-depth" className="text-base font-medium text-foreground">Explanation depth focus</h2>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {[
+              { id: 'surface', label: 'Overview', desc: 'High-level summary' },
+              { id: 'balanced', label: 'Balanced', desc: 'Executive focus' },
+              { id: 'deep', label: 'Technical', desc: 'Detailed breakdown' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setExplanationDepth(item.id as any)}
                 className={cn(
-                  'w-full p-3.5 rounded-xl border text-left transition-all flex items-center gap-3',
-                  coachPersona === 'marcus'
-                    ? 'bg-amber-500/20 border-amber-500 text-white ring-1 ring-amber-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-900'
+                  'rounded-lg border border-border bg-surface p-3 text-center transition-colors hover:bg-muted/40',
+                  explanationDepth === item.id && 'border-primary bg-accent ring-1 ring-primary'
                 )}
               >
-                <div className="size-9 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0">
-                  CM
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-white">Coach Marcus (Male Voice)</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">Executive Delivery Specialist — Polished, authoritative executive coach</div>
-                </div>
+                <p className="text-xs font-medium text-foreground">{item.label}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">{item.desc}</p>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setCoachPersona('sarah')}
-                className={cn(
-                  'w-full p-3.5 rounded-xl border text-left transition-all flex items-center gap-3',
-                  coachPersona === 'sarah'
-                    ? 'bg-amber-500/20 border-amber-500 text-white ring-1 ring-amber-500'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-900'
-                )}
-              >
-                <div className="size-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs shrink-0">
-                  CS
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-white">Coach Sarah (Female Voice)</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">Presentation Strategist — Warm, encouraging master strategist</div>
-                </div>
-              </button>
-            </div>
+            ))}
           </div>
+        </section>
+      </div>
 
-          {/* Explanation Depth Selector */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <Layers className="size-4 text-amber-400" /> 4. Explanation Depth Focus
-            </label>
-
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: 'surface', label: 'Overview', desc: 'High-level' },
-                { id: 'balanced', label: 'Balanced', desc: 'Executive' },
-                { id: 'deep', label: 'Technical', desc: 'Dense detail' },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setExplanationDepth(item.id as any)}
-                  className={cn(
-                    'p-2.5 rounded-xl border text-center transition-all',
-                    explanationDepth === item.id
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  )}
-                >
-                  <div className="text-xs">{item.label}</div>
-                  <div className="text-[9px] text-slate-400 mt-0.5">{item.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Launch Button */}
-          <Button
-            size="lg"
-            onClick={handleStartCoaching}
-            disabled={isCreating || (sourceType === 'deck' && !deck) || (sourceType === 'topic' && !topic.trim())}
-            className="w-full h-12 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="size-4 animate-spin" /> Launching Masterclass Studio...
-              </>
-            ) : (
-              <>
-                Enter Masterclass Studio <ArrowRight className="size-4" />
-              </>
-            )}
-          </Button>
-        </div>
+      {/* Start Button */}
+      <div className="pt-2">
+        <Button
+          size="lg"
+          onClick={handleStartCoaching}
+          disabled={isCreating || (sourceType === 'deck' && !deck) || (sourceType === 'topic' && !topic.trim())}
+          className="w-fit min-w-[200px]"
+        >
+          {isCreating ? (
+            <>
+              <Loader2 className="size-4 animate-spin mr-2" /> Creating session...
+            </>
+          ) : (
+            <>
+              Start coaching <ChevronRight className="size-4 ml-1" />
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
