@@ -1,6 +1,6 @@
 'use client';
 
-import { Mic, MicOff, ArrowRight, Sparkles } from 'lucide-react';
+import { Mic, MicOff, ArrowRight, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CoachingControlsProps {
@@ -19,20 +19,17 @@ export function CoachingControls({
   onFinish,
 }: CoachingControlsProps) {
   return (
-    <div className="h-14 border-t border-border bg-card px-6 flex items-center justify-between shrink-0">
+    <div className="h-14 border-t border-border bg-card/80 backdrop-blur px-6 flex items-center justify-between shrink-0">
       <div className="flex items-center gap-3">
-        {/* Practice Mic Toggle */}
+        {/* Practice Mic Button */}
         <Button
           onClick={onToggleMic}
           variant={isMicOn ? 'secondary' : 'outline'}
           size="sm"
-          className="font-medium text-xs flex items-center gap-2"
+          className="font-medium text-xs flex items-center gap-2 h-8"
         >
-          {isMicOn ? (
-            <><MicOff className="size-4 text-primary" /> Turn Off Mic</>
-          ) : (
-            <><Mic className="size-4" /> Practice Mic (Speech Active)</>
-          )}
+          {isMicOn ? <MicOff className="size-3.5 text-primary" /> : <Mic className="size-3.5" />}
+          {isMicOn ? 'Mute Mic' : 'Unmute Mic (Practice)'}
         </Button>
 
         {/* Record Attempt Toggle */}
@@ -40,39 +37,35 @@ export function CoachingControls({
           onClick={onToggleRecording}
           variant={isRecording ? 'destructive' : 'default'}
           size="sm"
-          className="font-medium text-xs flex items-center gap-2"
+          className="font-medium text-xs flex items-center gap-2 h-8"
         >
-          {isRecording ? (
-            <><MicOff className="size-4 animate-pulse" /> Stop Recording Attempt</>
-          ) : (
-            <><Mic className="size-4" /> Record Attempt</>
-          )}
+          {isRecording ? <Video className="size-3.5 animate-pulse" /> : <Video className="size-3.5" />}
+          {isRecording ? 'Stop Recording' : 'Record Official Session'}
         </Button>
 
-        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border ${
+        {/* Single Clean Badge */}
+        <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium flex items-center gap-1.5 border transition-all ${
           isRecording
             ? 'bg-red-500/10 text-red-400 border-red-500/30'
             : isMicOn
             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-            : 'bg-muted text-muted-foreground border-border'
+            : 'bg-muted/40 text-muted-foreground border-border'
         }`}>
-          <span className={`size-2 rounded-full ${
-            isRecording ? 'bg-red-500 animate-ping' : isMicOn ? 'bg-emerald-500' : 'bg-muted-foreground'
+          <span className={`size-1.5 rounded-full ${
+            isRecording ? 'bg-red-500 animate-ping' : isMicOn ? 'bg-emerald-500' : 'bg-muted-foreground/60'
           }`} />
-          {isRecording ? 'RECORDING SESSION' : isMicOn ? 'MIC ACTIVE (PRACTICE)' : 'MIC OFF'}
+          {isRecording ? 'RECORDING SESSION' : isMicOn ? 'PRACTICE MIC ACTIVE' : 'MIC OFF'}
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={onFinish}
-          variant="secondary"
-          size="sm"
-          className="font-medium text-xs flex items-center gap-2"
-        >
-          Finish Rehearsal <ArrowRight className="size-4" />
-        </Button>
-      </div>
+      <Button
+        onClick={onFinish}
+        variant="secondary"
+        size="sm"
+        className="font-medium text-xs flex items-center gap-1.5 h-8"
+      >
+        Finish Session <ArrowRight className="size-3.5" />
+      </Button>
     </div>
   );
 }
