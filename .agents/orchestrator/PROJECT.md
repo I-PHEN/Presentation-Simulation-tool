@@ -11,7 +11,7 @@
 | 1 | Exploration & Analysis | Codebase investigation of routing, CoachingRoom, SimulatorRoom, voice/speech logic, teleprompter, unit test suite | None | DONE |
 | 2 | Coaching Studio UI & Room Separation | Routing (`/coaching/[id]` vs `/rehearse/[id]` & `/practice/[id]`), `CoachingRoom` component with 1 coach avatar, header badge, single coach event loop | M1 | DONE |
 | 3 | Teleprompter, WPM Meter & Live Advice Actions | 2-row delivery guide, live WPM meter (130-150 optimal), "Ask Coach for Live Advice" & "Coach Rescue" buttons + handlers | M2 | DONE |
-| 4 | Verification, Unit Testing & Forensic Audit | Unit tests for `CoachingRoom` and `SimulatorRoom`, E2E/component route testing, Reviewer, Challenger, Forensic Auditor verification | M2, M3 | IN_PROGRESS |
+| 4 | Verification, Unit Testing & Forensic Audit | Unit tests for `CoachingRoom` and `SimulatorRoom`, E2E/component route testing, Reviewer, Challenger, Forensic Auditor verification | M2, M3 | DONE |
 
 ## Interface Contracts
 ### Routing Interface

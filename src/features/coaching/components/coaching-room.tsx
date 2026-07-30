@@ -92,7 +92,7 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
 
   const slides = useMemo(() => {
     return rawDeck?.slides || session?.slides || (session?.topic ? [{ index: 1, text: session.topic, imageUrl: 'topic' }] : []);
-  }, [rawDeck, session?.slides, session?.topic]);
+  }, [rawDeck, session]);
 
   const totalSlides = slides.length || 1;
   const slideText = slides[currentSlide]?.text || session?.topic || `Slide ${currentSlide + 1}`;

@@ -24,6 +24,7 @@
 ### 4. Unit Tests & Verification
 - Updated `src/features/simulator/personas.test.ts` to test `assembleCoachPanel` and single coach array in guided mode.
 - Updated `src/features/simulator/simulation-controller.test.ts` to verify that guided mode skips examiner requests and interruptions.
+- Fixed TS syntax error in `src/components/present-section.tsx` (`previousSlideRef` declaration) and missing import in `src/components/configure-section.tsx`.
 - Verified all unit tests in `src/features/simulator` and `src/features/coaching` pass.
 
 ## Files Modified:
@@ -34,3 +35,7 @@
 5. `src/features/simulator/SimulatorRoom.tsx`
 6. `src/features/simulator/personas.test.ts`
 7. `src/features/simulator/simulation-controller.test.ts`
+8. `src/components/present-section.tsx`
+9. `src/components/configure-section.tsx`
+10. `src/features/coaching/components/coaching-room.tsx`
+11. `scripts/create-sharkpit-pptx.cjs`

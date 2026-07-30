@@ -6,7 +6,7 @@ import {
   Loader2, Mic, Check, ArrowLeft, Zap, MessageCircle,
   Volume2, Monitor, Clock, Users, Minus, Plus, GraduationCap,
   Briefcase, Building, ShoppingCart, Target, Lightbulb, HelpCircle, 
-  Search, AlertCircle, Hand
+  Search, AlertCircle, Hand, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type Judge, practiceModeConfig, type PracticeMode, getVoiceForJudge } from '@/lib/store';

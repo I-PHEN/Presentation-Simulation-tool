@@ -6,7 +6,7 @@ Monitor project execution for distinct 1-on-1 AI Coaching Room redesign/build an
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: c:/Users/Michael/Downloads/sparring-partner/.agents/sentinel
-- Orchestrator: 878d595c-57fc-45d9-9394-0f042ff03afb
+- Orchestrator: 7c3ad03d-f251-4349-9cd0-69f6d81de2e0
 - Victory Auditor: to be spawned on victory claim
 
 ## 🔒 Key Constraints
