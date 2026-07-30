@@ -54,10 +54,11 @@ const START_REHEARSING_ACTION: StudioAction = { label: 'Start rehearsing', href:
  * linking there is what put people back in it.
  */
 function resolveAction(session: StudioSession): StudioAction {
+  if (!session.deck) return START_REHEARSING_ACTION;
   if (session.status === 'completed') return { label: 'Open review', href: `/reports/${session.id}` };
   if (session.mode === 'guided' || session.source === 'topic') return { label: 'Resume coaching', href: `/coaching/${session.id}` };
-  if (session.deck || session.status === 'practicing') return { label: 'Resume rehearsal', href: `/rehearse/${session.id}` };
-  return START_REHEARSING_ACTION;
+  if (session.status === 'practicing') return { label: 'Resume rehearsal', href: `/rehearse/${session.id}` };
+  return { label: 'Continue setup', href: `/practice/${session.id}?view=setup` };
 }
 
 /** Only ever real API data: finding.drill, finding.evidence, or report.nextDrill. Never a placeholder. */
