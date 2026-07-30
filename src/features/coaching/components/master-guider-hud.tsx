@@ -133,7 +133,7 @@ export default function MasterGuiderHud({
         {isRescueLoading ? (
           <><RefreshCw className="size-3.5 animate-spin mr-1.5" /> Generating Pitch Script...</>
         ) : (
-          <><Sparkles className="size-3.5 text-primary mr-1.5" /> Model Pitch Script</>
+          <><Sparkles className="size-3.5 text-primary mr-1.5" /> Coach Rescue: Model Pitch Script</>
         )}
       </Button>
     </div>
