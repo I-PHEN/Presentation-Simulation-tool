@@ -24,11 +24,13 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
 
   const [session, setSession] = useState<any>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMicOn, setIsMicOn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [wpm, setWpm] = useState(135);
   const [transcript, setTranscript] = useState('');
   const [isLoadingScript, setIsLoadingScript] = useState(false);
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(false);
 
   // Rescue Modal State
   const [rescueModalOpen, setRescueModalOpen] = useState(false);
@@ -55,6 +57,25 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     }
     loadSession();
   }, [sessionId]);
+
+  // Auto-greeting effect on load
+  useEffect(() => {
+    if (!session || hasGreeted) return;
+    setHasGreeted(true);
+
+    const topicName = session.topic || session.title || 'your presentation topic';
+    const coachName = coachPersona === 'sarah' ? 'Coach Sarah' : 'Coach Marcus';
+    const greeting = `Welcome! I'm ${coachName}. I've prepared your delivery strategy for "${topicName}". Turn on your practice mic anytime, or ask me for live advice!`;
+
+    setCoachSpeechBubble(greeting);
+
+    const voiceId = coachPersona === 'sarah'
+      ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
+      : '533b2990-5b82-45a4-b9f2-367776972ca6';
+    generateTTS(greeting, voiceId)
+      .then((audio) => playAudioData(audio))
+      .catch(() => {});
+  }, [session, hasGreeted, coachPersona]);
 
   const rawDeck = useMemo(() => {
     if (!session) return null;
@@ -224,11 +245,11 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
         />
 
         <CoachingControls
+          isMicOn={isMicOn}
+          onToggleMic={() => setIsMicOn(!isMicOn)}
           isRecording={isRecording}
           onToggleRecording={() => setIsRecording(!isRecording)}
           onFinish={() => router.push(`/reports/${sessionId}`)}
-          onAskCoach={handleAskCoachAdvice}
-          isAskingCoach={isAdviceLoading}
         />
       </div>
 
