@@ -73,13 +73,13 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
         <Captions className="size-4" aria-hidden="true" />
       </button>
       {onToggleMaximized && (
-        <button type="button" aria-label={maximized ? 'Restore layout' : 'Maximize room'} onClick={onToggleMaximized} className={round('secondary')}>
+        <button type="button" aria-label={maximized ? 'Exit full screen' : 'Maximize presentation'} title={maximized ? 'Exit full screen (Esc)' : 'Maximize presentation (F)'} onClick={onToggleMaximized} className={round('secondary')}>
           {maximized ? <Minimize2 className="size-4" aria-hidden="true" /> : <Maximize2 className="size-4" aria-hidden="true" />}
         </button>
       )}
       <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
-      <button type="button" aria-label="End session" onClick={onEnd} disabled={endDisabled} className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }), 'h-8 rounded-full px-3 text-xs font-medium')}>
-        <PhoneOff className="mr-1.5 size-3.5" aria-hidden="true" /> Finish
+      <button type="button" onClick={onEnd} disabled={endDisabled} className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }), 'h-8 rounded-full px-3 text-xs font-medium')}>
+        <PhoneOff className="mr-1.5 size-3.5" aria-hidden="true" /> End rehearsal
       </button>
     </div>
   );
