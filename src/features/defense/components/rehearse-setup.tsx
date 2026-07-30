@@ -230,32 +230,6 @@ export function RehearseSetup({
         {sourceType === 'file' ? (
           !deck ? (
             <div className="space-y-3">
-              {cachedDeck && (
-                <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-foreground flex items-center justify-between shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                      <FileText className="size-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Recently Uploaded Deck</div>
-                      <div className="text-sm font-semibold text-primary">{cachedDeck.sourceName}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{cachedDeck.slides.length} slides ready in local cache</div>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    type="button"
-                    onClick={() => {
-                      setDeck(cachedDeck);
-                      setTitle(cachedDeck.sourceName);
-                    }}
-                    className="text-xs font-semibold h-9 px-4 bg-primary text-primary-foreground shadow"
-                  >
-                    ⚡ Use This Deck
-                  </Button>
-                </div>
-              )}
               <div
                 onClick={() => inputRef.current?.click()}
                 onDragOver={handleDragOver}

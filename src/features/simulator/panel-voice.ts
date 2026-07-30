@@ -115,18 +115,20 @@ export function createPanelVoiceController(deps: PanelVoiceDependencies) {
   const speak = async (event: ExaminerEvent): Promise<AudioPlayResult> => {
     await deps.pauseCapture();
     setState({ speakingPersonaId: event.persona?.id ?? null, lastEvent: event, lastError: null });
-    startReveal(event.text, event.persona?.id ?? null);
     try {
       const audio = await deps.generateSpeech(event.text, voiceFor(event.persona?.id));
+      startReveal(event.text, event.persona?.id ?? null);
       const result = await deps.playSpeech(audio, repaceToAudio);
       if (result.played) {
         if (!(await appendOnce(event, 'audio'))) { setState({ lastError: replayError }); return { played: false, error: 'playback' }; }
         return result;
       }
+      startReveal(event.text, event.persona?.id ?? null);
       await appendOnce(event, 'caption-fallback');
       setState({ lastError: replayError });
       return result;
     } catch {
+      startReveal(event.text, event.persona?.id ?? null);
       await appendOnce(event, 'caption-fallback');
       setState({ lastError: replayError });
       return { played: false, error: 'playback' };
