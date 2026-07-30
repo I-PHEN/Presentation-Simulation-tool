@@ -14,6 +14,7 @@ import { buildIntroRequest, parseIntroResponse } from './intro';
 import { createSessionRecorder } from './session-recorder';
 import { acquireBrowserRecorder } from './browser-audio-recorder';
 import { uploadSessionAudio } from './upload-recording';
+import { useAppStore } from '@/lib/store';
 
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source?: 'deck' | 'topic' };
 type STTHandle = Awaited<ReturnType<typeof createSTT>>;
@@ -28,7 +29,8 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const [error, setError] = useState<string | null>(null);
 
   const source = session.source ?? 'deck';
-  const panel = useMemo<Persona[]>(() => assemblePanel(), []);
+  const coachPersona = useAppStore((s) => s.coachPersona) ?? 'marcus';
+  const panel = useMemo<Persona[]>(() => assemblePanel(session.mode, coachPersona), [session.mode, coachPersona]);
   const voiceForPersona = useCallback((id: string) => panel.find((p) => p.id === id)?.voiceId ?? panel[0].voiceId, [panel]);
 
   const captureRef = useRef<STTHandle | null>(null);

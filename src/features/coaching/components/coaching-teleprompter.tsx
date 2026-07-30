@@ -29,17 +29,11 @@ export function CoachingTeleprompter({
     ? 'State your core thesis clearly with high conviction in the first 15 seconds.'
     : 'Capture attention immediately with your main takeaway.';
 
-  const fallbackPoints = isTopicSession
-    ? [
-        'Context: Establish the core bottleneck or problem immediately.',
-        'Solution: Detail your strategic solution & key evidence points.',
-        'Impact: Conclude with a clear call to action and vision.',
-      ]
-    : [
-        'Highlight key metric or core claim.',
-        'Provide supporting technical or market context.',
-        'Transition smoothly to the next slide topic.',
-      ];
+  const fallbackPoints = [
+    'Context: Establish the core bottleneck or problem immediately.',
+    'Solution: Detail your strategic solution & key evidence points.',
+    'Impact: Conclude with a clear call to action and vision.',
+  ];
 
   const activeScript = script || {
     openingHook: fallbackHook,

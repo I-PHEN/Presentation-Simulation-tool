@@ -1,12 +1,12 @@
 'use client';
 
-import { useRef, useState, type DragEvent } from 'react';
+import { useRef, useState, type DragEvent, useEffect } from 'react';
 import {
   Upload, FileText, CheckCircle2, Zap, Activity, Flame,
   ShieldAlert, Sparkles, Clock, Play, Loader2, RefreshCw, AlertCircle, MessageSquare
 } from 'lucide-react';
 import type { DeckContext, DefenseMode, ExaminerStance } from '@/features/defense/types';
-import { parseUploadedDeck } from './deck-intake';
+import { parseUploadedDeck, getCachedDeck } from './deck-intake';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { AuthenticatedSlideImage } from '@/lib/authenticated-asset';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -58,25 +58,25 @@ export function buildRehearseSessionPayload({
   targetDurationMinutes?: number;
   customInstruction?: string;
 }) {
-  const fallbackTitle = deck.sourceName.trim() || 'Untitled Rehearsal';
-  const effectiveTitle = title?.trim() ? title.trim() : fallbackTitle;
   return {
-    title: effectiveTitle,
+    deck,
+    title: title?.trim() || deck.sourceName,
     mode,
     stance,
-    targetDurationMinutes,
-    customInstruction: stance === 'custom' ? customInstruction : undefined,
-    deck,
+    ...(targetDurationMinutes ? { targetDurationMinutes } : {}),
+    ...(customInstruction?.trim() ? { customInstruction: customInstruction.trim() } : {}),
   };
 }
 
 export function RehearseSetup({
   onStart,
   creating = false,
-  startError = null,
+  disabled = false,
+  startError,
 }: {
   onStart: (config: RehearseConfig) => void;
   creating?: boolean;
+  disabled?: boolean;
   startError?: string | null;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,6 +86,7 @@ export function RehearseSetup({
   const [rawText, setRawText] = useState('');
 
   const [deck, setDeck] = useState<DeckContext | null>(null);
+  const [cachedDeck, setCachedDeck] = useState<DeckContext | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [mode, setMode] = useState<DefenseMode>('diagnostic');
@@ -96,6 +97,13 @@ export function RehearseSetup({
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [uploadError, setUploadError] = useState<{ message: string; retryable: boolean } | null>(null);
+
+  useEffect(() => {
+    const cached = getCachedDeck();
+    if (cached) {
+      setCachedDeck(cached);
+    }
+  }, []);
 
   const upload = async (selected: File) => {
     setFile(selected);
@@ -222,6 +230,32 @@ export function RehearseSetup({
         {sourceType === 'file' ? (
           !deck ? (
             <div className="space-y-3">
+              {cachedDeck && (
+                <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-foreground flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                      <FileText className="size-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Recently Uploaded Deck</div>
+                      <div className="text-sm font-semibold text-primary">{cachedDeck.sourceName}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{cachedDeck.slides.length} slides ready in local cache</div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    type="button"
+                    onClick={() => {
+                      setDeck(cachedDeck);
+                      setTitle(cachedDeck.sourceName);
+                    }}
+                    className="text-xs font-semibold h-9 px-4 bg-primary text-primary-foreground shadow"
+                  >
+                    ⚡ Use This Deck
+                  </Button>
+                </div>
+              )}
               <div
                 onClick={() => inputRef.current?.click()}
                 onDragOver={handleDragOver}

@@ -20,12 +20,14 @@ const AVATAR_GRADIENTS: Record<string, string> = {
   professor: 'from-indigo-500 to-purple-600',
   examiner: 'from-amber-500 to-orange-600',
   peer: 'from-emerald-500 to-teal-600',
+  sarah: 'from-rose-500 to-pink-600',
+  marcus: 'from-blue-600 to-indigo-700',
 };
 
 /** Mood emoji that subtly indicates persona engagement — fully static, no overhead. */
 function personaMoodBadge(personaId: string, isSpeaking: boolean): string {
   if (isSpeaking) return '💬';
-  const moods: Record<string, string> = { professor: '🎓', examiner: '🔍', peer: '👁️' };
+  const moods: Record<string, string> = { professor: '🎓', examiner: '🔍', peer: '👁️', sarah: '🎓', marcus: '🎓' };
   return moods[personaId] ?? '👤';
 }
 

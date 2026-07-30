@@ -1,11 +1,13 @@
-## 2026-07-26T23:09:02Z
-You are Explorer 2 for Milestone 1 (Exploration & Codebase Analysis) of the Presentation Sparring Partner enhancement project.
-Working directory: c:/Users/Michael/Downloads/sparring-partner/.agents/explorer_m1_2
-Scope document: c:/Users/Michael/Downloads/sparring-partner/.agents/orchestrator/PROJECT.md
+## 2026-07-30T17:31:20Z
+You are Explorer M1 2 (Coach Persona & Voice Logic Explorer) investigating the repository at c:\Users\Michael\Downloads\sparring-partner.
+Your assigned working directory is c:\Users\Michael\Downloads\sparring-partner\.agents\explorer_m1_2. Write all your metadata/reports ONLY in that working directory.
 
-Your task:
-1. Explore the design system in `c:/Users/Michael/Downloads/sparring-partner`: locate `globals.css`, Tailwind configuration (`tailwind.config.js` or `tailwind.config.ts`), and existing UI styling tokens.
-2. Identify existing dark/light mode CSS variable tokens, surface colors, border styles, and backdrop-blur utilities.
-3. Analyze how to cleanly add Studio Glassmorphism tokens (backdrop-blur glass panels, subtle border reflections, dark/light surface tokens) without breaking existing styles.
-4. Write your analysis report to `c:/Users/Michael/Downloads/sparring-partner/.agents/explorer_m1_2/analysis.md` and a handoff report to `c:/Users/Michael/Downloads/sparring-partner/.agents/explorer_m1_2/handoff.md`.
-5. Send a completion message back to the parent orchestrator with a summary of findings and report file paths.
+Scope of investigation:
+1. Investigate how examiner/coach personas are defined, selected, and rendered (Coach Sarah vs Coach Marcus vs 4-examiner panel).
+2. Examine the audio/voice event loops, Cartesia TTS speech generation, interruption handlers, and examiner question loops in `SimulatorRoom` / `CoachingRoom` / custom hooks (e.g. `useAudio`, `useExaminers`, `useRoom`, etc.).
+3. Determine how to implement Requirement R1 & R2:
+   - Display ONLY ONE Coach Avatar (Coach Sarah or Coach Marcus, based on user preference), not the 4-person audience panel grid.
+   - Only the selected Coach persona speaks during coaching sessions (room intro, slide tips, and live advice).
+   - Eliminate all 4-examiner event loops and interruptions in coaching mode.
+
+Write your analysis report to `c:\Users\Michael\Downloads\sparring-partner\.agents\explorer_m1_2\analysis.md` and your handoff summary to `c:\Users\Michael\Downloads\sparring-partner\.agents\explorer_m1_2\handoff.md`. Include exact file paths, component names, hooks, state management details, and implementation recommendations for Worker. Update your `progress.md` with your status. When finished, send a message to parent with summary and file path.

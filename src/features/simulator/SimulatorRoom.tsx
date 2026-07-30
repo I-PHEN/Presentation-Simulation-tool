@@ -109,6 +109,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
           hearing={hearing}
           speakingPersonaId={engine.speakingPersonaId}
           recording={engine.recording}
+          mode={session.mode}
         />
       )}
 

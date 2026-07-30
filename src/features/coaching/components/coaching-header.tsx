@@ -22,8 +22,8 @@ export function CoachingHeader({ title = 'Coaching Session', onBack }: CoachingH
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <GraduationCap className="size-4 text-primary" /> Delivery Coaching
+        <span data-testid="coaching-studio-badge" className="text-xs font-semibold text-primary flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 border border-primary/20">
+          <GraduationCap className="size-4 text-primary" /> 🎓 1-on-1 Executive Coaching Studio
         </span>
       </div>
     </div>

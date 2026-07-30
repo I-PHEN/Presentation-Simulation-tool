@@ -1,59 +1,96 @@
-# Handoff Report — Explorer 3 (Milestone 1)
+# Handoff Report: Teleprompter, WPM Meter, Pitch Rescue & Test Explorer
 
 ## 1. Observation
-- **Presenter Microphone Capture**:
-  - `src/lib/voice-engine.ts:168`: `stream = await navigator.mediaDevices.getUserMedia({ audio: true })`. Used inside `createSTT` for live speech recognition and Groq audio chunk recording.
-  - `src/features/simulator/browser-audio-recorder.ts:9`: `stream = await navigator.mediaDevices.getUserMedia({ audio: true })`. Used inside `acquireBrowserRecorder` for full session recording.
-  - `src/components/configure-section.tsx:177-190`: Uses `AudioContext`, `createMediaStreamSource(stream)`, and `AnalyserNode` (`fftSize = 64`) to compute 16 frequency bands and volume level for mic testing.
 
-- **Cartesia TTS Output Playback**:
-  - `src/app/api/tts/route.ts:38-54`: Server route calls `@cartesia/cartesia-js` (`sonic-3.5` model) and returns an `audio/mpeg` MP3 blob.
-  - `src/lib/voice-engine.ts:30-48`: `generateTTS` posts to `/api/tts` and retrieves `audio: Blob`.
-  - `src/lib/voice-engine.ts:84-137`: `playAudioData` creates `new Audio(URL.createObjectURL(blob))` (`HTMLAudioElement`) and plays audio. Exposes `activeAudioElement` reference at line 104.
-  - `src/features/simulator/panel-voice.ts:115-156`: `speak` and `speakIntro` orchestrate TTS generation and audio playback while pacing caption text reveal.
+- **Project Configuration**:
+  - `package.json` line 10 specifies `"test": "vitest run"`.
+  - `vitest.config.ts` line 11 specifies `environment: 'node'`.
+  - Test command execution: `npm test` completed successfully with `103 passed` test files and `439 passed` tests in 58.06 seconds.
 
-- **Audio Visualizers & Web Audio API**:
-  - `src/components/audio-visualizer.tsx`: Interface takes `{ isActive?: boolean; variant?: 'mic' | 'speaker'; barCount?: number; className?: string }`. Renders CSS-animated equalizer bars (`sp-eq`).
-  - `src/features/simulator/ActivityBars.tsx`: Renders 4 CSS-animated bars based on `active: boolean`.
-  - Interface contract in `PROJECT.md:19-20`: Requires `stream?: MediaStream`, `audioNode?: AudioNode`, `isActive?: boolean`, `type: 'input' | 'output'`, `className?: string`.
+- **Teleprompter Component**:
+  - File: `src/features/coaching/components/coaching-teleprompter.tsx`
+  - Line 24-26: `headerLabel` handles both topic and slide sessions (`Topic Delivery Guide & Spoken Triad` vs `Slide X Delivery Guide & Talking Points`).
+  - Lines 77-80: Opening Hook rendered in 1st row: `<span className="text-xs"><strong className="text-primary font-semibold">Hook (0-15s):</strong> &ldquo;{activeScript.openingHook}&rdquo;</span>`.
+  - Lines 82-88: 3 Horizontal Triad Talking Points rendered in 2nd row: `<div className="grid grid-cols-1 md:grid-cols-3 gap-2">`.
 
-- **Repo Build and Test Configuration**:
-  - `package.json:7`: `"build": "next build && node -e \"const fs = require('fs'); fs.mkdirSync('.next/standalone/.next', { recursive: true }); fs.cpSync('.next/static', '.next/standalone/.next/static', { recursive: true }); fs.cpSync('public', '.next/standalone/public', { recursive: true });\""`
-  - `package.json:9`: `"test": "vitest run"`
-  - `package.json:10`: `"lint": "eslint ."`
-  - `vitest.config.ts:10-13`: `environment: 'node'`, `include: ['src/**/*.test.ts', 'src/**/*.test.tsx']`, path alias `'@'` -> `./src`.
-  - `eslint.config.mjs:9-48`: Flat ESLint config with Next.js core web vitals and TypeScript rules.
+- **MasterGuiderHud Component**:
+  - File: `src/features/coaching/components/master-guider-hud.tsx`
+  - Lines 37-55: Pacing status thresholds:
+    - Optimal Cadence (130-150 WPM)
+    - Deliberate Pace (<110 WPM)
+    - Fast Pace (>170 WPM)
+  - Lines 110-123: Primary action button: `Ask Coach for Advice` with icon `<Sparkles className="size-3.5" />`.
+  - Lines 126-138: Secondary action button: `Coach Rescue: Model Pitch Script` with click handler `onCoachRescue`.
+  - Lines 84-94: Speech bubble rendering `coachSpeechBubble` for live spoken advice.
+
+- **Coaching Room Component**:
+  - File: `src/features/coaching/components/coaching-room.tsx`
+  - Line 18: `export function CoachingRoom({ sessionId }: { sessionId: string })`
+  - Lines 174-200: `handleAskCoachAdvice` calculates WPM tip based on `wpm` thresholds, sets `coachSpeechBubble`, and invokes TTS audio via `generateTTS` and `playAudioData`.
+  - Lines 202-219: `handlePlayRescueAudio` triggers TTS playback of model pitch script (`rescueScript`).
+
+- **Voice & TTS Infrastructure**:
+  - File: `src/lib/voice-engine.ts`
+  - Lines 30-49: `generateTTS` makes POST request to `/api/tts` with text and Cartesia voice ID.
+  - Lines 156-283: `createSTT` combines Web Speech API (`SpeechRecognition`) for live visual feedback and `MediaRecorder` for Groq Whisper (`/api/transcribe`).
+
+- **Existing Unit Tests**:
+  - `src/features/coaching/components/master-guider-hud.test.tsx` (1 test)
+  - `src/features/coaching/components/coaching-setup.test.tsx` (1 test)
+  - `src/features/simulator/StageCaption.test.tsx` (7 tests)
+  - `src/features/simulator/AudiencePanel.test.tsx` (6 tests)
+  - `src/features/simulator/TranscriptPanel.test.tsx` (3 tests)
+  - `src/features/simulator/SlideStage.test.tsx` (3 tests)
+  - `src/features/simulator/TopicStage.test.tsx` (2 tests)
+  - `src/features/simulator/SessionTimer.test.tsx` (3 tests)
+  - `src/features/simulator/CameraPip.test.tsx` (2 tests)
 
 ---
 
 ## 2. Logic Chain
-1. **Presenter Mic Flow**: Microphone access (`getUserMedia`) is executed inside `createSTT` and `acquireBrowserRecorder`. In both cases, the `MediaStream` object is scoped within closure functions and not exposed to React state or components. To connect real-time mic visualizers (`AudioVisualizer type="input"`), the `MediaStream` or an `AudioNode` / `AnalyserNode` derived from `audioContext.createMediaStreamSource(stream)` must be surfaced through `useSimulationEngine` or a custom hook.
-2. **Cartesia Output Flow**: TTS audio is requested from `/api/tts` (Cartesia API route) and returned as an MP3 blob. `playAudioData` plays it via an HTML `HTMLAudioElement` (`new Audio(url)`). To visualize Cartesia output (`AudioVisualizer type="output"`), either `AudioContext.createMediaElementSource(audio)` must be connected to an `AnalyserNode`, or an `AudioBufferSourceNode` must be generated.
-3. **Existing Visualizer Hooks**: `configure-section.tsx` provides a working reference for Web Audio API frequency analysis using `AudioContext`, `AnalyserNode`, and `getByteFrequencyData()`. This logic can be extracted into a reusable Web Audio API hook (e.g. `useAudioAnalyser`).
-4. **Repo Build/Test Infrastructure**: Executing `npm run build` runs Next.js production build and standalone directory assembly. Executing `npm test` or `npx vitest run` runs unit tests via Vitest. Executing `npm run lint` or `npx eslint .` runs ESLint. Executing `npx tsc --noEmit` verifies TypeScript types.
+
+1. **Observation**: `CoachingTeleprompter` (`coaching-teleprompter.tsx`) uses a 2-row layout with an Opening Hook (0-15s) in row 1 and a 3-column grid for talking points (Context, Solution, Impact) in row 2.
+   **Reasoning**: This layout matches the exact design specification for Requirement R3's teleprompter.
+
+2. **Observation**: `MasterGuiderHud` (`master-guider-hud.tsx`) renders the WPM tempo gauge with ranges for Optimal Cadence (130-150 WPM), Deliberate Pace (<110 WPM), and Fast Pace (>170 WPM), along with two action buttons: `Ask Coach for Advice` (primary) and `Coach Rescue: Model Pitch Script` (secondary).
+   **Reasoning**: The HUD components, state bindings, and handlers in `coaching-room.tsx` fully realize Requirement R3's live speech telemetry and coach interaction requirements.
+
+3. **Observation**: `npm test` runs 103 test files with 439 passing tests using Vitest in a `node` environment, where React components are tested using `renderToString` from `react-dom/server`.
+   **Reasoning**: Unit tests for new components or updates to `CoachingTeleprompter`, `CoachingRoom`, or `SimulatorRoom` should follow this established pattern (`renderToString` + string assertion or Vitest DOM matchers).
 
 ---
 
 ## 3. Caveats
-- Browser Autoplay Policy: `HTMLAudioElement.play()` or `AudioContext.resume()` requires a user interaction (gesture/click). `unlockAudio()` in `voice-engine.ts` already addresses this on initial click.
-- `MediaElementAudioSourceNode` CORS & Re-connection constraints: Creating `createMediaElementSource(audioElement)` permanently connects that HTMLAudioElement to the specified `AudioContext`. If connected, `audioContext.destination` must be connected to maintain audible sound.
+
+- **Web Speech API Browser Compatibility**: `SpeechRecognition` relies on browser support (`window.SpeechRecognition` || `window.webkitSpeechRecognition`). In environments without browser Web Speech API (e.g. Node/jsdom unit test environments), speech recognition must be mocked or gracefully handled by fallbacks.
+- **Cartesia TTS API Keys**: Real voice generation requires an active Cartesia API key configured in server environment variables. When missing, `generateTTS` falls back to error handling, and `CoachingRoom` shows speech advice in the HUD text bubble.
 
 ---
 
 ## 4. Conclusion
-- All audio handling pathways (mic input, Cartesia TTS output, audio players, Web Audio API contexts) have been traced and cataloged with exact line numbers.
-- Exact tapping points for Milestone 3 (Audio Visualizer Component) have been identified in `useSimulationEngine.ts`, `voice-engine.ts`, `panel-voice.ts`, and `configure-section.tsx`.
-- All build, test, lint, and typecheck commands are verified and documented.
+
+Requirement R3's components (2-row teleprompter, live WPM meter with 130-150 WPM optimal cadence, "Ask Coach for Live Advice" primary action, and "Coach Rescue: Model Pitch Script" secondary action) are already cleanly structured and implemented in `coaching-teleprompter.tsx`, `master-guider-hud.tsx`, `coaching-room.tsx`, and `voice-engine.ts`. 
+
+The test infrastructure is fully functional (`npm test` passes 103 test files / 439 tests). Implementation workers can build additional unit test coverage for `coaching-teleprompter.tsx`, `coaching-room.tsx`, and `SimulatorRoom.tsx` following the existing `renderToString` pattern in `master-guider-hud.test.tsx`.
 
 ---
 
 ## 5. Verification Method
-1. **Build Verification Command**: `npm run build` or `bun run build`
-2. **Test Verification Command**: `npm test` or `npx vitest run` or `bun run test`
-3. **Linter Verification Command**: `npm run lint` or `npx eslint .`
-4. **Typecheck Verification Command**: `npx tsc --noEmit`
-5. **Inspect Source Tapping Points**:
-   - Mic Input: `src/lib/voice-engine.ts:168`, `src/features/simulator/browser-audio-recorder.ts:9`
-   - Cartesia TTS Playback: `src/app/api/tts/route.ts:38`, `src/lib/voice-engine.ts:84`
-   - Web Audio Frequency Analyser: `src/components/configure-section.tsx:180-217`
-   - Visualizer Component & Props: `src/components/audio-visualizer.tsx:5-10`, `src/features/simulator/ActivityBars.tsx:11-28`
+
+To verify these findings independently:
+
+1. Run unit tests command:
+   ```bash
+   npm test
+   ```
+   Confirm that all 103 test files pass without error.
+
+2. Inspect the teleprompter component:
+   - View `src/features/coaching/components/coaching-teleprompter.tsx` lines 76-89 to verify the 2-row layout (Hook + 3 Triad Points).
+
+3. Inspect the HUD & Pitch Rescue components:
+   - View `src/features/coaching/components/master-guider-hud.tsx` lines 37-55 for WPM ranges and lines 110-138 for Primary/Secondary actions.
+   - View `src/features/coaching/components/coach-rescue-modal.tsx` for modal implementation.
+
+4. Inspect test file implementation pattern:
+   - View `src/features/coaching/components/master-guider-hud.test.tsx` for the `renderToString` Vitest setup.

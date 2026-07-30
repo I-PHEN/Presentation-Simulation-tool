@@ -1,26 +1,29 @@
-# Project: Presentation Sparring Partner Theme & Visualizer Enhancements
+# Project: 1-on-1 AI Executive Coaching Studio & Room Separation
 
 ## Architecture
-- Frontend Application (React / Next.js / Tailwind CSS)
-- Audio Handling: Presenter Mic Input & Cartesia TTS Output audio nodes/streams
-- Design System: `globals.css` CSS variables, Tailwind tokens, Glassmorphism utilities
-- Key Components: `SimulatorRoom`, Header Status Bar, Audio Visualizer, Slide Canvas Backdrop
+- Routes: `/coaching/[sessionId]` (1-on-1 Coaching Studio), `/rehearse/[sessionId]` & `/practice/[sessionId]` (4-examiner Defense Simulator)
+- Components: `CoachingRoom` (1 coach avatar, single coach persona logic, delivery guide teleprompter, WPM meter, live advice actions), `SimulatorRoom` (4-examiner panel)
+- Coaching Features: Single Coach (Coach Sarah or Coach Marcus), distinct header badge `🎓 1-on-1 Executive Coaching Studio`, 2-row teleprompter (Hook + Triad Talking Points: Context, Solution, Impact), WPM meter (130-150 WPM optimal), "Ask Coach for Live Advice", "Coach Rescue: Model Pitch Script".
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | Exploration & Analysis | Codebase investigation, AudioContext, CSS variables, build/test scripts | None | DONE |
-| 2 | Studio Glassmorphism Tokens & CSS | `globals.css`, Tailwind config, backdrop-blur tokens, subtle border reflections | M1 | DONE |
-| 3 | Glowing Multi-Band Audio Visualizer | Equalizer/waveform component for audio input & Cartesia TTS output | M1 | DONE |
-| 4 | Dynamic Slide Palette Ambient Lighting | Ambient backlight effect reflecting slide color/presenter state | M1 | IN_PROGRESS |
-| 5 | SimulatorRoom Integration & Verification | Integrate components, full verification (build, test, dark/light mode, audit) | M2, M3, M4 | PLANNED |
+| 1 | Exploration & Analysis | Codebase investigation of routing, CoachingRoom, SimulatorRoom, voice/speech logic, teleprompter, unit test suite | None | DONE |
+| 2 | Coaching Studio UI & Room Separation | Routing (`/coaching/[id]` vs `/rehearse/[id]` & `/practice/[id]`), `CoachingRoom` component with 1 coach avatar, header badge, single coach event loop | M1 | IN_PROGRESS |
+| 3 | Teleprompter, WPM Meter & Live Advice Actions | 2-row delivery guide, live WPM meter (130-150 optimal), "Ask Coach for Live Advice" & "Coach Rescue" buttons + handlers | M2 | PLANNED |
+| 4 | Verification, Unit Testing & Forensic Audit | Unit tests for `CoachingRoom` and `SimulatorRoom`, E2E/component route testing, Reviewer, Challenger, Forensic Auditor verification | M2, M3 | PLANNED |
 
 ## Interface Contracts
-### Audio Visualizer Interface
-- Component props: `stream?: MediaStream`, `audioNode?: AudioNode`, `isActive?: boolean`, `type: 'input' | 'output'`, `className?: string`
+### Routing Interface
+- `/coaching/[id]` -> Renders `CoachingRoom` (1 coach avatar)
+- `/rehearse/[id]` & `/practice/[id]` -> Renders `SimulatorRoom` (4-examiner panel)
 
-### Ambient Lighting Interface
-- Props/State: `activeSlideColor?: string`, `presenterState?: string`, `containerClassName?: string`
+### Coaching Room Props / State
+- `coach`: 'sarah' | 'marcus' (User preference or default)
+- `headerBadge`: '🎓 1-on-1 Executive Coaching Studio'
+- `teleprompter`: { hook: string, triad: { context: string, solution: string, impact: string } }
+- `wpmMeter`: current WPM rate, status indicator (optimal 130-150 WPM)
+- Actions: `onAskLiveAdvice()`, `onCoachRescue()`
 
 ## Code Layout
 - Target repository root: `c:/Users/Michael/Downloads/sparring-partner`

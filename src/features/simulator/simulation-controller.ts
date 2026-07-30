@@ -68,7 +68,7 @@ export function createSimulationController(dependencies: SimulationControllerDep
     segments = [...segments, segment];
     notify();
     await save();
-    if (dependencies.mode === 'uninterrupted') {
+    if (dependencies.mode === 'uninterrupted' || dependencies.mode === 'guided') {
       return;
     }
     if (dependencies.mode === 'mock' && answeringQuestion) {

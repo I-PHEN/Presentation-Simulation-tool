@@ -40,15 +40,15 @@ export default function MasterGuiderHud({
     bg: 'bg-emerald-500/10 border-emerald-500/30',
   };
 
-  if (wpm > 0 && wpm < 110) {
+  if (wpm > 0 && wpm < 130) {
     pacingStatus = {
-      label: 'Deliberate Pace (<110 WPM)',
+      label: 'Deliberate Pace (<130 WPM)',
       color: 'text-sky-400',
       bg: 'bg-sky-500/10 border-sky-500/30',
     };
-  } else if (wpm > 170) {
+  } else if (wpm > 150) {
     pacingStatus = {
-      label: 'Fast Pace (>170 WPM)',
+      label: 'Fast Pace (>150 WPM)',
       color: 'text-amber-400',
       bg: 'bg-amber-500/10 border-amber-500/30',
     };
@@ -117,7 +117,7 @@ export default function MasterGuiderHud({
           {isAdviceLoading ? (
             <><RefreshCw className="size-3.5 animate-spin" /> Analyzing Speech & Pacing...</>
           ) : (
-            <><Sparkles className="size-3.5" /> Ask {coachName} for Advice</>
+            <>🎙️ Ask Coach for Live Advice</>
           )}
         </Button>
       )}
@@ -133,7 +133,7 @@ export default function MasterGuiderHud({
         {isRescueLoading ? (
           <><RefreshCw className="size-3.5 animate-spin mr-1.5" /> Generating Pitch Script...</>
         ) : (
-          <><Sparkles className="size-3.5 text-primary mr-1.5" /> Coach Rescue: Model Pitch Script</>
+          <>✨ Coach Rescue: Model Pitch Script</>
         )}
       </Button>
     </div>

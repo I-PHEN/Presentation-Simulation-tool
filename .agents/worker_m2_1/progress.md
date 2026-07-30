@@ -1,14 +1,12 @@
-# Progress Log
+# Progress Tracker
 
-Last visited: 2026-07-26T23:20:00Z
+Last visited: 2026-07-30T17:34:09Z
 
-## Tasks
-- [x] Create ORIGINAL_REQUEST.md and BRIEFING.md
-- [x] Inspect existing `src/app/globals.css`, `tailwind.config.ts`, and `PROJECT.md`
-- [x] Implement CSS custom properties in `:root` and `.dark` in `src/app/globals.css`
-- [x] Register theme properties in `@theme inline` inside `src/app/globals.css`
-- [x] Refactor `.glass-panel`, `.glass-card`, and add utility classes (`.glass-reflection`, `.glass-panel-glow`)
-- [x] Update `tailwind.config.ts` content array
-- [x] Run build, test, lint, typecheck verification
-- [x] Write `changes.md` and `handoff.md`
-- [x] Send completion message to parent orchestrator
+- [x] Workspace briefing and progress tracker initialized
+- [ ] Codebase investigation (exploring coaching routes, simulator room, store, audio/Cartesia integration, teleprompter, WPM meter, and existing tests)
+- [ ] Implement R1: Distinct 1-on-1 Coaching Studio UI & Room Separation
+- [ ] Implement R2: Single Coach Persona & Spoken Guidance
+- [ ] Implement R3: Integrated Delivery Teleprompter & Speech Pacing
+- [ ] Implement & update unit tests for CoachingRoom and SimulatorRoom
+- [ ] Verify test suite with `npx vitest run`
+- [ ] Generate changes.md, handoff.md, and notify parent agent
