@@ -52,7 +52,7 @@ export async function GET(
       );
     }
 
-    if (session.practiceMode === 'defense') {
+    if (session.practiceMode === 'defense' || session.practiceMode === 'guided') {
       const deck = defenseDeckSchema.safeParse(parsePersisted(session.deckContext));
       const segments = transcriptSegmentsSchema.safeParse(parsePersisted(session.transcriptSegments));
       const events = examinerEventsSchema.safeParse(parsePersisted(session.examinerEvents));
@@ -110,7 +110,7 @@ export async function PATCH(
       || update.data.status !== undefined;
     if (requiresDefenseSession) {
       const target = await db.session.findFirst({ where: { id, userId: identity.userId }, select: { practiceMode: true } });
-      if (!target || target.practiceMode !== 'defense') {
+      if (!target || (target.practiceMode !== 'defense' && target.practiceMode !== 'guided')) {
         return NextResponse.json({ error: 'Defense rehearsal updates require a defense session' }, { status: 400 });
       }
     }
