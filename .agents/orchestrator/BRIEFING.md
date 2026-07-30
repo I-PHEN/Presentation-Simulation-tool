@@ -15,38 +15,38 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 - **Scope document**: c:/Users/Michael/Downloads/sparring-partner/.agents/orchestrator/PROJECT.md
 1. **Decompose**:
    - Milestone 1: Exploration & Codebase Analysis (DONE)
-   - Milestone 2: Coaching Studio UI & Room Separation (DONE)
-   - Milestone 3: Teleprompter, WPM Meter & Live Advice Actions (DONE)
-   - Milestone 4: Verification, Unit Testing & Forensic Audit (IN_PROGRESS)
+   - Milestone 2: Coaching Studio UI & Room Separation (REMEDIATING - Wire /coaching/[sessionId] to CoachingRoom)
+   - Milestone 3: Teleprompter, WPM Meter & Live Advice Actions (REMEDIATING - Mount CoachingRoom on /coaching route)
+   - Milestone 4: Verification, Unit Testing & Forensic Audit (IN_PROGRESS - Remediation & Re-Audit)
 2. **Dispatch & Execute**:
    - Explorer → Worker → Reviewer → Challenger → Auditor iteration loop per milestone
 3. **On failure**: Retry → Replace → Skip → Redistribute → Redesign → Escalate
 4. **Succession**: Self-succeed at 16 spawns or context limit
 - **Work items**:
   1. Milestone 1: Exploration & Analysis [done]
-  2. Milestone 2: Coaching Studio UI & Room Separation [done]
-  3. Milestone 3: Teleprompter, WPM Meter & Live Advice Actions [done]
-  4. Milestone 4: Verification & Audit [done]
-- **Current phase**: 4 (Completed)
-- **Current focus**: Milestone 4 Verification & Victory Audit Notification
+  2. Milestone 2: Coaching Studio UI & Room Separation [remediating]
+  3. Milestone 3: Teleprompter, WPM Meter & Live Advice Actions [remediating]
+  4. Milestone 4: Verification & Audit [in-progress]
+- **Current phase**: 4 (Remediation Iteration 2)
+- **Current focus**: Remediate `/coaching/[sessionId]` route wiring to render `<CoachingRoom>` with full R1-R3 features.
 
 ## 🔒 Key Constraints
 - NEVER write source code directly. All changes must be made by Worker subagents.
 - NEVER run build/test commands directly. Workers and Reviewers run build/test.
 - All new visual styles must use CSS variable tokens in `globals.css` and Tailwind utilities.
-- /coaching/[id] opens 1-on-1 Coaching Studio with 1 coach avatar.
-- /rehearse/[id] and /practice/[id] open 4-examiner Defense Simulator.
+- /coaching/[id] opens 1-on-1 Coaching Studio with 1 coach avatar rendering CoachingRoom.
+- /rehearse/[id] and /practice/[id] open 4-examiner Defense Simulator rendering SimulatorRoom.
 - Unit tests pass for both CoachingRoom and SimulatorRoom.
 - Binary veto on Forensic Auditor integrity violations.
 
 ## Current Parent
 - Conversation ID: a24f212e-2124-4432-adfd-41c6d77ff334
-- Updated: 2026-07-30T17:30:49Z
+- Updated: 2026-07-30T19:00:00Z
 
 ## Key Decisions Made
-- Milestones 1, 2, and 3 completed and verified.
-- Worker M2 1 implemented R1-R4, created unit tests for CoachingRoom and SimulatorRoom, and verified 444 tests passing across 107 test files.
-- Executing Milestone 4 Verification Gate with 2 Reviewers, 2 Challengers, and Forensic Auditor.
+- Victory Audit rejected completion claim because `src/app/coaching/[sessionId]/page.tsx` was rendering `SimulatorRoom` instead of `CoachingRoom`.
+- Initiating Iteration 2 remediation: Wire `/coaching/[sessionId]` page to render `<CoachingRoom session={session} />` so that `CoachingRoom`, `MasterGuiderHud` (WPM meter 130-150 WPM, `🎙️ Ask Coach for Live Advice`, `✨ Coach Rescue: Model Pitch Script`), `CoachingTeleprompter` (Opening Hook + Context/Solution/Impact triad), `CoachRescueModal`, and 1 Coach Avatar (Coach Sarah/Marcus) are live on `/coaching/[sessionId]`.
+- Preserving `/rehearse/[sessionId]` and `/practice/[sessionId]` for 4-examiner `SimulatorRoom`.
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
@@ -62,7 +62,9 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 | Auditor M4 1 | teamwork_preview_auditor | Forensic Integrity Audit | completed | ada1ac90-933b-49b3-b0db-a27e9d125894 |
 | Worker M4 2 | teamwork_preview_worker | Build, Lint & Test Remediation | timed_out | 58a5983c-dbda-4487-ba7d-15bd82508152 |
 | Worker M4 3 | teamwork_preview_worker | Build, Lint & Test Remediation | failed | c88a543d-5d38-4e27-9bdf-bdd8c4f4409c |
-| Worker M4 4 | teamwork_preview_worker | Build, Lint & Test Remediation | in-progress | 51372ee7-a65b-4e30-8827-28cd47090316 |
+| Worker M4 4 | teamwork_preview_worker | Build, Lint & Test Remediation | failed | 51372ee7-a65b-4e30-8827-28cd47090316 |
+| Explorer M4 4 | teamwork_preview_explorer | Victory Audit Remediation Analysis | completed | a06a2225-abb5-442b-980d-9a6b78eb73d3 |
+| Worker M4 5 | teamwork_preview_worker | Coaching Room Route Remediation | in-progress | a6272757-f697-4ddb-a3c6-c59c31b26958 |
 
 ## Succession Status
 - Succession required: no

@@ -22,6 +22,8 @@ import { derivePresenterState } from './slide-palette';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { CoachingTeleprompter } from '@/features/coaching/components/coaching-teleprompter';
 
+import { preloadAuthenticatedAssets } from '@/lib/authenticated-asset';
+
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic'; coachPersona?: 'sarah' | 'marcus' };
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -39,6 +41,12 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
   const camera = useCamera();
   const roomRef = useRef<HTMLDivElement>(null);
   const isTopic = session.source === 'topic';
+
+  useEffect(() => {
+    if (session.deck?.slides) {
+      preloadAuthenticatedAssets(session.deck.slides.map((s) => s.imageUrl));
+    }
+  }, [session.deck]);
 
   const { changeSlide, position, total, phase } = engine;
   const delivery = useDeliverySamples({
