@@ -162,6 +162,48 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
     setPhase(controller.getState().ended ? 'ended' : 'live');
   }, [controller, recorder, session.id]);
 
+  const askCoachForAdvice = useCallback(async () => {
+    if (!controllerRef.current) return;
+    const currentState = controllerRef.current.getState();
+    const currentPos = Math.max(0, session.deck.slides.findIndex((s) => s.index === currentState.slideIndex));
+    const currentSlideText = session.deck.slides[currentPos]?.text || session.deck.sourceName;
+
+    const presenterSegments = currentState.segments
+      .filter((s) => s.role === 'presenter')
+      .map((s) => s.text)
+      .join(' ');
+
+    const promptText = presenterSegments.trim()
+      ? `The presenter just spoke: "${presenterSegments.slice(-400)}". Current topic: "${currentSlideText}". Give 1 concise, encouraging 2-sentence coaching tip on their delivery and key takeaway.`
+      : `Current topic: "${currentSlideText}". Give 1 concise 2-sentence opening coaching tip on how to pitch this effectively.`;
+
+    try {
+      const res = await authenticatedFetch('/api/coaching/script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slideText: promptText, slideIndex: currentState.slideIndex, presenterDirectives: 'Provide live spoken advice' }),
+      });
+      const data = await res.json();
+      const adviceText = data.openingHook || data.rescueScript || `State your core thesis with high conviction and keep your pacing steady around 140 WPM.`;
+
+      void voice.enqueue({
+        id: `advice-${Date.now()}`,
+        personaId: panel[0].id,
+        text: adviceText,
+        slideIndex: currentState.slideIndex,
+        interrupts: false,
+      });
+    } catch {
+      void voice.enqueue({
+        id: `advice-${Date.now()}`,
+        personaId: panel[0].id,
+        text: "Focus on your core problem statement and deliver your main recommendation with confidence.",
+        slideIndex: currentState.slideIndex,
+        interrupts: false,
+      });
+    }
+  }, [panel, session.deck.slides, session.deck.sourceName, voice]);
+
   return {
     phase, slide, position, total: session.deck.slides.length, captureState, micActive: captureState === 'listening', recording: recorder.isRecording(),
     // The one session clock: wall-clock start, so elapsed time and every
@@ -172,5 +214,6 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
     events: state.events, transcript: state.segments, interim, metrics,
     error: error ?? voiceState.lastError, begin, toggleMic, changeSlide, end, replayIntro,
     canFinish: controller.canFinish(), finish: controller.finish,
+    askCoachForAdvice,
   };
 }

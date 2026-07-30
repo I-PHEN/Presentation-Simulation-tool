@@ -161,6 +161,7 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         <SimulatorToolbar recording={engine.recording} micActive={engine.micActive} hearing={hearing} maximized={maximized} onToggleMaximized={toggleMaximized} onToggleMic={() => void engine.toggleMic()} onToggleParticipants={() => setShowParticipants((v) => !v)} onToggleTranscript={() => setShowTranscript((v) => !v)} onEnd={() => void engine.end(delivery.getSamples())} endDisabled={phase !== 'live'}
           timer={phase === 'ready' ? undefined : { startedAtMs: engine.startedAtMs, targetMs, onCycleTarget: setTargetMs }}
           camera={{ enabled: camera.enabled, onToggle: () => void camera.toggle() }}
+          onAskCoach={session.mode === 'guided' || engine.askCoachForAdvice ? () => void engine.askCoachForAdvice() : undefined}
           slideNav={isTopic ? undefined : {
             onPrev: () => void changeSlide(Math.max(0, position - 1)),
             onNext: () => void changeSlide(Math.min(total - 1, position + 1)),

@@ -6,7 +6,7 @@ import { ActivityBars } from './ActivityBars';
 import { SessionTimer } from './SessionTimer';
 import { cn } from '@/lib/utils';
 
-export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer, camera }: {
+export function SimulatorToolbar({ recording, micActive, hearing = false, onToggleMic, onToggleParticipants, onToggleTranscript, onEnd, endDisabled, slideNav, maximized = false, onToggleMaximized, timer, camera, onAskCoach }: {
   recording?: boolean; micActive: boolean;
   /** The recogniser is producing words right now — i.e. you are being heard. */
   hearing?: boolean;
@@ -18,6 +18,7 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
   timer?: { startedAtMs: number; targetMs: number | null; onCycleTarget: (next: number | null) => void };
   /** Camera is opt-in: the control only appears when the room supplies it. */
   camera?: { enabled: boolean; onToggle: () => void };
+  onAskCoach?: () => void;
 }) {
   const round = (variant: 'default' | 'secondary' | 'destructive') =>
     cn(buttonVariants({ variant, size: 'icon' }), 'size-8 rounded-full');
@@ -56,6 +57,15 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
           {camera.enabled ? <Video className="size-4" aria-hidden="true" /> : <VideoOff className="size-4" aria-hidden="true" />}
         </button>
       )}
+      {onAskCoach && (
+        <button
+          type="button"
+          onClick={onAskCoach}
+          className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary border border-primary/20 hover:bg-primary/20 transition-all"
+        >
+          ✨ Ask Coach
+        </button>
+      )}
       <button type="button" aria-label="Show participants" onClick={onToggleParticipants} className={round('secondary')}>
         <Users className="size-4" aria-hidden="true" />
       </button>
@@ -63,12 +73,13 @@ export function SimulatorToolbar({ recording, micActive, hearing = false, onTogg
         <Captions className="size-4" aria-hidden="true" />
       </button>
       {onToggleMaximized && (
-        <button type="button" aria-label={maximized ? 'Exit full screen' : 'Maximize presentation'} title={maximized ? 'Exit full screen (Esc)' : 'Maximize presentation (F)'} onClick={onToggleMaximized} className={round('secondary')}>
+        <button type="button" aria-label={maximized ? 'Restore layout' : 'Maximize room'} onClick={onToggleMaximized} className={round('secondary')}>
           {maximized ? <Minimize2 className="size-4" aria-hidden="true" /> : <Maximize2 className="size-4" aria-hidden="true" />}
         </button>
       )}
-      <button type="button" onClick={onEnd} disabled={endDisabled} className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }), 'h-8 rounded-full')}>
-        <PhoneOff className="size-4" aria-hidden="true" /> End rehearsal
+      <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
+      <button type="button" aria-label="End session" onClick={onEnd} disabled={endDisabled} className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }), 'h-8 rounded-full px-3 text-xs font-medium')}>
+        <PhoneOff className="mr-1.5 size-3.5" aria-hidden="true" /> Finish
       </button>
     </div>
   );
