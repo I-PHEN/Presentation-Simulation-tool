@@ -10,7 +10,7 @@ import { createSimulationController } from './simulation-controller';
 import { createPanelVoiceController } from './panel-voice';
 import { assemblePanel, type Persona } from './personas';
 import { computeMetrics } from './metrics';
-import { buildIntroRequest, parseIntroResponse } from './intro';
+
 import { createSessionRecorder } from './session-recorder';
 import { acquireBrowserRecorder } from './browser-audio-recorder';
 import { uploadSessionAudio } from './upload-recording';
@@ -118,25 +118,33 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const slide = session.deck.slides[position];
   const metrics = useMemo(() => computeMetrics(state.segments), [state.segments]);
 
+  const instantIntro = useCallback(() => {
+    const lead = panel[0];
+    const deckless = source === 'topic';
+    const name = session.deck.sourceName;
+    const text = deckless
+      ? `Welcome. You'll be arguing "${name.length > 60 ? name.slice(0, 57) + '...' : name}" today. Turn on your microphone whenever you are ready to begin.`
+      : `Welcome. We're ready to hear your presentation${name ? ` on "${name.length > 60 ? name.slice(0, 57) + '...' : name}"` : ''}. Turn on your microphone whenever you are ready to begin.`;
+    return { text, voiceId: lead.voiceId, personaId: lead.id };
+  }, [panel, session.deck.sourceName, source]);
+
   const begin = useCallback(async () => {
     unlockAudio();
     startedAtRef.current = Date.now();
     await recorder.start();
     setPhase('introducing');
     try {
-      const res = await authenticatedFetch('/api/intro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildIntroRequest(session.deck.sourceName, panel, source)) });
-      const intro = parseIntroResponse(await res.json().catch(() => null), panel);
+      const intro = instantIntro();
       await voice.speakIntro(intro);
     } catch { /* intro is best-effort; never blocks the rehearsal */ }
     setPhase('live');
     await controller.start();
-  }, [controller, panel, recorder, session.deck.sourceName, source, voice]);
+  }, [controller, instantIntro, recorder, voice]);
 
   const replayIntro = useCallback(async () => {
-    const res = await authenticatedFetch('/api/intro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildIntroRequest(session.deck.sourceName, panel, source)) }).catch(() => null);
-    const intro = parseIntroResponse(res ? await res.json().catch(() => null) : null, panel);
+    const intro = instantIntro();
     await voice.speakIntro(intro);
-  }, [panel, session.deck.sourceName, source, voice]);
+  }, [instantIntro, voice]);
 
   const toggleMic = useCallback(async () => {
     if (captureState === 'listening') { setCaptureState('paused'); await stopCapture(); }
