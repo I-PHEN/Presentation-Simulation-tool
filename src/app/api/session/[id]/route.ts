@@ -53,16 +53,19 @@ export async function GET(
     }
 
     if (session.practiceMode === 'defense' || session.practiceMode === 'guided') {
-      const deck = defenseDeckSchema.safeParse(parsePersisted(session.deckContext));
-      const segments = transcriptSegmentsSchema.safeParse(parsePersisted(session.transcriptSegments));
-      const events = examinerEventsSchema.safeParse(parsePersisted(session.examinerEvents));
-      if (!deck.success || !segments.success || !events.success) return NextResponse.json({ error: 'Saved defense evidence is invalid. Please retry or create a new rehearsal.' }, { status: 422 });
+      const rawDeck = parsePersisted(session.deckContext);
+      const parsedDeck = defenseDeckSchema.safeParse(rawDeck);
+      const validDeck = parsedDeck.success ? parsedDeck.data : (rawDeck && typeof rawDeck === 'object' && 'slides' in rawDeck && Array.isArray((rawDeck as { slides: unknown }).slides) ? (rawDeck as Record<string, unknown>) : null);
+
+      const segments = parseArray(session.transcriptSegments);
+      const events = parseArray(session.examinerEvents);
+      if (!validDeck) return NextResponse.json({ error: 'Saved defense evidence is invalid. Please retry or create a new rehearsal.' }, { status: 422 });
       return NextResponse.json({
         defense: {
           ...session,
-          deck: deck.data,
-          transcriptSegments: segments.data,
-          examinerEvents: events.data,
+          deck: validDeck,
+          transcriptSegments: segments,
+          examinerEvents: events,
           findings: parseArray(session.findings),
         },
       });

@@ -33,13 +33,13 @@ export function parseDefenseSessionResponse(value: unknown): DefenseSession | nu
   const events = examinerEventsSchema.safeParse(session.examinerEvents);
   if (!deck.success || !segments.success || !events.success) return null;
   if (session.mode !== 'uninterrupted' && session.mode !== 'diagnostic' && session.mode !== 'mock' && session.mode !== 'guided') return null;
-  if (session.stance !== 'rigorous' && session.stance !== 'supportive' && session.stance !== 'hostile') return null;
+  const validStance: ExaminerStance = session.stance === 'supportive' || session.stance === 'rigorous' || session.stance === 'hostile' || session.stance === 'custom' ? session.stance : 'supportive';
   if (typeof session.id !== 'string') return null;
   return {
     id: session.id,
     deck: deck.data,
     mode: session.mode,
-    stance: session.stance,
+    stance: validStance,
     transcriptSegments: segments.data,
     examinerEvents: events.data,
     status: typeof session.status === 'string' ? session.status : 'upload',

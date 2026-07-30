@@ -65,7 +65,11 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 | Worker M4 4 | teamwork_preview_worker | Build, Lint & Test Remediation | failed | 51372ee7-a65b-4e30-8827-28cd47090316 |
 | Explorer M4 4 | teamwork_preview_explorer | Victory Audit Remediation Analysis | completed | a06a2225-abb5-442b-980d-9a6b78eb73d3 |
 | Worker M4 5 | teamwork_preview_worker | Coaching Room Route Remediation | unreachable | a6272757-f697-4ddb-a3c6-c59c31b26958 |
-| Worker M4 6 | teamwork_preview_worker | Coaching Room Route Remediation | in-progress | 1645f455-315c-44f5-93d7-b7cc3020ac31 |
+| Worker M4 6 | teamwork_preview_worker | Coaching Room Route Remediation | completed | 1645f455-315c-44f5-93d7-b7cc3020ac31 |
+| Reviewer M4 3 | teamwork_preview_reviewer | Architecture & Route Remediation Review | in-progress | 32d45689-7a24-4af6-b3af-314716da5f38 |
+| Reviewer M4 4 | teamwork_preview_reviewer | Component & Integration Test Review | in-progress | f13d5b35-20a9-4f44-8360-4142cd2505ff |
+| Challenger M4 3 | teamwork_preview_challenger | Route & UI Verification Challenge | in-progress | c42252b9-bea5-420a-ae27-8871f18f9a1c |
+| Auditor M4 2 | teamwork_preview_auditor | Forensic Integrity Audit 2 | in-progress | 202f1760-21f0-4423-9dc4-9f64fc4b2b71 |
 
 ## Succession Status
 - Succession required: no

@@ -14,7 +14,7 @@ describe('authenticated asset loader', () => {
   it('rejects unreadable assets without turning their URL into visible content and releases object URLs', async () => {
     const revokeObjectURL = vi.fn();
     vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:private-slide'), revokeObjectURL });
-    await expect(loadAuthenticatedAsset('/api/slides/private/slide-1.jpg', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))).rejects.toThrow('Unable to load slide preview');
+    await expect(loadAuthenticatedAsset('/api/slides/private/unreadable-slide.jpg', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))).rejects.toThrow('Unable to load slide preview');
     releaseAuthenticatedAsset('blob:private-slide');
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:private-slide');
   });

@@ -31,4 +31,11 @@ describe('CoachingRoom', () => {
     expect(html).toContain('🎙️ Ask Coach for Live Advice');
     expect(html).toContain('✨ Coach Rescue: Model Pitch Script');
   });
+
+  it('ensures absence of Defense Simulator widgets (Room Mood, Skepticism)', () => {
+    const html = renderToString(<CoachingRoom sessionId="test-session-1" />);
+
+    expect(html).not.toContain('Room Mood');
+    expect(html).not.toContain('Skepticism');
+  });
 });
