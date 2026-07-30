@@ -9,6 +9,7 @@ const assetCache = new Map<string, string>();
 const pendingRequests = new Map<string, Promise<string>>();
 
 export async function loadAuthenticatedAsset(source: string, request: AuthenticatedAssetRequest = authenticatedFetch): Promise<string> {
+  if (!source) throw new Error('Unable to load slide preview');
   if (source.startsWith('data:') || source.startsWith('blob:')) {
     return source;
   }
@@ -44,14 +45,23 @@ export function preloadAuthenticatedAssets(sources: string[], request: Authentic
 }
 
 export function releaseAuthenticatedAsset(url: string | null | undefined) {
-  /* Kept in in-memory assetCache for instant slide navigation across session */
+  if (url) {
+    for (const [key, cachedUrl] of assetCache.entries()) {
+      if (cachedUrl === url) {
+        assetCache.delete(key);
+        break;
+      }
+    }
+    URL.revokeObjectURL(url);
+  }
 }
 
 export function AuthenticatedSlideImage({ source, alt, className }: { source: string; alt: string; className?: string }) {
-  const [objectUrl, setObjectUrl] = useState<string>(() => assetCache.get(source) || (source.startsWith('data:') || source.startsWith('blob:') ? source : ''));
+  const [objectUrl, setObjectUrl] = useState<string>(() => (source && assetCache.get(source)) || (source?.startsWith('data:') || source?.startsWith('blob:') ? source : ''));
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (!source) return;
     let active = true;
     const cached = assetCache.get(source);
     if (cached) {

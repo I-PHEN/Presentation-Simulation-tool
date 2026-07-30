@@ -64,7 +64,8 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 | Worker M4 3 | teamwork_preview_worker | Build, Lint & Test Remediation | failed | c88a543d-5d38-4e27-9bdf-bdd8c4f4409c |
 | Worker M4 4 | teamwork_preview_worker | Build, Lint & Test Remediation | failed | 51372ee7-a65b-4e30-8827-28cd47090316 |
 | Explorer M4 4 | teamwork_preview_explorer | Victory Audit Remediation Analysis | completed | a06a2225-abb5-442b-980d-9a6b78eb73d3 |
-| Worker M4 5 | teamwork_preview_worker | Coaching Room Route Remediation | in-progress | a6272757-f697-4ddb-a3c6-c59c31b26958 |
+| Worker M4 5 | teamwork_preview_worker | Coaching Room Route Remediation | unreachable | a6272757-f697-4ddb-a3c6-c59c31b26958 |
+| Worker M4 6 | teamwork_preview_worker | Coaching Room Route Remediation | in-progress | 1645f455-315c-44f5-93d7-b7cc3020ac31 |
 
 ## Succession Status
 - Succession required: no
