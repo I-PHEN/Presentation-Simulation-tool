@@ -20,6 +20,7 @@ import { SimulatorHeader } from './SimulatorHeader';
 import { SlideAmbientLighting } from './SlideAmbientLighting';
 import { derivePresenterState } from './slide-palette';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { CoachingTeleprompter } from '@/features/coaching/components/coaching-teleprompter';
 
 type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic' };
 
@@ -147,6 +148,15 @@ export function SimulatorRoom({ session, onComplete }: { session: SimSession; on
         {showAside && (
           <aside className="flex min-h-0 flex-col gap-3 overflow-hidden max-lg:max-h-[40dvh]">
             {showParticipants && <AudiencePanel panel={engine.panel} speakingPersonaId={engine.speakingPersonaId} self={{ micActive: engine.micActive, hearing }} />}
+            {session.mode === 'guided' && (
+              <CoachingTeleprompter
+                currentSlide={position}
+                isLoading={false}
+                isPlayingDemo={false}
+                onPlayDemo={() => void engine.askCoachForAdvice()}
+                isTopicSession={isTopic}
+              />
+            )}
             {showTranscript && <TranscriptPanel segments={engine.transcript} interim={engine.interim} metrics={engine.metrics} />}
             {(engine.error || camera.error) && <p role="alert" className="shrink-0 text-sm text-destructive">{engine.error ?? camera.error}</p>}
           </aside>

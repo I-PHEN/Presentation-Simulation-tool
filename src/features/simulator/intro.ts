@@ -17,6 +17,8 @@ export function parseIntroResponse(data: unknown, panel: Persona[]): { text: str
   const lead = leadPersona(panel);
   const record = (data && typeof data === 'object') ? data as Record<string, unknown> : {};
   const text = typeof record.text === 'string' && record.text.trim().length > 0 ? record.text.trim() : DEFAULT_WELCOME;
-  const voiceId = typeof record.voice === 'string' && record.voice.trim().length > 0 ? record.voice.trim() : lead.voiceId;
+  const isCoach = lead.id === 'sarah' || lead.id === 'marcus';
+  const voiceId = isCoach ? lead.voiceId : (typeof record.voice === 'string' && record.voice.trim().length > 0 ? record.voice.trim() : lead.voiceId);
   return { text, voiceId, personaId: lead.id };
 }
+

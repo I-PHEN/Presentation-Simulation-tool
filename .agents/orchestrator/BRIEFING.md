@@ -15,20 +15,20 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 - **Scope document**: c:/Users/Michael/Downloads/sparring-partner/.agents/orchestrator/PROJECT.md
 1. **Decompose**:
    - Milestone 1: Exploration & Codebase Analysis (DONE)
-   - Milestone 2: Coaching Studio UI & Room Separation (IN_PROGRESS)
-   - Milestone 3: Teleprompter, WPM Meter & Live Advice Actions (PLANNED)
-   - Milestone 4: Verification, Unit Testing & Forensic Audit (PLANNED)
+   - Milestone 2: Coaching Studio UI & Room Separation (DONE)
+   - Milestone 3: Teleprompter, WPM Meter & Live Advice Actions (DONE)
+   - Milestone 4: Verification, Unit Testing & Forensic Audit (IN_PROGRESS)
 2. **Dispatch & Execute**:
    - Explorer → Worker → Reviewer → Challenger → Auditor iteration loop per milestone
 3. **On failure**: Retry → Replace → Skip → Redistribute → Redesign → Escalate
 4. **Succession**: Self-succeed at 16 spawns or context limit
 - **Work items**:
   1. Milestone 1: Exploration & Analysis [done]
-  2. Milestone 2: Coaching Studio UI & Room Separation [in-progress]
-  3. Milestone 3: Teleprompter, WPM Meter & Live Advice Actions [pending]
-  4. Milestone 4: Verification & Audit [pending]
-- **Current phase**: 2
-- **Current focus**: Milestone 2 (Coaching Studio UI & Room Separation Implementation)
+  2. Milestone 2: Coaching Studio UI & Room Separation [done]
+  3. Milestone 3: Teleprompter, WPM Meter & Live Advice Actions [done]
+  4. Milestone 4: Verification & Audit [in-progress]
+- **Current phase**: 4
+- **Current focus**: Milestone 4 (2 Reviewers, 2 Challengers, Forensic Auditor)
 
 ## 🔒 Key Constraints
 - NEVER write source code directly. All changes must be made by Worker subagents.
@@ -44,8 +44,9 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 - Updated: 2026-07-30T17:30:49Z
 
 ## Key Decisions Made
-- Milestone 1 exploration completed by 3 Explorers. Synthesized architecture and implementation plan.
-- Executing Milestone 2: Coaching Studio UI & Room Separation.
+- Milestones 1, 2, and 3 completed and verified.
+- Worker M2 1 implemented R1-R4, created unit tests for CoachingRoom and SimulatorRoom, and verified 444 tests passing across 107 test files.
+- Executing Milestone 4 Verification Gate with 2 Reviewers, 2 Challengers, and Forensic Auditor.
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
@@ -53,7 +54,12 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 | Explorer M1 1 | teamwork_preview_explorer | Route & Room Exploration | completed | c519aee9-5e6a-4ae1-be99-6f3fc3dd885f |
 | Explorer M1 2 | teamwork_preview_explorer | Coach Persona & Voice Logic | completed | e6c96441-c082-4b4f-b721-1d5087b9310a |
 | Explorer M1 3 | teamwork_preview_explorer | Teleprompter, WPM & Tests | completed | 233706ae-41a3-456b-8418-2c93da8d6a70 |
-| Worker M2 1 | teamwork_preview_worker | Coaching Studio & Room Separation | in-progress | 26eff07b-8ad3-46da-ab8d-48461896f1ba |
+| Worker M2 1 | teamwork_preview_worker | Coaching Studio & Room Separation | completed | 26eff07b-8ad3-46da-ab8d-48461896f1ba |
+| Reviewer M4 1 | teamwork_preview_reviewer | Architecture & Route Review | in-progress | 0c1cede2-6763-4a45-8010-1eefcd64ebaa |
+| Reviewer M4 2 | teamwork_preview_reviewer | Component & Unit Test Review | in-progress | ee86aa54-c2f7-4d69-97b2-6979dfa690c5 |
+| Challenger M4 1 | teamwork_preview_challenger | Route & Persona Challenge | in-progress | 9280cbcf-dd20-4d5c-bfd4-b29f2bdfa85d |
+| Challenger M4 2 | teamwork_preview_challenger | Voice & Teleprompter Challenge | in-progress | fb87ff62-02cb-4289-a23e-894e1889b3ee |
+| Auditor M4 1 | teamwork_preview_auditor | Forensic Integrity Audit | in-progress | ada1ac90-933b-49b3-b0db-a27e9d125894 |
 
 ## Succession Status
 - Succession required: no

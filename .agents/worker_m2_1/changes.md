@@ -1,36 +1,39 @@
-# Changes Log - Milestone 2 Worker 1
+# Summary of Changes
 
-## Summary of Changes
+## Overview
+Implemented the 1-on-1 AI Executive Coaching Studio and Room Separation across Milestone 2 & Milestone 3. Ensured dedicated 1-on-1 Coaching Studio UI separation from the 4-examiner Defense Simulator room, single coach persona audio/guidance, teleprompter with triad talking points, speech pacing telemetry, and action buttons.
 
-### 1. `tailwind.config.ts`
-- Updated the `content` array to include `./src/**/*.{js,ts,jsx,tsx,mdx}` so Tailwind processes all source components inside the `src/` directory.
+## Modified & Added Files
 
-### 2. `src/app/globals.css`
-- **Added CSS custom properties**:
-  - In `:root`:
-    - `--glass-bg: rgba(255, 255, 255, 0.7);`
-    - `--glass-border: rgba(226, 232, 240, 0.6);`
-    - `--glass-reflection-top: rgba(255, 255, 255, 0.8);`
-    - `--glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);`
-  - In `.dark`:
-    - `--glass-bg: rgba(15, 23, 42, 0.7);`
-    - `--glass-border: rgba(255, 255, 255, 0.12);`
-    - `--glass-reflection-top: rgba(255, 255, 255, 0.18);`
-    - `--glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);`
-- **Registered `@theme inline` properties**:
-  - `--color-glass-bg: var(--glass-bg);`
-  - `--color-glass-border: var(--glass-border);`
-  - `--color-glass-reflection-top: var(--glass-reflection-top);`
-  - `--shadow-glass: var(--glass-shadow);`
-- **Refactored and added `@layer components` glass utility classes**:
-  - `.glass-panel`: configured with `@apply backdrop-blur-md;`, `var(--glass-bg)`, `var(--glass-border)`, `var(--glass-shadow)`, and top reflection inset shadow.
-  - `.glass-card`: configured with `@apply backdrop-blur-xl;`, `var(--glass-bg)`, `var(--glass-border)`, `var(--glass-shadow)`, and top reflection inset shadow.
-  - `.glass-reflection`: added utility class for top border light reflection (`inset 0 1px 0 0 var(--glass-reflection-top)`).
-  - `.glass-panel-glow`: added utility class for glass panels with ambient outer glow for both light and dark mode states.
+1. `src/features/simulator/personas.ts`
+   - Defined `COACH_SARAH` (`'a7a59115-2425-4192-844c-1e98ec7d6877'`, Amber) and `COACH_MARCUS` (`'533b2990-5b82-45a4-b9f2-367776972ca6'`, Reed) Cartesia voice IDs.
+   - Updated `assemblePanel` signature and logic to return a single-member array (`[COACH_SARAH]` or `[COACH_MARCUS]`) when `mode === 'guided'`.
 
-## Verification Results
+2. `src/features/simulator/use-simulation-engine.ts`
+   - Integrated store's `coachPersona` and session `mode` into `assemblePanel(session.mode, coachPersona)` so that in guided mode, only the selected coach persona is loaded and speaks.
 
-- **`npm run build`**: PASS (Compiled successfully, static pages generated)
-- **`npm test`**: PASS (2/2 tests passed in Vitest)
-- **`npm run lint`**: PASS (No ESLint warnings or errors)
-- **`npx tsc --noEmit`**: PASS (No TypeScript errors)
+3. `src/features/simulator/simulation-controller.ts`
+   - Added early return in `commit()` when `dependencies.mode === 'guided'`, eliminating all 4-examiner event loops and `/api/defense/examiner` calls when in coaching mode.
+
+4. `src/features/simulator/AudiencePanel.tsx`
+   - Added `sarah` and `marcus` avatar gradients and mood badges (`🎓`).
+   - In guided coaching mode, renders ONLY 1 coach avatar (+ presenter card), preserving the full 4-person audience panel grid for Defense Simulator (`/rehearse` & `/practice`).
+
+5. `src/features/simulator/SimulatorHeader.tsx` & `src/features/coaching/components/coaching-header.tsx`
+   - Added `mode` prop to `SimulatorHeader` and distinct header badge `🎓 1-on-1 Executive Coaching Studio` (`data-testid="coaching-studio-badge"`).
+
+6. `src/features/coaching/components/coaching-teleprompter.tsx`
+   - Updated fallback talking points to feature 2-row teleprompter structure: Row 1 Opening Hook, Row 2: 3 Horizontal Triad Talking Points (`Context`, `Solution`, `Impact`).
+
+7. `src/features/coaching/components/master-guider-hud.tsx`
+   - Highlighted optimal 130–150 WPM range in WPM speech pacing gauge.
+   - Standardized Primary Action button to `"🎙️ Ask Coach for Live Advice"` and Secondary Action button to `"✨ Coach Rescue: Model Pitch Script"`.
+
+8. `src/features/defense/components/rehearse-setup.tsx`
+   - Fixed `creating` prop in `RehearseSetup` function signature.
+
+9. Test Files:
+   - `src/features/coaching/components/coaching-room.test.tsx` (added unit test for CoachingRoom)
+   - `src/features/simulator/SimulatorRoom.test.tsx` (added unit test for SimulatorRoom in guided mode vs mock/uninterrupted defense mode)
+   - `src/app/coaching/[sessionId]/page.test.tsx` (added unit test verifying `/coaching/[id]` opens 1-on-1 Coaching Studio)
+   - `src/app/rehearse/[sessionId]/page.test.tsx` (added unit test verifying `/rehearse/[id]` opens Defense Simulator)

@@ -55,6 +55,7 @@ export function createSimulationController(dependencies: SimulationControllerDep
     await save();
   };
   const examine = async (segment: TranscriptSegment) => {
+    if (dependencies.mode === 'guided') return;
     if (words(segment.text) < minimumWords) return;
     const persona = pickSpeaker(dependencies.panel, events);
     const raw = await dependencies.requestTurn(segment, persona);

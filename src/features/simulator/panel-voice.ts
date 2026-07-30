@@ -154,9 +154,21 @@ export function createPanelVoiceController(deps: PanelVoiceDependencies) {
     }
   };
 
+  const enqueue = async (item: { id?: string; personaId?: string; text: string; slideIndex?: number; interrupts?: boolean }): Promise<AudioPlayResult> => {
+    const persona = item.personaId ? { id: item.personaId, title: item.personaId === 'sarah' ? 'Coach Sarah' : item.personaId === 'marcus' ? 'Coach Marcus' : 'Coach' } : undefined;
+    return speak({
+      kind: 'question',
+      slideIndex: item.slideIndex ?? 0,
+      text: item.text,
+      occurredAtMs: deps.now?.() ?? 0,
+      persona,
+    });
+  };
+
   return {
     speak,
     speakIntro,
+    enqueue,
     replayLast: async () => (state.lastEvent ? speak(state.lastEvent) : ({ played: false, error: 'playback' } as AudioPlayResult)),
     getState: () => state,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => listeners.delete(listener); },

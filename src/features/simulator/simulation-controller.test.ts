@@ -61,4 +61,13 @@ describe('simulation controller', () => {
     await controller.commit(segment('A second complete answer for the final question.'));
     await controller.continueQuestion(); controller.finish(); expect(done).toHaveBeenCalledOnce();
   });
+
+  it('skips examiner requests and interruptions when mode is guided', async () => {
+    const requestTurn = vi.fn();
+    const controller = createSimulationController({ mode: 'guided', panel, now: () => 0, persist: vi.fn(), startCapture: vi.fn(), stopCapture: vi.fn(), requestTurn, speak: vi.fn(), onComplete: vi.fn() });
+    await controller.start();
+    await controller.commit(segment());
+    await controller.waitForExaminer();
+    expect(requestTurn).not.toHaveBeenCalled();
+  });
 });

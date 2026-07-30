@@ -99,7 +99,7 @@ export default function PresentSection() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [slideAspect, setSlideAspect] = useState<number | null>(null);
   const [timeUp, setTimeUp] = useState(false);
-  const previousSlideRef.current = currentSlide;
+  const previousSlideRef = useRef(currentSlide);
 
   // Initialize custom directives checklist from presenterDirectives prompt
   useEffect(() => {

@@ -60,10 +60,15 @@ export const COACH_MARCUS: Persona = {
   voiceId: COACH_MARCUS_VOICE_ID,
 };
 
+export function assembleCoachPanel(coachPersona: 'marcus' | 'sarah' = 'marcus'): Persona {
+  return coachPersona === 'sarah' ? COACH_SARAH : COACH_MARCUS;
+}
+
 export function assemblePanel(mode?: DefenseMode, coachPersona: 'sarah' | 'marcus' = 'marcus'): Persona[] {
   if (mode === 'guided') {
-    return coachPersona === 'sarah' ? [COACH_SARAH] : [COACH_MARCUS];
+    return [assembleCoachPanel(coachPersona)];
   }
   return [PERSONAS.professor, PERSONAS.examiner, PERSONAS.peer];
 }
+
 
