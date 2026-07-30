@@ -102,6 +102,9 @@ export function RehearseSetup({
     const cached = getCachedDeck();
     if (cached) {
       setCachedDeck(cached);
+      // Auto-restore: if no fresh upload has happened yet, populate deck from cache
+      setDeck((prev) => prev ?? cached);
+      setTitle((prev) => prev || cached.sourceName);
     }
   }, []);
 
@@ -168,7 +171,7 @@ export function RehearseSetup({
     }
   };
 
-  const effectiveDeck = deck;
+  const effectiveDeck = deck ?? cachedDeck;
 
   const start = () => {
     if (!effectiveDeck || creating) return;
@@ -228,7 +231,7 @@ export function RehearseSetup({
         </p>
 
         {sourceType === 'file' ? (
-          !deck ? (
+          !effectiveDeck ? (
             <div className="space-y-3">
               <div
                 onClick={() => inputRef.current?.click()}
@@ -310,7 +313,7 @@ export function RehearseSetup({
                   />
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <CheckCircle2 className="size-3.5 text-emerald-500" />
-                    <span>{deck.slides.length} slides ready for examination</span>
+                    <span>{effectiveDeck!.slides.length} slides ready for examination</span>
                   </p>
                 </div>
                 <button
@@ -327,10 +330,10 @@ export function RehearseSetup({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">Slide Preview Gallery</span>
-                  <span className="font-mono">{deck.slides.length} slides</span>
+                  <span className="font-mono">{effectiveDeck!.slides.length} slides</span>
                 </div>
                 <ol className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin">
-                  {deck.slides.map((slide) => (
+                  {effectiveDeck!.slides.map((slide) => (
                     <li key={slide.index} className="shrink-0 group relative">
                       <div className="overflow-hidden rounded-lg border border-border bg-background transition-all group-hover:border-primary/50 group-hover:shadow-sm">
                         <AuthenticatedSlideImage
@@ -372,14 +375,14 @@ export function RehearseSetup({
       {/* Step 02: Room Parameters */}
       <section
         aria-labelledby="rehearse-step-room"
-        className={cn('rounded-xl border border-border bg-card p-6 shadow-sm transition-all sm:p-8 space-y-6', !deck && 'opacity-60')}
+        className={cn('rounded-xl border border-border bg-card p-6 shadow-sm transition-all sm:p-8 space-y-6', !effectiveDeck && 'opacity-60')}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-3">
             <span className="font-mono text-xs text-muted-foreground">02</span>
             <h2 id="rehearse-step-room" className="text-base font-medium text-foreground">Who is in the room?</h2>
           </div>
-          {!deck && (
+          {!effectiveDeck && (
             <span className="text-xs text-muted-foreground italic flex items-center gap-1">
               <FileText className="size-3.5" /> Upload a deck or paste text above to unlock
             </span>
@@ -390,7 +393,7 @@ export function RehearseSetup({
         </p>
 
         {/* Practice Mode Radio Cards */}
-        <fieldset disabled={!deck} className="space-y-3">
+        <fieldset disabled={!effectiveDeck} className="space-y-3">
           <legend className="text-xs font-semibold text-foreground uppercase tracking-wider">Practice Mode</legend>
           <div className="grid gap-3 sm:grid-cols-3">
             {MODES.map(([value, label, help, Icon]) => {
@@ -432,7 +435,7 @@ export function RehearseSetup({
         </fieldset>
 
         {/* Examiner Stance Radio Cards */}
-        <fieldset disabled={!deck} className="space-y-3">
+        <fieldset disabled={!effectiveDeck} className="space-y-3">
           <legend className="text-xs font-semibold text-foreground uppercase tracking-wider">Examiner Stance</legend>
           <div className="grid gap-3 sm:grid-cols-3">
             {STANCES.map(([value, label, help, Icon]) => {
@@ -509,7 +512,7 @@ export function RehearseSetup({
         )}
 
         {/* Target Presentation Duration */}
-        <fieldset disabled={!deck} className="space-y-3">
+        <fieldset disabled={!effectiveDeck} className="space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="size-4 text-primary" />
             <legend className="text-xs font-semibold text-foreground uppercase tracking-wider">Target Presentation Duration</legend>
@@ -551,7 +554,7 @@ export function RehearseSetup({
 
       <Button
         size="lg"
-        disabled={!deck || creating}
+        disabled={!effectiveDeck || creating}
         onClick={start}
         className="w-full h-12 text-sm font-semibold flex items-center justify-center gap-2 rounded-xl shadow-sm"
       >
