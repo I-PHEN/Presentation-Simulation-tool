@@ -80,6 +80,6 @@ export function AuthenticatedSlideImage({ source, alt, className }: { source: st
   }, [source]);
 
   if (failed) return <div role="alert" className="text-sm text-destructive">Slide preview could not be loaded.</div>;
-  if (!objectUrl) return <div role="status" className="text-sm text-muted-foreground animate-pulse">Loading slide preview…</div>;
+  if (!objectUrl) return <div role="status" className="text-sm text-muted-foreground animate-pulse">Loading private slide preview…</div>;
   return <img src={objectUrl} alt={alt} className={className} />;
 }
