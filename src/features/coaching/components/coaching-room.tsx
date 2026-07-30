@@ -121,16 +121,19 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
     };
   }, [currentSlide, slides.length, slideText, coachPersona, explanationDepth, presenterDirectives, scriptAlreadyLoaded]);
 
+  const [coachSpeechBubble, setCoachSpeechBubble] = useState<string | null>(null);
+  const [isAdviceLoading, setIsAdviceLoading] = useState(false);
+
+  const isTopicSession = session?.source === 'topic' || Boolean(session?.topic) || slides[0]?.imageUrl === 'topic';
+
   const handlePlayDemo = async () => {
     const activeScript = scriptsMap[currentSlide];
-    if (!activeScript) {
-      toast.error('Script unavailable for voiceover demo');
-      return;
-    }
+    const demoText = activeScript
+      ? `${activeScript.openingHook} ${activeScript.rescueScript}`
+      : `Welcome to this presentation session. State your core thesis clearly and keep your pacing steady around 140 words per minute.`;
 
     setIsPlayingDemo(true);
     try {
-      const demoText = `${activeScript.openingHook} ${activeScript.rescueScript}`;
       const voiceId = coachPersona === 'sarah'
         ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
         : '533b2990-5b82-45a4-b9f2-367776972ca6';
@@ -145,6 +148,34 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
 
   const handleOpenCoachRescue = () => {
     setRescueModalOpen(true);
+  };
+
+  const handleAskCoachAdvice = async () => {
+    setIsAdviceLoading(true);
+    try {
+      const coachName = coachPersona === 'sarah' ? 'Coach Sarah' : 'Coach Marcus';
+      let tip = `${coachName} Tip: Keep your pitch focused! Emphasize your key problem statement first.`;
+
+      if (wpm > 170) {
+        tip = `${coachName} Tip: You are rushing at ${wpm} WPM. Take a 2-second pause to let key points land.`;
+      } else if (wpm > 0 && wpm < 110) {
+        tip = `${coachName} Tip: Great deliberate pace at ${wpm} WPM. Add energy to your concluding hook!`;
+      } else {
+        tip = `${coachName} Tip: Excellent flow at ${wpm} WPM! Focus on engaging eye contact and bold assertions.`;
+      }
+
+      setCoachSpeechBubble(tip);
+
+      const voiceId = coachPersona === 'sarah'
+        ? 'a7a59115-2425-4192-844c-1e98ec7d6877'
+        : '533b2990-5b82-45a4-b9f2-367776972ca6';
+      const audioResult = await generateTTS(tip, voiceId);
+      await playAudioData(audioResult);
+    } catch {
+      toast.info('Coach advice displayed in HUD');
+    } finally {
+      setIsAdviceLoading(false);
+    }
   };
 
   const handlePlayRescueAudio = async () => {
@@ -189,12 +220,15 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
           isLoading={isLoadingScript}
           isPlayingDemo={isPlayingDemo}
           onPlayDemo={handlePlayDemo}
+          isTopicSession={isTopicSession}
         />
 
         <CoachingControls
           isRecording={isRecording}
           onToggleRecording={() => setIsRecording(!isRecording)}
           onFinish={() => router.push(`/reports/${sessionId}`)}
+          onAskCoach={handleAskCoachAdvice}
+          isAskingCoach={isAdviceLoading}
         />
       </div>
 
@@ -206,7 +240,10 @@ export function CoachingRoom({ sessionId }: { sessionId: string }) {
           wpm={wpm}
           transcript={transcript}
           onCoachRescue={handleOpenCoachRescue}
+          onAskCoachAdvice={handleAskCoachAdvice}
           isRescueLoading={isRescueLoading}
+          isAdviceLoading={isAdviceLoading}
+          coachSpeechBubble={coachSpeechBubble}
         />
       </div>
 

@@ -13,7 +13,10 @@ interface MasterGuiderHudProps {
   wpm: number;
   transcript: string;
   onCoachRescue: () => void;
+  onAskCoachAdvice?: () => void;
   isRescueLoading?: boolean;
+  isAdviceLoading?: boolean;
+  coachSpeechBubble?: string | null;
 }
 
 export default function MasterGuiderHud({
@@ -22,7 +25,10 @@ export default function MasterGuiderHud({
   wpm,
   transcript,
   onCoachRescue,
+  onAskCoachAdvice,
   isRescueLoading = false,
+  isAdviceLoading = false,
+  coachSpeechBubble,
 }: MasterGuiderHudProps) {
   const {
     coachPersona,
@@ -83,10 +89,22 @@ export default function MasterGuiderHud({
         </div>
 
         <div className="text-right">
-          <span className="text-[10px] font-mono text-muted-foreground">SLIDE</span>
+          <span className="text-[10px] font-mono text-muted-foreground">PROGRESS</span>
           <p className="text-xs font-bold text-foreground">{currentSlide + 1} <span className="text-muted-foreground">/ {Math.max(1, totalSlides)}</span></p>
         </div>
       </div>
+
+      {/* Active Coach Speech Bubble */}
+      {coachSpeechBubble && (
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 text-xs space-y-1.5 animate-fade-in">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary">
+            <Sparkles className="size-3" /> {coachName} Voice Advice:
+          </div>
+          <p className="text-foreground italic leading-relaxed text-[11px]">
+            &ldquo;{coachSpeechBubble}&rdquo;
+          </p>
+        </div>
+      )}
 
       {/* Telemetry Pillar 1: Vocal Weight / Depth */}
       <div className="space-y-1.5 rounded-lg bg-surface p-2.5 border border-border">
@@ -107,7 +125,7 @@ export default function MasterGuiderHud({
       <div className="space-y-1.5 rounded-lg bg-surface p-2.5 border border-border">
         <div className="flex items-center justify-between text-[10px]">
           <span className="font-semibold text-foreground flex items-center gap-1">
-            <Zap className="size-3 text-primary" /> Live Tempo & Speed
+            <Zap className="size-3 text-primary" /> Live Speech Tempo
           </span>
           <span className="font-mono text-foreground">{wpm > 0 ? `${wpm} WPM` : 'Measuring...'}</span>
         </div>
@@ -153,7 +171,24 @@ export default function MasterGuiderHud({
         </div>
       )}
 
-      {/* Action Button: Coach Rescue */}
+      {/* Action 1: Ask Coach for Advice */}
+      {onAskCoachAdvice && (
+        <Button
+          size="sm"
+          variant="default"
+          onClick={onAskCoachAdvice}
+          disabled={isAdviceLoading}
+          className="w-full h-8 text-xs font-medium bg-primary text-primary-foreground shadow-sm"
+        >
+          {isAdviceLoading ? (
+            <><RefreshCw className="size-3.5 animate-spin mr-1.5" /> Coach Analyzing Speech...</>
+          ) : (
+            <><Sparkles className="size-3.5 mr-1.5" /> Ask {coachName} for Delivery Advice</>
+          )}
+        </Button>
+      )}
+
+      {/* Action 2: Coach Rescue */}
       <Button
         size="sm"
         variant="outline"

@@ -1,5 +1,5 @@
-import path from 'path';
-import pptxgen from 'pptxgenjs';
+const path = require('path');
+const pptxgen = require('pptxgenjs');
 
 async function generatePPTX() {
   const pptx = new pptxgen();
@@ -139,9 +139,17 @@ async function generatePPTX() {
     rectRadius: 0.1
   });
 
-  const outputPath = path.join(process.cwd(), 'SharkPit_Pitch_Deck.pptx');
-  await pptx.writeFile({ fileName: outputPath });
-  console.log('Successfully generated 100% native PowerPoint presentation at:', outputPath);
+  const outputPath1 = path.join(process.cwd(), 'SharkPit_Pitch_Deck_Clean.pptx');
+  await pptx.writeFile({ fileName: outputPath1 });
+  console.log('Successfully generated 100% native PowerPoint presentation at:', outputPath1);
+
+  try {
+    const outputPath2 = path.join(process.cwd(), 'SharkPit_Pitch_Deck.pptx');
+    await pptx.writeFile({ fileName: outputPath2 });
+    console.log('Also updated SharkPit_Pitch_Deck.pptx at:', outputPath2);
+  } catch (err) {
+    console.log('Note: SharkPit_Pitch_Deck.pptx was locked by PowerPoint (please close it first). Created SharkPit_Pitch_Deck_Clean.pptx instead!');
+  }
 }
 
 generatePPTX().catch(console.error);
