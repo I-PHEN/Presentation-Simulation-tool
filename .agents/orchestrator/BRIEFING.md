@@ -70,6 +70,7 @@ Build a distinct 1-on-1 AI Coaching Studio UI at /coaching/[sessionId] featuring
 | Reviewer M4 4 | teamwork_preview_reviewer | Component & Integration Test Review | in-progress | f13d5b35-20a9-4f44-8360-4142cd2505ff |
 | Challenger M4 3 | teamwork_preview_challenger | Route & UI Verification Challenge | in-progress | c42252b9-bea5-420a-ae27-8871f18f9a1c |
 | Auditor M4 2 | teamwork_preview_auditor | Forensic Integrity Audit 2 | in-progress | 202f1760-21f0-4423-9dc4-9f64fc4b2b71 |
+| Worker M4 8 | teamwork_preview_worker | Syntax & Build Remediation | in-progress | bb884b93-5ee1-4f60-893f-01d2a083b72d |
 
 ## Succession Status
 - Succession required: no

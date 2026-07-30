@@ -28,20 +28,21 @@ export function parseDefenseSessionResponse(value: unknown): DefenseSession | nu
   const defense = value.defense;
   if (!defense || typeof defense !== 'object') return null;
   const session = defense as Record<string, unknown>;
-  const deck = defenseDeckSchema.safeParse(session.deck);
-  const segments = transcriptSegmentsSchema.safeParse(session.transcriptSegments);
-  const events = examinerEventsSchema.safeParse(session.examinerEvents);
-  if (!deck.success || !segments.success || !events.success) return null;
+  const parsedDeck = defenseDeckSchema.safeParse(session.deck);
+  const deck = parsedDeck.success ? parsedDeck.data : (isDeckContext(session.deck) ? (session.deck as DeckContext) : null);
+  const segments = Array.isArray(session.transcriptSegments) ? session.transcriptSegments : transcriptSegmentsSchema.safeParse(session.transcriptSegments).data;
+  const events = Array.isArray(session.examinerEvents) ? session.examinerEvents : examinerEventsSchema.safeParse(session.examinerEvents).data;
+  if (!deck || !segments || !events) return null;
   if (session.mode !== 'uninterrupted' && session.mode !== 'diagnostic' && session.mode !== 'mock' && session.mode !== 'guided') return null;
   const validStance: ExaminerStance = session.stance === 'supportive' || session.stance === 'rigorous' || session.stance === 'hostile' || session.stance === 'custom' ? session.stance : 'supportive';
   if (typeof session.id !== 'string') return null;
   return {
     id: session.id,
-    deck: deck.data,
+    deck,
     mode: session.mode,
     stance: validStance,
-    transcriptSegments: segments.data,
-    examinerEvents: events.data,
+    transcriptSegments: segments,
+    examinerEvents: events,
     status: typeof session.status === 'string' ? session.status : 'upload',
   };
 }

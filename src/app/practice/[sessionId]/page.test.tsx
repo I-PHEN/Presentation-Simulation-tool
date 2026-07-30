@@ -8,7 +8,7 @@ describe('practice session route', () => {
         id: 'practice-session-1',
         deck: {
           sourceName: 'Practice Deck',
-          slides: [{ index: 0, text: 'Slide text', imageUrl: 'image.png' }],
+          slides: [{ index: 1, text: 'Slide text', imageUrl: 'image.png' }],
         },
         mode: 'mock',
         stance: 'rigorous',

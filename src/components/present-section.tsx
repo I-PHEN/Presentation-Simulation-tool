@@ -1593,7 +1593,7 @@ export default function PresentSection() {
       </AnimatePresence>
 
       {/* ─── Document PiP Portal ─── */}
-      {pipWindow?.document?.body && createPortal(
+      {Boolean(pipWindow?.document?.body) ? createPortal(
         <div className="bg-[#0a0a0c] min-h-screen text-foreground p-4 flex flex-col gap-4 font-sans m-0 overflow-hidden border border-border/20 shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -1650,8 +1650,8 @@ export default function PresentSection() {
              </Button>
           </div>
         </div>,
-        pipWindow.document.body
-      )}
+        pipWindow!.document.body
+      ) : null}
     </div>
   );
 }

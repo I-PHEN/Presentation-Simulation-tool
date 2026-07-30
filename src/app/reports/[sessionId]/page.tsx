@@ -8,7 +8,7 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 export function reportFromSummary(value: unknown): CoachingReport | null {
   if (!value || typeof value !== 'object') return null;
-  const candidate = (value as Record<string, unknown>).coachingReport;
+  const candidate = 'coachingReport' in value ? (value as Record<string, unknown>).coachingReport : value;
   const parsed = coachingReportSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
 }

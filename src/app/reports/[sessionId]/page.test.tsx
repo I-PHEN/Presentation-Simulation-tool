@@ -5,21 +5,38 @@ describe('report page coaching wiring', () => {
   it('parses coaching report summary correctly', () => {
     const validReport = {
       coachingReport: {
-        overallScore: 85,
-        summary: 'Great executive presentation performance.',
-        keyStrengths: ['Clear pacing', 'Strong hook'],
-        areasForImprovement: ['Conclude with clearer call to action'],
-        deliveryPacingWpm: 140,
-        slideFeedback: [
-          { slideIndex: 0, feedback: 'Strong opening', score: 90 },
+        highestLeverage: {
+          title: 'Opening Pitch Directness',
+          risk: 'high',
+          basis: 'slide_reliance',
+          presenterQuote: 'We believe our product is good.',
+          evidence: 'Presenter spent 45s reading bullet points verbatim.',
+          slideIndex: 1,
+          drill: 'Practice 15s executive hook without looking at slide.',
+        },
+        drills: ['Practice 15s executive hook'],
+        metrics: {
+          paceWpm: 140,
+          fillerPerMin: 2,
+          verbatimSlides: 1,
+          slideTimes: [{ slideIndex: 1, ms: 30000, atMs: 0 }],
+          questionsHandled: { handled: 2, total: 2 },
+          deckless: false,
+          delivery: null,
+        },
+        timeline: [
+          { atMs: 0, kind: 'presenter', slideIndex: 1, text: 'Opening statement' },
         ],
+        personaVerdicts: [],
+        strengths: ['Great vocal pace'],
+        minimal: false,
       },
     };
 
     const parsed = reportFromSummary(validReport);
     expect(parsed).not.toBeNull();
-    expect(parsed?.overallScore).toBe(85);
-    expect(parsed?.summary).toContain('Great executive presentation');
+    expect(parsed?.highestLeverage.title).toBe('Opening Pitch Directness');
+    expect(parsed?.metrics.paceWpm).toBe(140);
   });
 
   it('returns null when report format is invalid', () => {
