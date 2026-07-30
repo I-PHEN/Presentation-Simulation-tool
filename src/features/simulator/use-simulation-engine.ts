@@ -16,7 +16,7 @@ import { acquireBrowserRecorder } from './browser-audio-recorder';
 import { uploadSessionAudio } from './upload-recording';
 import { useAppStore } from '@/lib/store';
 
-type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source?: 'deck' | 'topic' };
+type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source?: 'deck' | 'topic'; coachPersona?: 'sarah' | 'marcus' };
 type STTHandle = Awaited<ReturnType<typeof createSTT>>;
 export type SimulationPhase = 'ready' | 'introducing' | 'live' | 'ended';
 
@@ -29,7 +29,8 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
   const [error, setError] = useState<string | null>(null);
 
   const source = session.source ?? 'deck';
-  const coachPersona = useAppStore((s) => s.coachPersona) ?? 'marcus';
+  const storeCoach = useAppStore((s) => s.coachPersona);
+  const coachPersona = session.coachPersona ?? (typeof window === 'undefined' ? useAppStore.getState().coachPersona : storeCoach) ?? 'marcus';
   const panel = useMemo<Persona[]>(() => assemblePanel(session.mode, coachPersona), [session.mode, coachPersona]);
   const voiceForPersona = useCallback((id: string) => panel.find((p) => p.id === id)?.voiceId ?? panel[0].voiceId, [panel]);
 

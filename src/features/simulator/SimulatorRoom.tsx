@@ -22,7 +22,7 @@ import { derivePresenterState } from './slide-palette';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { CoachingTeleprompter } from '@/features/coaching/components/coaching-teleprompter';
 
-type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic' };
+type SimSession = { id: string; deck: DeckContext; mode: DefenseMode; stance: ExaminerStance; transcriptSegments: TranscriptSegment[]; examinerEvents: ExaminerEvent[]; status: string; source: 'deck' | 'topic'; coachPersona?: 'sarah' | 'marcus' };
 
 function isTypingTarget(target: EventTarget | null): boolean {
   const element = target as HTMLElement | null;
