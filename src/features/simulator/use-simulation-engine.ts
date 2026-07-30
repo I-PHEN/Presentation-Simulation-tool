@@ -153,24 +153,28 @@ export function useSimulationEngine(session: SimSession, { onComplete }: { onCom
 
   const changeSlide = useCallback(async (pos: number) => { await controller.changeSlide(session.deck.slides[pos].index); }, [controller, session.deck.slides]);
   const end = useCallback(async (deliverySamples: DeliverySample[] = []) => {
+    setPhase('ended');
+    setCaptureState('idle');
     let failure: string | null = null;
     try {
-      await controller.end();
-      // Camera evidence rides its own PATCH so a failure here can never lose the
-      // transcript; the report simply reports no camera evidence.
-      if (deliverySamples.length > 0) {
-        await authenticatedFetch(`/api/session/${session.id}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deliverySamples }),
-        }).catch(() => undefined);
+      const endPromise = controller.end();
+      const samplesPromise = deliverySamples.length > 0
+        ? authenticatedFetch(`/api/session/${session.id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deliverySamples }),
+          }).catch(() => undefined)
+        : Promise.resolve();
+      const recorderPromise = recorder.stop().catch(() => undefined);
+
+      const results = await Promise.allSettled([endPromise, samplesPromise, recorderPromise]);
+      const endResult = results[0];
+      if (endResult.status === 'rejected') {
+        failure = endResult.reason instanceof Error ? endResult.reason.message : 'Your rehearsal could not be saved.';
       }
     } catch (e) {
       failure = e instanceof Error ? e.message : 'Your rehearsal could not be saved.';
     }
-    await recorder.stop(); // finish upload + release BEFORE showing the report, so audio is present on first load
     if (failure) setError(failure);
-    setCaptureState('idle');
-    setPhase(controller.getState().ended ? 'ended' : 'live');
   }, [controller, recorder, session.id]);
 
   const askCoachForAdvice = useCallback(async () => {
